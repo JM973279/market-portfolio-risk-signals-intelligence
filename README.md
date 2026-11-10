@@ -36,7 +36,24 @@ python3 -m qsignals.diagnose        # → reports/event_diagnostics.{csv,md}
 python3 -m unittest discover -s tests -t .
 ```
 
-배포 저장소 경로가 다르면 `--source-root PATH`를 넘깁니다. 11/6 이후 이벤트는 배포 저장소의 `operational-markets.json`이 갱신된 뒤 `import_scores`를 다시 실행하면 진단됩니다.
+배포 저장소 경로가 다르면 `--source-root PATH`를 넘깁니다.
+
+## 최신 점수 갱신
+
+`import_scores`는 배포 저장소에 이미 있는 JSON만 복사합니다. 배포 저장소의 운영 export는 사람이 수집을 돌릴 때만 갱신되므로(자동 예약 없음), 그 JSON만 보면 점수가 멈춘 날짜에서 더 나아가지 않습니다. `qsignals.refresh`는 배포 저장소의 동결 파이프라인(`market_engine/operations/run.py --collect`)을 **수정 없이** 임시 사본에서 돌려 최신 한국 점수를 직접 받아옵니다.
+
+```bash
+scripts/setup_inference_env.sh      # 최초 1회: ~/.venvs/mpri-inference (배포 저장소의 고정 버전)
+python3 -m qsignals.refresh         # 수집 → 동결 모델 추론 → data/input/ 갱신
+python3 -m qsignals.diagnose
+```
+
+- **배포 저장소와 원본 V1 저장소는 읽기만 합니다.** 둘 다 `git archive`로 `~/.cache/qsignals/runs/<시각>/`에 사본을 만들어 그 안에서 실행합니다. 배포 저장소의 `operational-markets.json`, 웹사이트, AWS 배포는 바뀌지 않습니다.
+- **원본 V1 버전은 contract.json으로 고릅니다.** 파이프라인은 V1 소스 10개의 SHA-256이 맞아야 돕니다. V1 작업 폴더가 다른 브랜치(예: `feature/zscore-warning`)에 있어도, 모든 브랜치에서 해시가 맞는 커밋을 찾아 그 커밋으로 사본을 만듭니다. 맞는 커밋이 없으면 멈춥니다.
+- **한국 원천 이력은 `~/.cache/qsignals/v1-data/raw/korea/`에 둡니다.** V1에서 gitignore된 파일이라 저장소에 없습니다. 첫 실행은 V1 다운로더로 2010년부터 받고(KRX 약 8,800회 호출), 이후에는 새 거래일만 받습니다.
+- **API 키**는 V1 `.env`(`KRX_API_KEY`, `ECOS_API_KEY`)에서 자식 프로세스 환경으로만 넘깁니다. 출력·파일에 남기지 않습니다.
+- 한국이 기대 거래일 기준 `CURRENT`일 때만 `data/input/`을 바꿉니다. 아니면 이전 import를 유지하고 종료 코드 2로 끝납니다. `provenance.json`의 `refresh`에 실행 ID, V1 커밋, 시장별 상태·관측일이 남습니다.
+- **미국은 이 저장소에서 쓰지 않지만 상태는 기록합니다.** 미국은 Yahoo가 SPY 조정가격을 다시 계산해 과거 `SPY_1D_Return`이 최대 1.6e-6 달라지고, 동결 파이프라인이 1e-9 재현 기준으로 신규 점수를 보류합니다(`BLOCKED`). 수집 실패가 아니라 배포 저장소의 revision 수용 정책 문제라 여기서 기준을 바꾸지 않습니다.
 
 ## 구조
 
@@ -44,6 +61,8 @@ python3 -m unittest discover -s tests -t .
 data/events/kospi_2026_events.csv   급락일 주석 (사람이 작성)
 data/input/korea_scores.csv         V1 점수·MSI·KOSPI200 (import_scores가 생성)
 data/input/provenance.json          출처 브랜치·커밋·sha256·행 수
+qsignals/refresh.py                 동결 파이프라인을 임시 사본에서 실행해 최신 점수 수집
+scripts/setup_inference_env.sh      refresh용 별도 Python 환경
 qsignals/scores.py                  점수 시계열 병합·검증
 qsignals/events.py                  이벤트 스키마·검증
 qsignals/diagnostics.py             사전 경보 판정, 대형 하락일 스캔

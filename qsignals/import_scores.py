@@ -40,13 +40,14 @@ def _git(source_root, *args):
     return out.stdout.strip()
 
 
-def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source-root", type=Path, default=DEFAULT_SOURCE)
-    parser.add_argument("--output-dir", type=Path, default=PROJECT_ROOT / "data" / "input")
-    args = parser.parse_args(argv)
+def import_scores(source_root, output_dir, extra_provenance=None):
+    """Write korea_scores.csv and provenance.json from a deployed-repo tree.
 
-    source_root = args.source_root.resolve()
+    `extra_provenance` overrides/extends the recorded fields (used by
+    qsignals.refresh, whose source tree is a git archive without .git).
+    """
+    source_root = Path(source_root).resolve()
+    output_dir = Path(output_dir)
     payloads, files = {}, {}
     for key, rel in SOURCE_FILES.items():
         raw = (source_root / rel).read_bytes()
@@ -58,7 +59,7 @@ def main(argv=None):
         }
 
     rows = build_rows(payloads["global_markets"], payloads["operational_markets"])
-    write_scores(rows, args.output_dir / "korea_scores.csv")
+    write_scores(rows, output_dir / "korea_scores.csv")
 
     korea_ops = payloads["operational_markets"]["markets"]["korea"]
     scored = [r for r in rows if r.risk_v1 is not None]
@@ -82,9 +83,18 @@ def main(argv=None):
         "last_risk_date": scored[-1].date,
         "last_price_date": priced[-1].date,
     }
-    out = args.output_dir / "provenance.json"
+    provenance.update(extra_provenance or {})
+    out = output_dir / "provenance.json"
     out.write_text(json.dumps(provenance, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return provenance
 
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--source-root", type=Path, default=DEFAULT_SOURCE)
+    parser.add_argument("--output-dir", type=Path, default=PROJECT_ROOT / "data" / "input")
+    args = parser.parse_args(argv)
+    provenance = import_scores(args.source_root, args.output_dir)
     print(json.dumps(provenance, indent=2, ensure_ascii=False))
 
 
