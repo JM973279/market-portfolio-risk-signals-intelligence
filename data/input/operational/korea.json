@@ -1,0 +1,963 @@
+{
+ "schema_version": 1,
+ "runId": "20261110T140419Z-d19f9c34",
+ "generatedAt": "2026-11-10T14:04:19.284915+00:00",
+ "mode": "provider-refresh",
+ "sourceValuesIncluded": false,
+ "market": "korea",
+ "block": {
+  "status": "DELAYED",
+  "expectedDate": "2026-11-10",
+  "series": [
+   {
+    "name": "KOSPI200",
+    "provider": "KRX",
+    "retrievedAt": null,
+    "observationDate": "2026-11-09",
+    "status": "ERROR",
+    "reason": "수집 실패 (TransientProviderError); 인증·네트워크·제공처 응답 확인 필요",
+    "sha256": "dac7e4c9fdfbd04321ffa0167c72d62e9ae8a8b4ca0d9a15762cf3fe27a29ba7"
+   },
+   {
+    "name": "VKOSPI",
+    "provider": "KRX",
+    "retrievedAt": null,
+    "observationDate": "2026-11-09",
+    "status": "ERROR",
+    "reason": "수집 실패 (TransientProviderError); 인증·네트워크·제공처 응답 확인 필요",
+    "sha256": "22b85491e3a68c1bccf98499f638a8bdb7013ea09365eec4e35c0a91edb2733e"
+   },
+   {
+    "name": "Korea_Treasury_3Y",
+    "provider": "BOK ECOS",
+    "retrievedAt": "2026-11-10T14:04:31.643284+00:00",
+    "observationDate": "2026-11-10",
+    "status": "OBSERVED",
+    "reason": null,
+    "sha256": "a643a803a0cb63877b3998ce32da3c6da14fd9ccfccdfd2ad15054b39781db16"
+   },
+   {
+    "name": "Korea_Corporate_AAminus_3Y",
+    "provider": "BOK ECOS",
+    "retrievedAt": "2026-11-10T14:04:32.477109+00:00",
+    "observationDate": "2026-11-09",
+    "status": "OBSERVED",
+    "reason": null,
+    "sha256": "da9b67cf3cffb93f8d10f39b0613801456b77cfaecfb1928ba9a646e46f1861a"
+   }
+  ],
+  "history": [
+   {
+    "date": "2026-09-17",
+    "risk": 0.18049225211143494,
+    "msi": 0.2259968665574651,
+    "threshold": 1.1167385311155495,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-09-18",
+    "risk": 0.11555816978216171,
+    "msi": 0.3444401554706056,
+    "threshold": 1.1166355692603225,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-09-21",
+    "risk": 0.02893492765724659,
+    "msi": 0.3247252904824316,
+    "threshold": 1.116532607405095,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-09-22",
+    "risk": 0.02635282650589943,
+    "msi": 0.2096347067634808,
+    "threshold": 1.1164296455498677,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-09-23",
+    "risk": 0.03350980952382088,
+    "msi": 0.199096802717438,
+    "threshold": 1.11632668369464,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-09-28",
+    "risk": 0.09026940166950226,
+    "msi": 0.3347759420294953,
+    "threshold": 1.1162237218394129,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-09-29",
+    "risk": 0.04201154038310051,
+    "msi": 0.3676250906043933,
+    "threshold": 1.1161847828036358,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-09-30",
+    "risk": 0.08344537019729614,
+    "msi": 0.3457224269087245,
+    "threshold": 1.1161458437678586,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-01",
+    "risk": 0.037343889474868774,
+    "msi": 0.2838765503322694,
+    "threshold": 1.1161069047320815,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-02",
+    "risk": 0.03298579528927803,
+    "msi": 0.2224127765532169,
+    "threshold": 1.1160679656963044,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-06",
+    "risk": 0.043566543608903885,
+    "msi": 0.1756838292332424,
+    "threshold": 1.1160290266605275,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-07",
+    "risk": 0.034490156918764114,
+    "msi": 0.1789590301263722,
+    "threshold": 1.1159900876247506,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-08",
+    "risk": 0.12075536698102951,
+    "msi": 0.29828783490148,
+    "threshold": 1.1159511485889737,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-12",
+    "risk": 0.15586504340171814,
+    "msi": 0.4966867148051102,
+    "threshold": 1.1159122095531966,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-13",
+    "risk": 0.3784849941730499,
+    "msi": 0.7438493170571651,
+    "threshold": 1.1158732705174192,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-14",
+    "risk": 0.32324275374412537,
+    "msi": 0.7198486500390797,
+    "threshold": 1.1158343314816423,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-15",
+    "risk": 0.40475425124168396,
+    "msi": 1.049062895656283,
+    "threshold": 1.1158205260360516,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-16",
+    "risk": 0.31599363684654236,
+    "msi": 0.7878436927929781,
+    "threshold": 1.1158067205904612,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-19",
+    "risk": 0.38572970032691956,
+    "msi": 0.7430033932278036,
+    "threshold": 1.1157929151448704,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-20",
+    "risk": 0.3784849941730499,
+    "msi": 0.7862013418963044,
+    "threshold": 1.1157791096992795,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-21",
+    "risk": 0.35076528787612915,
+    "msi": 0.7141836094519057,
+    "threshold": 1.115765304253689,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-22",
+    "risk": 0.3664270341396332,
+    "msi": 0.8118316877682467,
+    "threshold": 1.1157514988080983,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-23",
+    "risk": 0.3841983377933502,
+    "msi": 0.9192871843960424,
+    "threshold": 1.1157376933625078,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-26",
+    "risk": 0.3841983377933502,
+    "msi": 0.9445743007400532,
+    "threshold": 1.1157238879169171,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-27",
+    "risk": 0.3841983377933502,
+    "msi": 0.8885722773577992,
+    "threshold": 1.1157100824713264,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-28",
+    "risk": 0.3841983377933502,
+    "msi": 0.779264836250432,
+    "threshold": 1.1156962770257357,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-29",
+    "risk": 0.3682185113430023,
+    "msi": 0.6859652468250362,
+    "threshold": 1.1155057818395353,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-30",
+    "risk": 0.39525002241134644,
+    "msi": 0.7786169904666703,
+    "threshold": 1.115315286653335,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-11-02",
+    "risk": 0.40170958638191223,
+    "msi": 0.7534051710453241,
+    "threshold": 1.1151247914671345,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-11-03",
+    "risk": 0.39525002241134644,
+    "msi": 0.8476606594131907,
+    "threshold": 1.1149342962809328,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-11-04",
+    "risk": 0.3863885998725891,
+    "msi": 0.8442272439480659,
+    "threshold": 1.1147438010947324,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-11-05",
+    "risk": 0.3796622157096863,
+    "msi": 0.9485536765999506,
+    "threshold": 1.114553305908532,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-11-06",
+    "risk": 0.5262924432754517,
+    "msi": 1.16434762277284,
+    "threshold": 1.1143628107223311,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-11-09",
+    "risk": 0.4716390371322632,
+    "msi": 1.0659580402042406,
+    "threshold": 1.1157238879169171,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   }
+  ],
+  "current": null,
+  "lastValid": {
+   "date": "2026-11-09",
+   "risk": 0.4716390371322632,
+   "msi": 1.0659580402042406,
+   "threshold": 1.1157238879169171,
+   "price": null,
+   "recordType": "RETROSPECTIVE_INFERENCE"
+  },
+  "reason": "일부 원천 수집 실패. 과거 캐시 재현 결과만 별도 표시합니다.",
+  "modelSha256": "b8524d9dab692434e051011987bc6a86ffbd18c20a0c30ff00b4b30856318247",
+  "trainingCutoff": "2026-09-16",
+  "trainingEvidence": "scaler 통계와 labeled 3714행 일치; 실행 시각 미기록",
+  "featureOrder": [
+   "KOSPI200_1D_Return",
+   "KOSPI200_5D_Return",
+   "KOSPI200_20D_Return",
+   "KOSPI200_20D_Vol",
+   "KOSPI200_60D_Vol",
+   "KOSPI200_Drawdown",
+   "KOSPI200_20D_Momentum",
+   "VKOSPI_Level",
+   "VKOSPI_1D_Change",
+   "VKOSPI_5D_Change",
+   "VKOSPI_20D_Momentum",
+   "VKOSPI_252D_ZScore",
+   "Credit_Level",
+   "Credit_1D_Change",
+   "Credit_5D_Change",
+   "Credit_20D_Momentum",
+   "Credit_252D_ZScore"
+  ],
+  "inferenceSucceeded": true,
+  "publicationDeadline": "2026-11-10T12:30:00+00:00",
+  "availability": [
+   {
+    "date": "2026-08-12",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-13",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-14",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-18",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-19",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-20",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-21",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-24",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-25",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-26",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-27",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-28",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-31",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-01",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-02",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-03",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-04",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-07",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-08",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-09",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-10",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-11",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-14",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-15",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-16",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-17",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-18",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-21",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-22",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-23",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-28",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-29",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-30",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-01",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-02",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-06",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-07",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-08",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-12",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-13",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-14",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-15",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-16",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-19",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-20",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-21",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-22",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-23",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-26",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-27",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-28",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-29",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-30",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-11-02",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-11-03",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-11-04",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-11-05",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-11-06",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-11-09",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-11-10",
+    "available": [],
+    "missing": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ]
+   }
+  ],
+  "availabilityOrigin": "legacy-cache",
+  "historicalParity": true,
+  "inferenceAt": "2026-11-10T14:04:33.316104+00:00"
+ }
+}

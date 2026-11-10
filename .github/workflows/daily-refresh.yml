@@ -97,12 +97,14 @@ jobs:
         run: |
           python -m qsignals.diagnose
           python -m qsignals.view
+          python -m qsignals.export_frontend
+          python -m market_engine.scenarios.build_korea_library
 
       - name: Commit refreshed data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/input reports
+          git add data/input reports frontend/public/data
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
           last=$(python -c "import json;m=json.load(open('data/input/provenance.json'))['markets'];print(', '.join(f\"{k} {v['last_risk_date']}\" for k,v in m.items()))")
           git commit -m "data: refresh V1 scores ($last)"

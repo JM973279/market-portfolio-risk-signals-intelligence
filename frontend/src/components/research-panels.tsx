@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { currentOperationalPoint, operationalMessage } from "@/lib/operational-status";
+import { currentOperationalPoint, lastValidOperationalPoint, operationalMessage } from "@/lib/operational-status";
 import CountryFlag from "./country-flag";
 import { useState } from "react";
 import { useDashboard } from "./dashboard-shell";
@@ -20,11 +20,16 @@ export function CountryCards({only}:{only?:"us"|"korea"}) {
   const oos=points?.filter(p=>p.risk!==null).at(-1);
   const operation=operational?.markets[country];
   const operatingPoint=currentOperationalPoint(operation);
+  // 현재 점수가 없으면(예: 미국 DELAYED) N/A 대신 마지막 유효 점수를 날짜와 함께 보여 준다.
+  // 현재 점수로 이월하지 않는다: 상태 표시와 안내 문구는 operatingPoint 기준 그대로 둔다.
+  const lastValidPoint=lastValidOperationalPoint(operation);
+  const shownPoint=operatingPoint??lastValidPoint;
+  const lastValidNote=lastValidPoint?`${t("lastValidScore")} · ${lastValidPoint.date}`:null;
   const monitoringState=!operation&&country==="korea"?monitor?.latest?.state:undefined;
   const complete=country==="korea"?monitor?.last_complete?.Date:oos?.date;
-  const risk=operation?operatingPoint?.risk:country==="korea"?monitor?.latest?.Prob_XGBoost:current?.risk;
-  const msi=operation?operatingPoint?.msi:country==="korea"?monitor?.latest?.Korea_MSI:current?.msi;
-  return <section className="panel country-card" key={country}><div className="panel-header"><Link href={`/${country}`} className="country-title"><CountryFlag country={country}/><h2>{t(country)}</h2><span aria-hidden="true">›</span></Link><span className="source-date">{t(operation?"operationalAsOf":"sourceAsOf")}<b>{(operation?operation.expectedDate:country==="korea"?monitor?.latest?.Date:latestSource?.date) ?? "N/A"}</b></span></div><div className="country-metrics"><div className="country-metric"><h3>{t("risk10")}</h3><strong>{pct(risk)}</strong><p>{t("futureRisk")}</p></div><div className="country-metric"><h3>MSI</h3><strong>{num(msi)}</strong><p>{t("currentStress")}</p></div><div className="country-status"><span className="status-label"><i/>{operation?(operatingPoint?(language==="ko"?"필수 관측 확인":"Inputs verified"):(language==="ko"?"최신 점수 미확인":"Current score unavailable")):monitoringState?stateCopy[monitoringState]?.[language==="en"?0:1]??monitoringState:t("unknownState")}</span><p>{operation?operationalMessage(operation,language):monitoringState&&!monitoringState.includes("UNKNOWN")?(language==="ko"?reasonCopy[monitor?.latest?.reason??""]??monitor?.latest?.reason:monitor?.latest?.reason):t("currentNote")}</p><Link href={`/${country}`}>{t("openMarket")} →</Link></div></div><div className="country-meta"><span>{t("oosAsOf")} <b>{oos?.date ?? "N/A"}</b></span><span>{t("complete")} <b>{complete ?? "N/A"}</b></span></div><span className="country-scope">{t(country==="us"?"originalV1":"experimentalKorea")}</span>{language==="ko" && <span className="sr-only">{t("notLive")}</span>}</section>;
+  const risk=operation?shownPoint?.risk:country==="korea"?monitor?.latest?.Prob_XGBoost:current?.risk;
+  const msi=operation?shownPoint?.msi:country==="korea"?monitor?.latest?.Korea_MSI:current?.msi;
+  return <section className="panel country-card" key={country}><div className="panel-header"><Link href={`/${country}`} className="country-title"><CountryFlag country={country}/><h2>{t(country)}</h2><span aria-hidden="true">›</span></Link><span className="source-date">{t(operation?"operationalAsOf":"sourceAsOf")}<b>{(operation?operation.expectedDate:country==="korea"?monitor?.latest?.Date:latestSource?.date) ?? "N/A"}</b></span></div><div className="country-metrics"><div className="country-metric"><h3>{t("risk10")}</h3><strong>{pct(risk)}</strong><p>{lastValidNote??t("futureRisk")}</p></div><div className="country-metric"><h3>MSI</h3><strong>{num(msi)}</strong><p>{lastValidNote??t("currentStress")}</p></div><div className="country-status"><span className="status-label"><i/>{operation?(operatingPoint?(language==="ko"?"필수 관측 확인":"Inputs verified"):(language==="ko"?"최신 점수 미확인":"Current score unavailable")):monitoringState?stateCopy[monitoringState]?.[language==="en"?0:1]??monitoringState:t("unknownState")}</span><p>{operation?operationalMessage(operation,language):monitoringState&&!monitoringState.includes("UNKNOWN")?(language==="ko"?reasonCopy[monitor?.latest?.reason??""]??monitor?.latest?.reason:monitor?.latest?.reason):t("currentNote")}</p><Link href={`/${country}`}>{t("openMarket")} →</Link></div></div><div className="country-meta"><span>{t("oosAsOf")} <b>{oos?.date ?? "N/A"}</b></span><span>{t("complete")} <b>{complete ?? "N/A"}</b></span></div><span className="country-scope">{t(country==="us"?"originalV1":"experimentalKorea")}</span>{language==="ko" && <span className="sr-only">{t("notLive")}</span>}</section>;
  })}</div>;
 }
 

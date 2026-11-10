@@ -60,6 +60,22 @@ python3 -m qsignals.diagnose
 - **미국 점수는 배포 저장소 `main` 9bedc79 이후 코드에서만 나옵니다.** 그 이전 파이프라인은 Yahoo의 SPY 조정가격 재계산(과거 `SPY_1D_Return` 최대 1.6e-6 차이) 때문에 1e-9 재현 대조에서 미국을 `BLOCKED`로 보류합니다. 9bedc79의 `anchor_us_history`는 V1 캐시 행을 그대로 두고 이후 관측만 붙이므로 통과합니다. 이 저장소는 그 기준을 바꾸지 않고, 고른 `--source-ref`의 파이프라인 결과를 그대로 씁니다. 미국이 `BLOCKED`인 ref로 돌리면 `us_scores.csv`는 바뀌지 않습니다.
 - 미국은 FRED 신용 금리(DBAA/DGS10)가 SPY·VIX보다 며칠 늦게 공개되는 일이 많아 `DELAYED`가 흔합니다. 이때 점수는 마지막으로 모든 원천이 관측된 날까지만 있습니다.
 
+## 웹 화면 (`frontend/`)
+
+배포 저장소의 `frontend/`를 9bedc79에서 그대로 복사했습니다(커밋 216198a, 트리 해시 동일). 그 위에 이 저장소 작업만 얹었습니다: 사례 분석 시나리오 라이브러리(`korea-scenario-library.patch`), 현재 점수가 없을 때 시장 카드에 마지막 유효 점수 표시, 데이터 점검 스크립트를 특정 실행 수치 대신 규칙으로 검사. 배포 저장소는 바꾸지 않습니다.
+
+```bash
+python3 -m qsignals.refresh                        # 점수 CSV + data/input/operational/{korea,us}.json
+python3 -m qsignals.export_frontend                # → frontend/public/data/operational-markets.json
+python3 -m market_engine.scenarios.build_korea_library   # → frontend/public/data/korea-scenarios.json
+cd frontend && npm ci && npm run build && npm run start   # http://localhost:3000
+```
+
+- **이 저장소 데이터로 바뀌는 것:** `operational-markets.json`(시장 카드, 미국·한국 시장 페이지의 운영 추론, 헤더 날짜)과 그것을 읽는 `korea-scenarios.json`. `export_frontend`는 `data/input/operational/<시장>.json`(refresh가 저장한 시장별 최신 검증 블록, 가격 없음)을 합치고, 모든 점수가 `<시장>_scores.csv`와 같은지 확인한 뒤 씁니다. 두 시장은 서로 다른 수집 실행에서 올 수 있고 `runId`에 둘 다 적힙니다.
+- **복사본 그대로인 것:** `global-markets.json`(walk-forward OOS 연구 export), `korea-monitor.json`(시장 확산도·과거 검증). 동결 연구 자료라 갱신하지 않습니다.
+- **배포 화면과 다른 점:** refresh가 한국 원천 이력을 매번 최신으로 채우므로 학습 기준일 이후 한국 행은 모두 `RETROSPECTIVE_INFERENCE`(과거 캐시 재현 추론)로 표시됩니다. 배포 사이트는 V1 캐시 끝(10/15) 이후를 `OPERATIONAL`로 표시합니다. 점수 값은 같습니다.
+- 포트폴리오 화면은 별도 API 서버가 필요해 이 저장소에서는 데이터 없이 뜹니다.
+
 ## 구조
 
 ```text
@@ -69,6 +85,10 @@ data/input/us_scores.csv            미국 V1 점수·MSI·SPY (비교용, 진�
 data/input/provenance.json          시장별 출처 커밋·sha256·행 수, 수집 상태
 qsignals/refresh.py                 동결 파이프라인을 임시 사본에서 실행해 최신 점수 수집
 qsignals/view.py                    reports/dashboard.html 생성 (data/input·reports만 읽음)
+qsignals/export_frontend.py         frontend/public/data/operational-markets.json 생성·검증
+data/input/operational/             시장별 최신 검증 파이프라인 블록 (refresh가 저장)
+frontend/                           배포 저장소 화면 복사본 + 이 저장소 수정
+market_engine/scenarios/            한국 급락 시나리오 큐레이션·빌더 (사례 분석 화면)
 scripts/setup_inference_env.sh      refresh용 별도 Python 환경
 qsignals/scores.py                  점수 시계열 병합·검증
 qsignals/events.py                  이벤트 스키마·검증

@@ -32,7 +32,7 @@
   "markets": {
     "us": {
       "file": "us_scores.csv",
-      "imported_at": "2026-11-10T13:27:20+00:00",
+      "imported_at": "2026-11-10T14:04:37+00:00",
       "source_repo": "market-portfolio-risk-intelligence",
       "source_git_branch": "main",
       "source_git_ref": "main",
@@ -46,11 +46,11 @@
         },
         "operational_markets": {
           "path": "frontend/public/data/operational-markets.json",
-          "bytes": 48657,
-          "sha256": "586a995c30390904523109bf4320343a6b80b4c7d7f35ea12d712c5de7e84382"
+          "bytes": 48676,
+          "sha256": "7911229586bf04a2f655575bffc6050124ede6fd764dcf00322a4c5acde1d503"
         }
       },
-      "operational_run_id": "20261110T132701Z-44d06722",
+      "operational_run_id": "20261110T140419Z-d19f9c34",
       "operational_model_sha256": "90c51c245ebe62b58f804098a7a7045b60fb64ef83da72d4c9a049cf8d5eeb0d",
       "training_cutoff": "2026-09-16",
       "rows": 5093,
@@ -103,7 +103,7 @@
   "refresh": {
     "mode": "provider-refresh",
     "v1_commit": "e939dc358c3bca92fee4c318d4bb297fd80debd3",
-    "generated_at": "2026-11-10T13:27:01.216763+00:00",
+    "generated_at": "2026-11-10T14:04:19.284915+00:00",
     "korea_reference": {
       "rebuilt": true,
       "original_sha256": "9fad15f4d0c2d78f890aa479a2b77d0f83cff637c014061de72e4c1c21b61588",
@@ -164,7 +164,7 @@
           "SPY": {
             "overlapDates": 258,
             "scale": 1.0,
-            "maxRelativeDifference": 0.0
+            "maxRelativeDifference": 1.8106844323780435e-07
           },
           "VIX": {
             "overlapDates": 260,

@@ -1,0 +1,936 @@
+{
+ "schema_version": 1,
+ "runId": "20261110T140419Z-d19f9c34",
+ "generatedAt": "2026-11-10T14:04:19.284915+00:00",
+ "mode": "provider-refresh",
+ "sourceValuesIncluded": false,
+ "market": "us",
+ "block": {
+  "status": "DELAYED",
+  "expectedDate": "2026-11-09",
+  "series": [
+   {
+    "name": "SPY",
+    "provider": "Yahoo Finance",
+    "retrievedAt": "2026-11-10T14:04:34.650887+00:00",
+    "observationDate": "2026-11-09",
+    "status": "OBSERVED",
+    "reason": null,
+    "sha256": "00ed31d7e1bd62ba9424a458582859fb2c8af21cbe00fd91828aa4331f37c0ee"
+   },
+   {
+    "name": "VIX",
+    "provider": "Yahoo Finance",
+    "retrievedAt": "2026-11-10T14:04:35.384494+00:00",
+    "observationDate": "2026-11-09",
+    "status": "OBSERVED",
+    "reason": null,
+    "sha256": "c0f52ca0fc4ec4b9e3fb19d0d42043d880dbdda7b63efb29407ff7aee0aae980"
+   },
+   {
+    "name": "DBAA",
+    "provider": "FRED",
+    "retrievedAt": "2026-11-10T14:04:35.804443+00:00",
+    "observationDate": "2026-11-06",
+    "status": "OBSERVED",
+    "reason": null,
+    "sha256": "abee9795e793df7c78c620fe778daa87be4c0673e58e83bb19eca64b0eb2f74d"
+   },
+   {
+    "name": "DGS10",
+    "provider": "FRED",
+    "retrievedAt": "2026-11-10T14:04:36.581237+00:00",
+    "observationDate": "2026-11-06",
+    "status": "OBSERVED",
+    "reason": null,
+    "sha256": "7f86ceef57d3ffc385e33f337d4fc1daa67d514a76116fa23f6a010690bb49b5"
+   }
+  ],
+  "history": [
+   {
+    "date": "2026-09-17",
+    "risk": 0.13914445042610168,
+    "msi": -0.9450805277121832,
+    "threshold": 1.292774077236955,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-09-18",
+    "risk": 0.11438912153244019,
+    "msi": -1.1399235471852396,
+    "threshold": 1.2927705758082115,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-09-21",
+    "risk": 0.12061714380979538,
+    "msi": -1.274639242576738,
+    "threshold": 1.2927670743794684,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-09-22",
+    "risk": 0.0824253186583519,
+    "msi": -1.2810929703201552,
+    "threshold": 1.292742715330404,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-09-23",
+    "risk": 0.1241672933101654,
+    "msi": -1.2330011288443423,
+    "threshold": 1.2927183562813391,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-09-24",
+    "risk": 0.12169469147920609,
+    "msi": -1.12251218291962,
+    "threshold": 1.2926939972322744,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-09-25",
+    "risk": 0.08522559702396393,
+    "msi": -0.9875522031642197,
+    "threshold": 1.29266963818321,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-09-28",
+    "risk": 0.12281512469053268,
+    "msi": -0.7164210136345943,
+    "threshold": 1.2926452791341454,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-09-29",
+    "risk": 0.13571161031723022,
+    "msi": -0.7155674800648558,
+    "threshold": 1.292620920085081,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-09-30",
+    "risk": 0.162636399269104,
+    "msi": -0.6533367621636765,
+    "threshold": 1.2925965610360162,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-01",
+    "risk": 0.162636399269104,
+    "msi": -0.6607927162222048,
+    "threshold": 1.2925722019869514,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-02",
+    "risk": 0.10021074116230011,
+    "msi": -0.8630971671941055,
+    "threshold": 1.292547842937887,
+    "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-10-06",
+    "risk": 0.10819675773382187,
+    "msi": -0.9713890447935236,
+    "threshold": 1.292491275618801,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-10-07",
+    "risk": 0.11543131619691849,
+    "msi": -0.988098761779686,
+    "threshold": 1.2924590673487797,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-10-08",
+    "risk": 0.10144848376512527,
+    "msi": -0.8857448800275112,
+    "threshold": 1.292426859078758,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-10-09",
+    "risk": 0.11936238408088684,
+    "msi": -1.1592120063251865,
+    "threshold": 1.292394650808737,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-10-13",
+    "risk": 0.1021764874458313,
+    "msi": -1.0176337120950498,
+    "threshold": 1.2923302342686942,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-10-14",
+    "risk": 0.20631195604801178,
+    "msi": -0.8466215469260977,
+    "threshold": 1.2922980259986727,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-10-15",
+    "risk": 0.16906265914440155,
+    "msi": -0.9530322759228972,
+    "threshold": 1.2922658177286512,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-10-16",
+    "risk": 0.5260498523712158,
+    "msi": -0.2952771212339566,
+    "threshold": 1.29223360945863,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-10-19",
+    "risk": 0.2834768295288086,
+    "msi": -0.4742345917358846,
+    "threshold": 1.2922014011886085,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-10-20",
+    "risk": 0.23035675287246704,
+    "msi": -0.5206864847748801,
+    "threshold": 1.292132800140089,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-10-21",
+    "risk": 0.23023882508277893,
+    "msi": -0.6304684147834868,
+    "threshold": 1.2920641990915689,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-10-22",
+    "risk": 0.360186368227005,
+    "msi": -0.2756824093418624,
+    "threshold": 1.2919955980430484,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-10-23",
+    "risk": 0.4396752417087555,
+    "msi": -0.1534046799237824,
+    "threshold": 1.2919269969945288,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-10-26",
+    "risk": 0.2747419774532318,
+    "msi": -0.3348980559923682,
+    "threshold": 1.2918583959460088,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-10-27",
+    "risk": 0.2556341290473938,
+    "msi": -0.5496842535368461,
+    "threshold": 1.291789794897489,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-10-28",
+    "risk": 0.2509496212005615,
+    "msi": -0.7211959915649349,
+    "threshold": 1.291721193848969,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-10-29",
+    "risk": 0.3045337498188019,
+    "msi": -0.4878432524899214,
+    "threshold": 1.2916525928004488,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-10-30",
+    "risk": 0.41263121366500854,
+    "msi": 0.0576330059456331,
+    "threshold": 1.2915839917519292,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-11-02",
+    "risk": 0.6574369668960571,
+    "msi": 0.3525397848776215,
+    "threshold": 1.291515390703409,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-11-03",
+    "risk": 0.560290515422821,
+    "msi": 0.3838161395734691,
+    "threshold": 1.291482474087922,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-11-04",
+    "risk": 0.20895008742809296,
+    "msi": -0.212711382138126,
+    "threshold": 1.291449557472435,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-11-05",
+    "risk": 0.9462416172027588,
+    "msi": 1.5205566530371757,
+    "threshold": 1.2914166408569476,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-11-06",
+    "risk": 0.9454043507575989,
+    "msi": 1.1402544874012082,
+    "threshold": 1.2919269969945288,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   }
+  ],
+  "current": null,
+  "lastValid": {
+   "date": "2026-11-06",
+   "risk": 0.9454043507575989,
+   "msi": 1.1402544874012082,
+   "threshold": 1.2919269969945288,
+   "price": null,
+   "recordType": "OPERATIONAL"
+  },
+  "reason": "최신 필수 원천 관측 미확인. 과거 재현 추론을 현재 점수로 이월하지 않습니다.",
+  "modelSha256": "90c51c245ebe62b58f804098a7a7045b60fb64ef83da72d4c9a049cf8d5eeb0d",
+  "trainingCutoff": "2026-09-16",
+  "trainingEvidence": "6317행 prefix scaler 근사 일치; cutoff 추정, 정확한 학습 receipt 미보존",
+  "featureOrder": [
+   "SPY_1D_Return",
+   "SPY_5D_Return",
+   "SPY_20D_Return",
+   "SPY_20D_Vol",
+   "SPY_60D_Vol",
+   "SPY_Drawdown",
+   "SPY_20D_Momentum",
+   "VIX_Level",
+   "VIX_1D_Change",
+   "VIX_5D_Change",
+   "VIX_20D_Momentum",
+   "VIX_252D_ZScore",
+   "Credit_Level",
+   "Credit_1D_Change",
+   "Credit_5D_Change",
+   "Credit_20D_Momentum",
+   "Credit_252D_ZScore"
+  ],
+  "inferenceSucceeded": true,
+  "publicationDeadline": "2026-11-10T09:00:00+00:00",
+  "providerRevision": {
+   "cacheEnd": "2026-10-05",
+   "channels": {
+    "SPY": {
+     "overlapDates": 258,
+     "scale": 1.0,
+     "maxRelativeDifference": 1.8106844323780435e-07
+    },
+    "VIX": {
+     "overlapDates": 260,
+     "scale": 1.0,
+     "maxRelativeDifference": 1.9350291724922078e-16
+    },
+    "BAA_Treasury_Spread": {
+     "overlapDates": 255,
+     "scale": 1.0,
+     "maxRelativeDifference": 2.453531546132943e-16
+    }
+   },
+   "appendedDates": 25
+  },
+  "availability": [
+   {
+    "date": "2026-08-18",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-19",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-20",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-21",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-24",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-25",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-26",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-27",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-28",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-08-31",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-01",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-02",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-03",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-04",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-07",
+    "available": [
+     "VIX"
+    ],
+    "missing": [
+     "SPY",
+     "BAA_Treasury_Spread"
+    ]
+   },
+   {
+    "date": "2026-09-08",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-09",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-10",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-11",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-14",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-15",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-16",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-17",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-18",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-21",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-22",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-23",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-24",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-25",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-28",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-29",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-09-30",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-01",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-02",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-05",
+    "available": [
+     "SPY",
+     "VIX"
+    ],
+    "missing": [
+     "BAA_Treasury_Spread"
+    ]
+   },
+   {
+    "date": "2026-10-06",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-07",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-08",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-09",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-12",
+    "available": [
+     "SPY",
+     "VIX"
+    ],
+    "missing": [
+     "BAA_Treasury_Spread"
+    ]
+   },
+   {
+    "date": "2026-10-13",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-14",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-15",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-16",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-19",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-20",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-21",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-22",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-23",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-26",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-27",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-28",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-29",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-10-30",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-11-02",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-11-03",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-11-04",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-11-05",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-11-06",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-11-09",
+    "available": [
+     "SPY",
+     "VIX"
+    ],
+    "missing": [
+     "BAA_Treasury_Spread"
+    ]
+   }
+  ],
+  "availabilityOrigin": "provider-refresh",
+  "historicalParity": true,
+  "inferenceAt": "2026-11-10T14:04:37.012863+00:00"
+ }
+}

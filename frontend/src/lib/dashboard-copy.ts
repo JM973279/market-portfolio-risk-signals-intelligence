@@ -3,6 +3,7 @@ export const dashboardCopy = {
  ...copy,
  operationalAsOf: ["Operational snapshot due date", "운영 스냅샷 기준 관측일"],
  operationalSnapshot: ["Operational snapshot", "운영 스냅샷"],
+ lastValidScore: ["Last valid score", "마지막 유효 점수"],
  portfolioAnalysis: ["Portfolio Analysis", "포트폴리오 분석"],
  dashboard: ["Dashboard", "대시보드"], us: ["US Market", "미국 시장"], korea: ["Korea Market", "한국 시장"], cases: ["Case Studies", "사례 분석"], sources: ["Data Sources", "데이터 정보"], methodology: ["Methodology", "연구 방법론"],
  globalTitle: ["Korea & US Market Stress Monitor", "Korea & US Market Stress Monitor"], globalSub: ["Trace market risk through different signals.", "서로 다른 신호가 만드는 글로벌 시장의 위험을 추적합니다."], globalDescription: ["Predictive risk, observed stress and market breadth — in one research workspace.", "예측 위험, 관측 스트레스, 시장 확산도 지표를 하나의 리서치 대시보드에서 확인하세요."], globalEyebrow: ["GLOBAL MARKETS / RESEARCH INTELLIGENCE", "한국 · 미국 시장 스트레스 모니터링"],

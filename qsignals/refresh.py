@@ -228,6 +228,28 @@ def us_importable(market):
             and bool(market.get("history")))
 
 
+def save_status_blocks(operational, output_dir):
+    """Keep each market's latest verified pipeline block in data/input/operational/.
+
+    These are the public (price-free) per-market blocks of the pipeline's
+    export: status, expected date, source observation dates, history. The
+    frontend export reads them for the status panels; the score CSVs stay the
+    source of the numbers (qsignals.export_frontend checks they agree). A
+    market whose history did not reproduce keeps its previous block.
+    """
+    saved = []
+    for market, block in operational["markets"].items():
+        if block.get("historicalParity") is not True:
+            continue
+        path = Path(output_dir) / "operational" / f"{market}.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        meta = {k: operational.get(k) for k in ("schema_version", "runId", "generatedAt", "mode", "sourceValuesIncluded")}
+        path.write_text(json.dumps({**meta, "market": market, "block": block}, indent=1, ensure_ascii=False) + "\n",
+                        encoding="utf-8")
+        saved.append(market)
+    return saved
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--python", type=Path, default=DEFAULT_PYTHON, help="interpreter with market_engine/operations/requirements.txt")
@@ -281,6 +303,7 @@ def main(argv=None):
     operational = json.loads((work / "mpri/frontend/public/data/operational-markets.json").read_text(encoding="utf-8"))
     status = {m: freshness(v) for m, v in operational["markets"].items()}
     summary = {"run_id": operational.get("runId"), "work_dir": str(work), "korea_reference": reference or {"rebuilt": False}, "markets": status}
+    summary["status_blocks_saved"] = save_status_blocks(operational, args.output_dir)
 
     try:
         remote = git(args.source_root, "remote", "get-url", "origin")

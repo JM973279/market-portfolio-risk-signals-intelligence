@@ -14,13 +14,31 @@ export function headerSnapshot(data: Pick<DashboardData, "global" | "monitor" | 
  return { operational: false, date: data.global?.asOf ?? data.monitor?.latest?.Date ?? null };
 }
 
+// 점수·MSI·임계값이 모두 유한한 숫자이고 Risk가 0~1 범위인지 확인한다.
+function validPoint(point: OperationalPoint | null | undefined): point is OperationalPoint {
+ if (!point) return false;
+ if (![point.risk, point.msi, point.threshold].every(value => typeof value === "number" && Number.isFinite(value))) return false;
+ return point.risk! >= 0 && point.risk! <= 1;
+}
+
 // A past record is never a fallback for a missing or blocked current observation.
 export function currentOperationalPoint(market?: OperationalMarketData | null): OperationalPoint | null {
  const point = market?.current;
  if (market?.status !== "CURRENT" || !point || point.date !== market.expectedDate) return null;
- if (![point.risk, point.msi, point.threshold].every(value => typeof value === "number" && Number.isFinite(value))) return null;
- if (point.risk! < 0 || point.risk! > 1) return null;
- return point;
+ return validPoint(point) ? point : null;
+}
+
+// 마지막 유효 점수 (시장 카드 전용 표시)
+// - 현재 점수가 없을 때만 쓴다. 예: 미국이 DELAYED인 경우. FRED 신용 금리(DBAA/DGS10)가
+//   기대 관측일보다 늦게 공개되어 11/09 점수는 없고, 11/06 점수만 검증되어 있다.
+// - 이 값은 현재 점수가 아니다. currentOperationalPoint와 상태(status)·안내 문구는 그대로
+//   "최신 점수 미확인"으로 두고, 카드에는 "마지막 유효 점수 · 날짜"를 붙여 따로 보여 준다.
+// - export의 lastValid는 동결 모델이 실제 관측일에 계산한 추론 기록이다(가격 제외).
+//   현재 점수가 있으면(CURRENT) null을 돌려 현재 점수만 표시한다.
+export function lastValidOperationalPoint(market?: OperationalMarketData | null): OperationalPoint | null {
+ if (!market || currentOperationalPoint(market)) return null;
+ const point = market.lastValid;
+ return point?.date && validPoint(point) ? point : null;
 }
 
 export function operationalMessage(market: OperationalMarketData | null | undefined, language: Language): string {

@@ -47,7 +47,7 @@
   },
   "operational": {
    "path": "frontend/public/data/operational-markets.json",
-   "sha256": "0ca354224acb558cdf816f420447217cd9bbd4484c1e8ea5795588949763c0e4"
+   "sha256": "7654016bea05313615784a24f68e47f19b87e880aa676dc7e708fcd55b1f5c9a"
   }
  },
  "summary": [
@@ -1061,7 +1061,7 @@
     "msi": 0.7786169904666703,
     "threshold": 1.115315286653335,
     "msi_recognized": false,
-    "origin": "operational"
+    "origin": "retrospective_inference"
    },
    "notes": [
     "price_missing",
@@ -1097,7 +1097,7 @@
     "msi": 1.16434762277284,
     "threshold": 1.1143628107223311,
     "msi_recognized": true,
-    "origin": "operational"
+    "origin": "retrospective_inference"
    },
    "notes": [
     "price_missing"
