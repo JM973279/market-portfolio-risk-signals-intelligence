@@ -1,10 +1,10 @@
-"""Collect the latest Korea V1 scores without touching the deployed repo.
+"""Collect the latest Korea and US V1 scores without touching the deployed repo.
 
     python3 -m qsignals.refresh [--python PATH] [--v1-repo PATH] [--source-root PATH]
 
 The deployed project's frozen pipeline (market_engine/operations/run.py) is
 the only code that may produce V1 scores. This command runs it unchanged, in
-throwaway snapshots, and then imports the Korea series:
+throwaway snapshots, and then imports the Korea and US series:
 
 1. Snapshot the deployed repo (git archive of --source-ref) and the original V1
    repo at the commit whose sources match the pipeline's contract.json. The
@@ -13,8 +13,10 @@ throwaway snapshots, and then imports the Korea series:
    downloaders into --v1-data. These files are gitignored in V1, so the first
    run downloads the full history from 2010; later runs fetch only new days.
 3. Run run.py --collect inside the snapshot.
-4. If Korea is CURRENT for its expected session, write data/input/ and
-   provenance.json. Otherwise keep the previous import and exit non-zero.
+4. Write korea_scores.csv only if Korea is CURRENT for its expected session,
+   and us_scores.csv when US history was reproduced (CURRENT or DELAYED).
+   A market that does not qualify keeps its previous file; a stale Korea run
+   exits 2 even when US was updated.
 
 API keys are read from the V1 .env into the child environment only; they are
 never printed or written. Run logs and provider receipts stay in --work-root
@@ -215,6 +217,17 @@ def freshness(market):
     }
 
 
+def us_importable(market):
+    """US rows are written when the pipeline reproduced history and scored dates.
+
+    DELAYED is fine (FRED credit data often lag SPY/VIX by a few sessions): the
+    rows stop at the last fully observed date. BLOCKED/UNAVAILABLE keep the
+    previous us_scores.csv.
+    """
+    return (market.get("status") in ("CURRENT", "DELAYED") and market.get("historicalParity") is True
+            and bool(market.get("history")))
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--python", type=Path, default=DEFAULT_PYTHON, help="interpreter with market_engine/operations/requirements.txt")
@@ -269,11 +282,6 @@ def main(argv=None):
     status = {m: freshness(v) for m, v in operational["markets"].items()}
     summary = {"run_id": operational.get("runId"), "work_dir": str(work), "korea_reference": reference or {"rebuilt": False}, "markets": status}
 
-    if not status["korea"]["fresh"]:
-        print(json.dumps(summary, indent=2, ensure_ascii=False))
-        print("Korea is not CURRENT; data/input/ left unchanged.", file=sys.stderr)
-        return 2
-
     try:
         remote = git(args.source_root, "remote", "get-url", "origin")
         source_repo = remote.rstrip("/").rsplit("/", 1)[-1].removesuffix(".git")
@@ -283,6 +291,14 @@ def main(argv=None):
         branch = git(args.source_root, "rev-parse", "--abbrev-ref", args.source_ref)
     except RefreshError:
         branch = None
+    # Korea is written only when CURRENT; US whenever its history was verified.
+    # A stale Korea run still updates US but exits 2 so schedulers notice.
+    markets = tuple(m for m, ok in (("korea", status["korea"]["fresh"]),
+                                    ("us", us_importable(operational["markets"]["us"]))) if ok)
+    if not markets:
+        print(json.dumps(summary, indent=2, ensure_ascii=False))
+        print("Neither market is importable; data/input/ left unchanged.", file=sys.stderr)
+        return 2
     provenance = import_scores(work / "mpri", args.output_dir, {
         "source_repo": source_repo,
         "source_git_branch": branch if branch and branch != "HEAD" else None,
@@ -294,12 +310,17 @@ def main(argv=None):
             "v1_commit": v1_commit,
             "generated_at": operational.get("generatedAt"),
             "korea_reference": reference or {"rebuilt": False},
-            "korea": status["korea"],
-            "us": {k: status["us"][k] for k in ("status", "expected_date", "reason")},
+            "korea": {**status["korea"], "imported": "korea" in markets},
+            "us": {**status["us"], "imported": "us" in markets,
+                   "provider_revision": operational["markets"]["us"].get("providerRevision")},
         },
-    })
-    summary["imported_last_risk_date"] = provenance["last_risk_date"]
+    }, markets)
+    summary["imported"] = list(markets)
+    summary["last_risk_date"] = {m: v["last_risk_date"] for m, v in provenance["markets"].items()}
     print(json.dumps(summary, indent=2, ensure_ascii=False))
+    if "korea" not in markets:
+        print("Korea is not CURRENT; korea_scores.csv left unchanged (US updated).", file=sys.stderr)
+        return 2
     return 0
 
 

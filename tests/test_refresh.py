@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from qsignals.refresh import RefreshError, archive, find_v1_commit, freshness, install_reference, load_env, prune_runs
+from qsignals.refresh import RefreshError, archive, find_v1_commit, freshness, install_reference, load_env, prune_runs, us_importable
 
 
 def sha(text):
@@ -128,6 +128,14 @@ class FreshnessTest(unittest.TestCase):
              "lastValid": {"date": "2026-11-09"}, "reason": None, "series": [{"name": "KOSPI200", "observationDate": "2026-11-09"}]}
         m.update(changes)
         return m
+
+    def test_us_import_gate(self):
+        history = [{"date": "2026-11-06", "risk": 0.9}]
+        self.assertTrue(us_importable({"status": "DELAYED", "historicalParity": True, "history": history}))
+        self.assertTrue(us_importable({"status": "CURRENT", "historicalParity": True, "history": history}))
+        self.assertFalse(us_importable({"status": "BLOCKED", "historicalParity": False, "history": history}))
+        self.assertFalse(us_importable({"status": "DELAYED", "historicalParity": True, "history": []}))
+        self.assertFalse(us_importable({"status": "DELAYED", "history": history}))
 
     def test_current_only_for_expected_session(self):
         self.assertTrue(freshness(self.market())["fresh"])

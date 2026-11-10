@@ -1,6 +1,6 @@
-name: Daily Korea score refresh
+name: Daily V1 score refresh
 
-# Collect the latest Korea V1 scores with the deployed repo's frozen pipeline
+# Collect the latest Korea and US V1 scores with the deployed repo's frozen pipeline
 # (python -m qsignals.refresh) and commit data/input/ and reports/.
 # Required repository secrets: KRX_API_KEY, ECOS_API_KEY.
 # The first run rebuilds the Korea raw history from 2010 (~8,800 KRX calls,
@@ -93,8 +93,10 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
-      - name: Rebuild diagnostics
-        run: python -m qsignals.diagnose
+      - name: Rebuild diagnostics and view
+        run: |
+          python -m qsignals.diagnose
+          python -m qsignals.view
 
       - name: Commit refreshed data
         run: |
@@ -102,6 +104,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/input reports
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
-          last=$(python -c "import json;print(json.load(open('data/input/provenance.json'))['last_risk_date'])")
-          git commit -m "data: refresh Korea V1 scores through $last"
+          last=$(python -c "import json;m=json.load(open('data/input/provenance.json'))['markets'];print(', '.join(f\"{k} {v['last_risk_date']}\" for k,v in m.items()))")
+          git commit -m "data: refresh V1 scores ($last)"
           git push

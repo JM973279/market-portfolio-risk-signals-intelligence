@@ -1,9 +1,9 @@
-"""Korea V1 Risk Score series used for the event diagnostics.
+"""V1 Risk Score series (Korea for the event diagnostics, US for comparison).
 
 The deployed project (market-portfolio-risk-intelligence) is read-only from
 here. `qsignals.import_scores` copies the Korea series out of its frozen
 frontend exports once and records SHA-256 provenance; everything else in this
-project works from that copy (data/input/korea_scores.csv).
+project works from that copy (data/input/korea_scores.csv, us_scores.csv).
 """
 
 from __future__ import annotations
@@ -36,11 +36,19 @@ CSV_FIELDS = (
     "record_type",
 )
 
+# Each market's CSV names its own equity close column; the rest is shared.
+MARKETS = ("korea", "us")
+PRICE_COLUMNS = {"korea": "kospi200_close", "us": "spy_close"}
+
+
+def csv_fields(market="korea"):
+    return ("date", PRICE_COLUMNS[market], *CSV_FIELDS[2:])
+
 
 @dataclass(frozen=True)
 class ScoreRow:
     date: str
-    kospi200_close: float | None
+    kospi200_close: float | None  # the market's equity close (SPY for US rows)
     risk_v1: float | None
     msi: float | None
     stress_threshold: float | None
@@ -77,7 +85,7 @@ def validate_rows(rows):
     return rows
 
 
-def build_rows(global_markets, operational):
+def build_rows(global_markets, operational, market="korea"):
     """Merge the walk-forward OOS series with the frozen-model series.
 
     Walk-forward OOS rows take precedence on any shared date. Operational rows
@@ -87,7 +95,7 @@ def build_rows(global_markets, operational):
 
     by_date = {}
 
-    for item in global_markets["korea"]:
+    for item in global_markets[market]:
         risk = _num(item.get("risk"))
         by_date[item["date"]] = ScoreRow(
             date=item["date"],
@@ -98,7 +106,7 @@ def build_rows(global_markets, operational):
             record_type="OOS_WALK_FORWARD" if risk is not None else "NO_SCORE",
         )
 
-    for item in operational["markets"]["korea"]["history"]:
+    for item in operational["markets"][market]["history"]:
         date = item["date"]
         existing = by_date.get(date)
         if existing is not None and existing.risk_v1 is not None:
@@ -116,12 +124,12 @@ def build_rows(global_markets, operational):
     return validate_rows([by_date[d] for d in sorted(by_date)])
 
 
-def write_scores(rows, path):
+def write_scores(rows, path, market="korea"):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, lineterminator="\n")
-        writer.writerow(CSV_FIELDS)
+        writer.writerow(csv_fields(market))
         for r in rows:
             writer.writerow(
                 [
@@ -135,15 +143,16 @@ def write_scores(rows, path):
             )
 
 
-def read_scores(path):
+def read_scores(path, market="korea"):
     with Path(path).open(newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
-        if tuple(reader.fieldnames or ()) != CSV_FIELDS:
+        fields = csv_fields(market)
+        if tuple(reader.fieldnames or ()) != fields:
             raise ValueError(f"Unexpected columns: {reader.fieldnames}")
         rows = [
             ScoreRow(
                 date=rec["date"],
-                kospi200_close=_num(rec["kospi200_close"]),
+                kospi200_close=_num(rec[fields[1]]),
                 risk_v1=_num(rec["risk_v1"]),
                 msi=_num(rec["msi"]),
                 stress_threshold=_num(rec["stress_threshold"]),
