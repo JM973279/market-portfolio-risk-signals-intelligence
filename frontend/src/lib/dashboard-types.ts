@@ -13,6 +13,23 @@ export type OperationalMarketData = {
  availability?: { date: string; available: string[]; missing: string[]; values?: Record<string, number | null> }[];
 };
 export type OperationalData = { schema_version: 1; generatedAt: string; markets: { us: OperationalMarketData; korea: OperationalMarketData } };
-export type DashboardData = { monitor: MonitorData | null; global: GlobalData | null; operational?: OperationalData | null };
+export type ScenarioVerdict = "warned" | "borderline" | "missed" | "no_data";
+export type ScenarioNote = "price_missing" | "window_incomplete" | "trough_at_window_end" | "source_unverified" | "window_overlaps";
+export type ScenarioEpisode = {
+ id: string; onset: string; tier: "core" | "supporting"; category: string; geo: "foreign" | "domestic" | "both";
+ name: { en: string; ko: string }; cause: { en: string; ko: string }; category_note?: { en: string; ko: string };
+ source: { title: string; url: string } | null;
+ metrics: { reference_date: string; onset_return: number; max_drawdown: number; trough_date: string; sessions_to_trough: number; recovery_date: string | null; sessions_to_recover: number | null; window_sessions: number; window_end_date: string; window_complete: boolean; trough_at_window_end: boolean; price_last_date: string } | null;
+ model: { verdict: ScenarioVerdict; prior_risk: number | null; prior_date: string | null; prior_warning_sessions: number | null; prior_observed_sessions: number; msi: number | null; threshold: number | null; msi_recognized: boolean | null; origin: string | null };
+ notes: ScenarioNote[]; overlaps: string[];
+};
+export type ScenarioSummary = { category: string; episodes: number; with_prices: number; median_max_drawdown: number | null; worst_max_drawdown: number | null; warned: number; judged: number };
+export type ScenarioLibraryData = {
+ schema_version: 1; asOf: string; is_forecast: false;
+ parameters: { window_sessions: number; prior_sessions: number };
+ taxonomy: { name: string; url: string; note: string };
+ categories: Record<string, string>; summary: ScenarioSummary[]; episodes: ScenarioEpisode[];
+};
+export type DashboardData = { monitor: MonitorData | null; global: GlobalData | null; operational?: OperationalData | null; scenarios?: ScenarioLibraryData | null };
 export const views = ["us", "korea", "breadth", "validation", "cases", "sources", "methodology"] as const;
 export type View = "dashboard" | typeof views[number];

@@ -146,3 +146,40 @@ svg.country-flag {width:44px;height:30px;flex-shrink:0;border:1px solid #e6edf6;
 .operational-market caption { text-align: left; padding-block: 1rem; color: var(--muted, #667085); }
 .operational-provider { display: block; font-weight: 400; }
 .operational-hash { overflow-wrap: anywhere; }
+/* Historical drawdown scenario library (Case Studies) */
+.scenario-subheading {font-size:13px;margin:6px 0 8px;color:#37587d}
+.scenario-summary td,.scenario-summary th {padding:9px 10px}
+.scenario-summary tr.selected th,.scenario-summary tr.selected td {background:#eef5fd}
+.link-button {border:0;background:transparent;padding:0;color:#2872ba;font-size:12px;font-weight:500;text-align:left}
+.link-button:hover {background:transparent;text-decoration:underline}
+.link-button[aria-pressed=true] {color:var(--navy);font-weight:600}
+.scenario-controls {display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin:20px 0 14px;flex-wrap:wrap}
+.scenario-filter {flex-wrap:wrap;width:auto;max-width:100%}
+.scenario-sort select {min-width:150px;font-size:12px;padding:6px 9px}
+.scenario-grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.scenario-card {display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-left:4px solid #8095ae;border-radius:8px;padding:14px;background:#fbfdff;min-width:0}
+.scenario-card.verdict-warned {border-left-color:#e86371}
+.scenario-card.verdict-borderline {border-left-color:var(--amber)}
+.scenario-card.verdict-missed {border-left-color:#8095ae}
+.scenario-card-top {display:flex;justify-content:space-between;align-items:center;gap:8px}
+.scenario-card time {font-size:11px;color:#6783a4;font-variant-numeric:tabular-nums}
+.scenario-tier.core {color:#9b3b4a;background:#fcf0f3;border-color:#f3d6dd}
+.scenario-card h3 {font-size:15px;line-height:1.4;margin:0}
+.scenario-meta {display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:11px;color:#657f9b;margin:0}
+.scenario-cause {font-size:12px;line-height:1.65;margin:0}
+.scenario-category-note {font-size:10px;color:#8a7590;margin:0}
+.scenario-metrics {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px;margin:2px 0 0}
+.scenario-metrics div {padding:7px 0;font-size:11px}
+.scenario-metrics dd {font-variant-numeric:tabular-nums}
+.scenario-metrics dd.negative {color:#c94f5f}
+.scenario-model {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;background:#f3f7fc;border-radius:6px;padding:9px 10px}
+.scenario-model span {display:flex;flex-direction:column;gap:2px;min-width:0}
+.scenario-model small {font-size:10px;color:#7087a2}
+.scenario-model b {font-size:15px;font-weight:500;font-variant-numeric:tabular-nums}
+.scenario-model em {font-style:normal;font-size:11px;color:#587494}
+.scenario-model em.verdict.warned {color:#c94f5f;font-weight:600}
+.scenario-model em.verdict.borderline {color:var(--amber);font-weight:600}
+.scenario-notes {margin:0;padding-left:16px;font-size:10px;line-height:1.6;color:#8a7590}
+.scenario-source {white-space:normal;overflow-wrap:anywhere;margin-top:auto}
+.scenario-link-panel p {font-size:12px}
+@media(max-width:760px) { .scenario-controls {flex-direction:column;align-items:stretch}.scenario-sort select {width:100%}.scenario-grid {grid-template-columns:1fr}.scenario-card h3 {font-size:14px} }

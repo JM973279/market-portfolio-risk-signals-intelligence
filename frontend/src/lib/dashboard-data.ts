@@ -1,7 +1,7 @@
 import "server-only";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import type { DashboardData, GlobalData, MonitorData, OperationalData } from "./dashboard-types";
+import type { DashboardData, GlobalData, MonitorData, OperationalData, ScenarioLibraryData } from "./dashboard-types";
 export async function getDashboardData(): Promise<DashboardData> {
  "use cache";
  let monitor: MonitorData | null = null;
@@ -19,5 +19,10 @@ export async function getDashboardData(): Promise<DashboardData> {
   const parsed = JSON.parse(await readFile(path.join(process.cwd(), "public/data/operational-markets.json"), "utf8"));
   if (parsed.schema_version === 1 && parsed.markets?.us && parsed.markets?.korea && typeof parsed.generatedAt === "string") operational = parsed;
  } catch { /* Operational availability does not block historical research or Portfolio. */ }
- return { monitor, global, operational };
+ let scenarios: ScenarioLibraryData | null = null;
+ try {
+  const parsed = JSON.parse(await readFile(path.join(process.cwd(), "public/data/korea-scenarios.json"), "utf8"));
+  if (parsed.schema_version === 1 && parsed.is_forecast === false && Array.isArray(parsed.episodes) && Array.isArray(parsed.summary) && parsed.categories) scenarios = parsed;
+ } catch { /* The scenario library is optional; Case Studies still renders the holdout. */ }
+ return { monitor, global, operational, scenarios };
 }
