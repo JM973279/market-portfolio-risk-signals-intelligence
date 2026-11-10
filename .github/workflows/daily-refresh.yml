@@ -10,9 +10,6 @@ on:
   schedule:
     - cron: "0 13 * * 1-5"   # 22:00 KST, after the pipeline's Korea publication deadline
   workflow_dispatch:
-  push:
-    branches: [feat/live-score-refresh]
-    paths: [".github/workflows/daily-refresh.yml", "qsignals/refresh.py"]
 
 permissions:
   contents: write
@@ -23,29 +20,29 @@ concurrency:
 
 jobs:
   refresh:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 300
     env:
       KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
       ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
       V1_DATA: /home/runner/.cache/qsignals/v1-data
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Check out the deployed repo (read-only)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: tina77302/market-portfolio-risk-intelligence
           path: _deployed
 
       - name: Check out the original V1 repo, all branches (read-only)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: tina77302/market-stress-early-warning
           path: _v1
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
           cache: pip
@@ -57,7 +54,7 @@ jobs:
           "$RUNNER_TEMP/mpri-inference/bin/pip" install -q -r _deployed/market_engine/operations/requirements.txt
 
       - name: Restore Korea raw history
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: ${{ env.V1_DATA }}
           key: korea-raw-${{ github.run_id }}
@@ -74,16 +71,22 @@ jobs:
             --v1-data "$V1_DATA" \
             --work-root "$RUNNER_TEMP/runs" | tee "$RUNNER_TEMP/summary.json"
 
-      - name: Save Korea raw history
+      - name: Check Korea raw history
+        id: raw
         if: always()
-        uses: actions/cache/save@v4
+        run: |
+          if [ -n "$(ls -A "$V1_DATA/raw/korea" 2>/dev/null)" ]; then echo "present=true" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Save Korea raw history
+        if: always() && steps.raw.outputs.present == 'true'
+        uses: actions/cache/save@v6
         with:
           path: ${{ env.V1_DATA }}
           key: korea-raw-${{ github.run_id }}
 
       - name: Upload pipeline logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: refresh-logs
           path: ${{ runner.temp }}/runs/*/refresh.log
