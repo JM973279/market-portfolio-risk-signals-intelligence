@@ -66,6 +66,7 @@ jobs:
       - name: Refresh scores
         id: refresh
         run: |
+          set -o pipefail
           python -m qsignals.refresh \
             --python "$RUNNER_TEMP/mpri-inference/bin/python" \
             --source-root _deployed \
