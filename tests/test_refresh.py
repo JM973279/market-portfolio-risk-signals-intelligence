@@ -1,10 +1,11 @@
 import hashlib
+import json
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 
-from qsignals.refresh import RefreshError, archive, find_v1_commit, freshness, load_env, prune_runs
+from qsignals.refresh import RefreshError, archive, find_v1_commit, freshness, install_reference, load_env, prune_runs
 
 
 def sha(text):
@@ -65,6 +66,51 @@ class PruneTest(unittest.TestCase):
                 (Path(tmp) / name).mkdir()
             prune_runs(tmp, 2)
             self.assertEqual(sorted(p.name for p in Path(tmp).iterdir()), ["20261102T000000Z", "20261103T000000Z", "notes"])
+
+
+class ReferenceInstallTest(unittest.TestCase):
+    REF = "data/processed/early_warning_v2/korea_feature_matrix_v1_reproduction.csv"
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        root = Path(self.tmp.name)
+        self.work, self.refdir = root / "work", root / "reference"
+        (self.work / "mpri/market_engine/operations").mkdir(parents=True)
+        self.refdir.mkdir()
+        self.contract = {"markets": {"korea": {"reference": self.REF, "reference_sha256": "orig"}}}
+        (self.refdir / "korea_feature_matrix_v1_reproduction.csv").write_bytes(b"rebuilt\n")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def verify(self, **changes):
+        report = {"passed": True, "contract_reference_sha256": "orig", "rebuilt_sha256": sha("rebuilt\n"), "end": "2026-10-02", "checks": {}}
+        report.update(changes)
+        (self.refdir / "verification.json").write_text(json.dumps(report), encoding="utf-8")
+
+    def test_original_wins(self):
+        target = self.work / "mpri" / self.REF
+        target.parent.mkdir(parents=True)
+        target.write_text("original\n", encoding="utf-8")
+        self.assertIsNone(install_reference(self.work, self.contract, self.refdir))
+        self.assertEqual(target.read_text(encoding="utf-8"), "original\n")
+
+    def test_installs_verified_rebuild_into_snapshot_only(self):
+        self.verify()
+        info = install_reference(self.work, self.contract, self.refdir)
+        self.assertTrue(info["rebuilt"])
+        self.assertEqual((self.work / "mpri" / self.REF).read_text(encoding="utf-8"), "rebuilt\n")
+        written = json.loads((self.work / "mpri/market_engine/operations/contract.json").read_text(encoding="utf-8"))
+        self.assertEqual(written["markets"]["korea"]["reference_sha256"], sha("rebuilt\n"))
+
+    def test_rejections(self):
+        for changes in ({"passed": False}, {"contract_reference_sha256": "other"}, {"rebuilt_sha256": "tampered"}):
+            self.verify(**changes)
+            with self.assertRaises(RefreshError):
+                install_reference(self.work, json.loads(json.dumps(self.contract)), self.refdir)
+        (self.refdir / "verification.json").unlink()
+        with self.assertRaises(RefreshError):
+            install_reference(self.work, self.contract, self.refdir)
 
 
 class EnvTest(unittest.TestCase):

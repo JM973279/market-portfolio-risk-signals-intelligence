@@ -44,6 +44,10 @@ DEFAULT_V1 = PROJECT_ROOT.parent
 DEFAULT_PYTHON = Path(os.environ.get("QSIGNALS_INFERENCE_PYTHON", HOME / ".venvs/mpri-inference/bin/python"))
 DEFAULT_V1_DATA = HOME / ".cache/qsignals/v1-data"
 DEFAULT_WORK_ROOT = HOME / ".cache/qsignals/runs"
+DEFAULT_REFERENCE_DIR = HOME / ".cache/qsignals/reference"
+# Official Korea MSI/targets behind the original reference ended here
+# (3,724 rows; 3,714 labeled Target_10D rows, matching the training evidence).
+REFERENCE_END = "2026-10-02"
 CONTRACT = "market_engine/operations/contract.json"
 RUNNER = "market_engine/operations/run.py"
 KOREA_RAW = ("krx_indices.csv", "vkospi.csv", "ecos_credit.csv")
@@ -119,7 +123,14 @@ def run_logged(cmd, cwd, env, log_path):
 
 
 def top_up_korea_raw(python, v1_tree, v1_data, env, log):
-    for module in DOWNLOADERS:
+    # KRX must be topped up: run.py only fetches the last 14 days on top of
+    # this history and refuses gaps over 90 days. ECOS is fetched in full by
+    # run.py itself, and calling it twice within seconds gets the second
+    # request rejected, so the ECOS downloader only runs to bootstrap.
+    modules = list(DOWNLOADERS)
+    if (v1_data / "raw" / "korea" / "ecos_credit.csv").exists():
+        modules.remove("download_ecos_credit")
+    for module in modules:
         code = run_logged([python, "-m", f"src.korea.{module}", "--data-root", str(v1_data)], v1_tree, env, log)
         if code != 0:
             raise RefreshError(f"V1 downloader {module} failed (exit {code}); see {log}")
@@ -137,6 +148,56 @@ def prune_runs(work_root, keep):
     runs = sorted(p for p in Path(work_root).iterdir() if p.is_dir() and p.name[:8].isdigit())
     for old in runs[:-keep]:
         shutil.rmtree(old, ignore_errors=True)
+
+
+def sha256_file(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def rebuild_reference(python, work, v1_data, reference_dir, end, log):
+    """Run qsignals/_reference_worker.py (pandas/joblib) under the inference Python."""
+    reference_dir.mkdir(parents=True, exist_ok=True)
+    worker = Path(__file__).with_name("_reference_worker.py")
+    code = run_logged([python, str(worker), "--v1-tree", str(work / "v1"), "--mpri-tree", str(work / "mpri"),
+                       "--raw-dir", str(v1_data / "raw" / "korea"), "--end", end, "--out-dir", str(reference_dir)],
+                      work, dict(os.environ), log)
+    if code != 0:
+        raise RefreshError(f"Rebuilt Korea reference failed verification (exit {code}); see {log}")
+
+
+def install_reference(work, contract, reference_dir):
+    """Use a verified rebuild only when the snapshot lacks the original reference.
+
+    The rebuilt file has a different SHA-256 from the original, so the
+    snapshot's contract.json (never the deployed repo's) is pointed at the
+    rebuilt hash. Returns provenance, or None when the original is present.
+    """
+    korea = contract["markets"]["korea"]
+    target = work / "mpri" / korea["reference"]
+    if target.exists():
+        return None
+    verification_path = reference_dir / "verification.json"
+    if not verification_path.exists():
+        raise RefreshError(f"Korea reference missing and no verified rebuild in {reference_dir}")
+    verification = json.loads(verification_path.read_text(encoding="utf-8"))
+    rebuilt = reference_dir / Path(korea["reference"]).name
+    if not verification.get("passed"):
+        raise RefreshError("Rebuilt Korea reference did not pass verification")
+    if verification.get("contract_reference_sha256") != korea["reference_sha256"]:
+        raise RefreshError("Rebuilt Korea reference belongs to a different contract; rebuild it")
+    if not rebuilt.exists() or sha256_file(rebuilt) != verification.get("rebuilt_sha256"):
+        raise RefreshError("Rebuilt Korea reference changed after verification; rebuild it")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(rebuilt, target)
+    korea["reference_sha256"] = verification["rebuilt_sha256"]
+    (work / "mpri" / CONTRACT).write_text(json.dumps(contract, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return {
+        "rebuilt": True,
+        "original_sha256": verification["contract_reference_sha256"],
+        "rebuilt_sha256": verification["rebuilt_sha256"],
+        "end": verification.get("end"),
+        "checks": verification.get("checks"),
+    }
 
 
 def freshness(market):
@@ -164,6 +225,11 @@ def main(argv=None):
     parser.add_argument("--v1-data", type=Path, default=DEFAULT_V1_DATA, help="persistent Korea raw history cache")
     parser.add_argument("--work-root", type=Path, default=DEFAULT_WORK_ROOT)
     parser.add_argument("--keep-runs", type=int, default=3, help="snapshot folders kept in --work-root (~110 MB each)")
+    parser.add_argument("--reference-dir", type=Path, default=DEFAULT_REFERENCE_DIR,
+                        help="verified rebuild of the gitignored Korea reference matrix")
+    parser.add_argument("--reference-end", default=REFERENCE_END,
+                        help="raw end date the original reference was built with")
+    parser.add_argument("--rebuild-reference", action="store_true", help="rebuild and re-verify it even if present")
     parser.add_argument("--output-dir", type=Path, default=PROJECT_ROOT / "data" / "input")
     args = parser.parse_args(argv)
 
@@ -190,22 +256,36 @@ def main(argv=None):
     args.v1_data.mkdir(parents=True, exist_ok=True)
     top_up_korea_raw(args.python, work / "v1", args.v1_data, env, log)
 
+    original_reference = (work / "mpri" / contract["markets"]["korea"]["reference"]).exists()
+    if not original_reference and (args.rebuild_reference or not (args.reference_dir / "verification.json").exists()):
+        rebuild_reference(args.python, work, args.v1_data, args.reference_dir, args.reference_end, log)
+    reference = install_reference(work, contract, args.reference_dir)
+
     env.pop("PYTHONPATH")
     code = run_logged([args.python, RUNNER, "--collect", "--original-v1-root", str(work / "v1")], work / "mpri", env, log)
     if code != 0:
         raise SystemExit(f"Frozen pipeline failed (exit {code}); see {log}")
     operational = json.loads((work / "mpri/frontend/public/data/operational-markets.json").read_text(encoding="utf-8"))
     status = {m: freshness(v) for m, v in operational["markets"].items()}
-    summary = {"run_id": operational.get("runId"), "work_dir": str(work), "markets": status}
+    summary = {"run_id": operational.get("runId"), "work_dir": str(work), "korea_reference": reference or {"rebuilt": False}, "markets": status}
 
     if not status["korea"]["fresh"]:
         print(json.dumps(summary, indent=2, ensure_ascii=False))
         print("Korea is not CURRENT; data/input/ left unchanged.", file=sys.stderr)
         return 2
 
+    try:
+        remote = git(args.source_root, "remote", "get-url", "origin")
+        source_repo = remote.rstrip("/").rsplit("/", 1)[-1].removesuffix(".git")
+    except RefreshError:
+        source_repo = args.source_root.resolve().name
+    try:
+        branch = git(args.source_root, "rev-parse", "--abbrev-ref", args.source_ref)
+    except RefreshError:
+        branch = None
     provenance = import_scores(work / "mpri", args.output_dir, {
-        "source_repo": args.source_root.resolve().name,
-        "source_git_branch": None,
+        "source_repo": source_repo,
+        "source_git_branch": branch if branch and branch != "HEAD" else None,
         "source_git_ref": args.source_ref,
         "source_git_commit": source_commit,
         "source_files_modified_locally": False,
@@ -213,6 +293,7 @@ def main(argv=None):
             "mode": operational.get("mode"),
             "v1_commit": v1_commit,
             "generated_at": operational.get("generatedAt"),
+            "korea_reference": reference or {"rebuilt": False},
             "korea": status["korea"],
             "us": {k: status["us"][k] for k in ("status", "expected_date", "reason")},
         },

@@ -1,8 +1,8 @@
 {
-  "imported_at": "2026-11-10T07:13:56+00:00",
+  "imported_at": "2026-11-10T10:56:28+00:00",
   "source_repo": "market-portfolio-risk-intelligence",
-  "source_git_branch": "integrate/stress-forward-validation",
-  "source_git_commit": "eb2c9acea6a87298204a6d87bf0f001027d026cc",
+  "source_git_branch": "main",
+  "source_git_commit": "93be0baaabf9bce317fc2e94e38025a2aef6a243",
   "source_files_modified_locally": false,
   "files": {
     "global_markets": {
@@ -12,21 +12,70 @@
     },
     "operational_markets": {
       "path": "frontend/public/data/operational-markets.json",
-      "bytes": 41309,
-      "sha256": "14d6ebc441b40666b2eb06a80648acc521bf4ad7d162bcc2179b545ec07bbcd7"
+      "bytes": 42715,
+      "sha256": "d533b95aa45aec2c9a10f4846f53f1e00a027ad4a0558e428f06e68edc1a6778"
     }
   },
-  "operational_run_id": "20261103T051707Z-f473940b",
+  "operational_run_id": "20261110T105615Z-49b29c75",
   "operational_model_sha256": "b8524d9dab692434e051011987bc6a86ffbd18c20a0c30ff00b4b30856318247",
   "training_cutoff": "2026-09-16",
-  "rows": 2483,
+  "rows": 2488,
   "record_type_counts": {
     "OOS_WALK_FORWARD": 2454,
-    "OPERATIONAL": 12,
-    "RETROSPECTIVE_INFERENCE": 17
+    "RETROSPECTIVE_INFERENCE": 34
   },
   "first_date": "2016-09-13",
-  "last_date": "2026-11-02",
-  "last_risk_date": "2026-11-02",
-  "last_price_date": "2026-10-02"
+  "last_date": "2026-11-09",
+  "last_risk_date": "2026-11-09",
+  "last_price_date": "2026-10-02",
+  "source_git_ref": "HEAD",
+  "refresh": {
+    "mode": "provider-refresh",
+    "v1_commit": "e939dc358c3bca92fee4c318d4bb297fd80debd3",
+    "generated_at": "2026-11-10T10:56:15.803296+00:00",
+    "korea_reference": {
+      "rebuilt": true,
+      "original_sha256": "9fad15f4d0c2d78f890aa479a2b77d0f83cff637c014061de72e4c1c21b61588",
+      "rebuilt_sha256": "de2a5e6f85e0cc868377b6a84ac269e3c58d9315c74834e8eddb61ce56d9eff7",
+      "end": "2026-10-02",
+      "checks": {
+        "Korea_MSI_vs_global_markets": {
+          "dates": 2464,
+          "max_abs_diff": 4.997180447219307e-11,
+          "passed": true
+        },
+        "Stress_Threshold_vs_global_markets": {
+          "dates": 2464,
+          "max_abs_diff": 4.99871255499329e-11,
+          "passed": true
+        },
+        "frozen_model_vs_committed_history": {
+          "dates": 29,
+          "first": "2026-09-17",
+          "last": "2026-11-02",
+          "max_abs_diff": 0.0,
+          "passed": true
+        }
+      }
+    },
+    "korea": {
+      "status": "CURRENT",
+      "expected_date": "2026-11-09",
+      "current_date": "2026-11-09",
+      "last_valid_date": "2026-11-09",
+      "fresh": true,
+      "reason": null,
+      "series": {
+        "KOSPI200": "2026-11-09",
+        "VKOSPI": "2026-11-09",
+        "Korea_Treasury_3Y": "2026-11-09",
+        "Korea_Corporate_AAminus_3Y": "2026-11-09"
+      }
+    },
+    "us": {
+      "status": "BLOCKED",
+      "expected_date": "2026-11-09",
+      "reason": "재수집한 과거 자료가 기존 연구 feature와 불일치: SPY_1D_Return. 신규 점수 발행 보류."
+    }
+  }
 }
