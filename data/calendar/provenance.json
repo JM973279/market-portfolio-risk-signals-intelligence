@@ -1,0 +1,15 @@
+{
+  "calendar": "XKRX",
+  "library": "exchange_calendars",
+  "library_version": "4.13.2",
+  "start": "2016-01-01",
+  "end": "2026-12-31",
+  "sha256": "7fc152faf5d28e8d2c7fc474bd9f3681acd7c3523f12f76d95750eff1cf63990",
+  "additional_closures": {
+    "2026-06-03": "지방선거일",
+    "2026-07-17": "제헌절"
+  },
+  "closure_notice": "https://stock.mk.co.kr/news/disclosure/template/1028611",
+  "official_calendar": "https://open.krx.co.kr/contents/MKD/01/0110/01100305/MKD01100305.jsp",
+  "note": "KRX closure notice reproduced by MK; additional closures correct the pinned library calendar. Outside coverage requires an explicit calendar update."
+}

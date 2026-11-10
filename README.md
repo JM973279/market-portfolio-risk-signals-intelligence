@@ -17,33 +17,46 @@ AWS에 배포하는 `market-portfolio-risk-intelligence`와 분리되어 있고,
 | ① 정량 프록시 | 신용융자·예탁금, 외국인 순매수, 2종목 시총 비중, SOX, WTI → ablation | 예정 |
 | ② 텍스트 지수 | 한국은행 뉴스심리지수(NSI), 일별 지정학 위험지수(GPR) → ablation | 예정 |
 
-## 첫 결과 (2026-11-10 import 기준)
+## 진단 결과와 데이터 갱신
 
 전체 표: [reports/event_diagnostics.md](reports/event_diagnostics.md)
 
-- 뉴스 목록 10건 중 진단 가능한 9건: **스트레스 진행 중 추가 급락 6**, 사전 경보 있음 1(6/8), **사전 경보 없음 2(10/13, 10/15)**. 나머지 1건(11/6)은 점수 데이터가 11/2까지라 진단하지 못했습니다.
-- 3/4 전쟁 급락 전날인 3/3(-7.92%, 뉴스 목록에 없음)에 V1은 직전 10거래일 내내 경보 상태였습니다. 트리거(전쟁)는 예측할 수 없어도 취약한 상태는 점수에 이미 나타나 있었던 사례입니다. 한 사례라 일반화하지는 않습니다.
-- 경보가 빈 곳은 10월 AI·반도체 급락입니다. 급락 전 10거래일 최고 점수가 15.6%(10/13), 37.8%(10/15)로 경보 기준 50%에 못 미쳤고(동결 모델 사후 추론), 급락 당일 MSI도 Stress 기준 미만이었습니다.
-- 2026년 KOSPI200 -5% 이하 하락일 22일 중 15일은 뉴스 목록에 없었습니다. 진단 대상은 뉴스가 아니라 가격 데이터로 골라야 합니다.
+- 수치와 실제 관측 종료일은 보고서에서 확인하세요. 점수와 가격의 마지막 날짜를 각각 표시하며 README에 결과 수치를 중복 고정하지 않습니다.
+- 기본 입력은 공개 원본 `tina77302/market-portfolio-risk-intelligence`의 main을 조회한 뒤 **한 커밋으로 고정**한 두 JSON입니다. 오래된 로컬 worktree를 자동 선택하지 않습니다. `--source-repo`로 출처를 변경할 수 있습니다.
+- 원본에 없는 가격은 Naver Finance `KPI200` 일봉으로 보충합니다. 동결 KOSPI200 종가와 5거래일 이상 겹쳐 확인하고, 차이가 0.005포인트를 넘으면 발행을 중단합니다. 2026-11-10 복구 시 겹친 475거래일 종가는 모두 일치했습니다.
+- 보충 가격은 사건 수익률·누락 급락일 조사에만 사용하며 Risk Score·MSI·공식 기준값·모델은 바꾸지 않습니다.
+- 11/6 사건은 최신 점수 연결 후 ‘데이터 없음’에서 ‘사전 경보 없음’으로 진단되었습니다. 동결 모델의 사후·운영 추론에 대한 진단이며 새 OOS 검증이 아닙니다.
+- 가격만 있는 날짜는 `NO_SCORE`로 유지합니다. 과거 점수를 복사해 현재 점수로 표시하지 않습니다.
+
+## 자동 갱신
+
+[Refresh Korea event diagnostics](https://github.com/JM973279/market-qualitative-signals/actions/workflows/refresh-diagnostics.yml)는 **4시간마다** 공개 원본 점수와 공개 가격을 확인하며 수동 실행도 가능합니다. GitHub 예약 실행은 지연될 수 있습니다.
+
+추가 API 키 없이 실행하고, main에서 수집·검사·보고서 생성이 성공하면 입력과 보고서를 커밋합니다. 조회나 일치 검증이 실패하면 마지막 검증 파일을 덮어쓰지 않습니다. 같은 입력으로 불필요한 타임스탬프 변경 커밋을 만들지 않습니다. 보고서는 원천의 과거 `CURRENT` 문자열을 그대로 믿지 않고 실행 시점의 기대 거래일과 실제 관측일을 비교합니다.
 
 ## 실행
 
 표준 라이브러리만 씁니다(Python 3.10+). 호스트 `python3`로 바로 실행됩니다.
 
 ```bash
-python3 -m qsignals.import_scores   # 배포 저장소 JSON → data/input/ (읽기 전용 복사, sha256 기록)
+python3 -m qsignals.import_scores   # 공개 원본 main을 한 커밋으로 고정 + KOSPI200 일봉 검증
+python3 -m qsignals.import_scores --source-root /path/to/checkout  # 명시적 로컬 입력
 python3 -m qsignals.diagnose        # → reports/event_diagnostics.{csv,md}
 python3 -m unittest discover -s tests -t .
 ```
 
-배포 저장소 경로가 다르면 `--source-root PATH`를 넘깁니다. 11/6 이후 이벤트는 배포 저장소의 `operational-markets.json`이 갱신된 뒤 `import_scores`를 다시 실행하면 진단됩니다.
+재현 시 `--source-ref COMMIT_SHA`로 원본을 고정합니다. `--price-replay data/input/provenance.json`은 보존한 가격 원응답을 해시 검증해 재사용합니다. 완전한 오프라인 재현은 해당 커밋의 로컬 체크아웃을 `--source-root`로 함께 넘깁니다.
+
+달력은 `data/calendar/`에 해시와 출처를 기록했습니다. exchange_calendars 4.13.2의 XKRX에 2026-06-03·07-17 추가 휴장을 반영했고 2016~2026년을 지원합니다. 지원 기간 밖 자료를 처리하려면 달력을 명시적으로 갱신해야 합니다. 핵심 코드와 검사는 Python 표준 라이브러리만 사용합니다.
 
 ## 구조
 
 ```text
 data/events/kospi_2026_events.csv   급락일 주석 (사람이 작성)
 data/input/korea_scores.csv         V1 점수·MSI·KOSPI200 (import_scores가 생성)
-data/input/provenance.json          출처 브랜치·커밋·sha256·행 수
+data/input/provenance.json          출처 커밋·sha256·가격/점수 종료일·누락 거래일
+data/input/kospi200_naver.xml        가격 제공처 원응답 (재현용)
+data/calendar/                     KRX 거래일 달력·추가 휴장 출처
 qsignals/scores.py                  점수 시계열 병합·검증
 qsignals/events.py                  이벤트 스키마·검증
 qsignals/diagnostics.py             사전 경보 판정, 대형 하락일 스캔
@@ -59,7 +72,7 @@ reports/                            진단 결과
 - 스트레스 진행 중 추가 급락: 직전 5거래일 중 MSI ≥ 공식 Stress 기준인 날이 있음
 - 사전 경보 있음: 위가 아니고, 직전 10거래일(Target_10D 기간) 중 경보가 하루 이상
 - 사전 경보 없음: 둘 다 아님
-- 급락 당일 점수는 당일 종가까지 반영하므로 '사전' 판정에서 뺍니다. 직전 구간에 결측이 있으면 판정하지 않습니다.
+- 급락 당일 점수는 당일 종가까지 반영하므로 '사전' 판정에서 뺍니다. 직전 구간에 행 전체가 빠진 경우까지 결측으로 처리합니다. 직전 거래일 가격이 없으면 여러 거래일 누적 등락을 일간 등락으로 계산하지 않습니다.
 
 ## 이벤트 CSV 작성 규칙
 
@@ -91,3 +104,10 @@ reports/                            진단 결과
 - 보도 등락은 KOSPI, 데이터 수익률은 KOSPI200 기준입니다.
 - 10월 점수는 walk-forward OOS가 아니라 동결 모델의 사후 추론입니다.
 - 이 저장소는 모델을 바꾸지 않습니다. 모델 변경은 팀(A 트랙) 합의 후 배포 저장소에서 별도로 진행합니다.
+
+## 복구 검증 (2026-11-10)
+
+- 원본 커밋과 두 JSON의 SHA-256, 보충 가격 원응답의 SHA-256, 생성 CSV의 SHA-256을 기록합니다.
+- 같은 날짜의 기존 2,483개 Risk Score·MSI·공식 기준값·기록 유형은 복구 전후 일치합니다.
+- 불가능한 날짜, 중복 날짜, NaN/무한값, 잘못된 종목 응답, 빠진 거래일, 가격 기준 불일치, 갱신 실패 시 파일 보존을 회귀 검사합니다.
+- 출처가 없는 뉴스 주석 두 건은 보고서에서도 ‘출처 미확인’으로 표시합니다. 기존 뉴스의 인과 해석을 새로 검증했다는 의미는 아닙니다.

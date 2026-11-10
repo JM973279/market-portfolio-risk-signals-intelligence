@@ -5,6 +5,10 @@ from __future__ import annotations
 import csv
 from dataclasses import asdict, dataclass, fields
 from pathlib import Path
+from bisect import bisect_left
+from datetime import datetime, timedelta, timezone
+
+from qsignals.calendar import latest_closed_session
 
 from qsignals.diagnostics import (
     LARGE_DROP_PCT,
@@ -116,7 +120,7 @@ def render_markdown(events, diagnoses, rows, provenance, scan_start):
     files = provenance["files"]
     add(
         f"- 점수: `{provenance['source_repo']}` "
-        f"`{provenance['source_git_branch']}` @ `{provenance['source_git_commit'][:7]}`, "
+        f"`{provenance['source_git_branch']}` @ `{(provenance.get('source_git_commit') or 'unknown')[:7]}`, "
         f"{provenance['first_date']} ~ {provenance['last_date']} ({provenance['rows']:,}행)"
     )
     for key, meta in files.items():
@@ -128,6 +132,19 @@ def render_markdown(events, diagnoses, rows, provenance, scan_start):
         + f" (동결 모델 학습 기준일 {provenance['training_cutoff']})"
     )
     add(f"  - KOSPI200 가격은 {provenance['last_price_date']}까지만 있습니다.")
+    add(f"  - V1 점수 마지막 관측일: {provenance['last_risk_date']}; 한국 원천 생성: {provenance.get('korea_generated_at', '미기록')}")
+    if provenance.get("price_source"):
+        price = provenance["price_source"]
+        add(f"  - 가격 보충: [{price['provider']} {price['symbol']}]({price['url']}), 원응답 sha256 `{price['sha256']}`")
+        add(f"  - 동결 가격과 겹치는 {price['frozen_overlap_rows']}일 대조, 최대 절대 차이 {price['frozen_max_abs_difference']:.6f}. 가격은 사건 수익률에만 사용하며 점수·MSI는 바꾸지 않았습니다.")
+    add(f"  - 생성 CSV sha256 `{provenance.get('scores_sha256', '미기록')}`")
+    now = datetime.now(timezone.utc).astimezone(timezone(timedelta(hours=9)))
+    due = latest_closed_session(now, publication_lag_hours=6)
+    add(f"  - 최신성 점검일: {now.date()} KST; 6시간 게시 여유를 적용한 기대 거래일 {due}")
+    if provenance["last_risk_date"] < due or provenance["last_price_date"] < due:
+        add("  - **갱신 지연**: 기대 거래일까지의 점수 또는 가격이 없습니다. 데이터 마지막 관측일 이후를 정상·무경보로 판정하지 않습니다.")
+    gaps = provenance.get("missing_sessions", [])
+    add(f"  - KRX 거래일 누락: {len(gaps)}일" + (f" ({', '.join(gaps)})" if gaps else ""))
     add("- 이벤트: `data/events/kospi_2026_events.csv` (보도 기준 KOSPI 등락, 사후 정리)")
     add("")
     add("## 판정 기준 (고정)")
@@ -146,6 +163,7 @@ def render_markdown(events, diagnoses, rows, provenance, scan_start):
         "직전 구간 점수 결측 / 급락일이 점수 데이터에 없음"
     )
     add("- 급락 당일 점수는 당일 종가까지 반영하므로 '사전' 판정에 쓰지 않습니다.")
+    add("- 직전 구간은 별도 KRX 거래일 달력으로 확인합니다. 행 전체가 빠져도 결측으로 처리하며, 여러 거래일 간 수익률을 하루 수익률로 표시하지 않습니다.")
     add("- ⚑ = 급락 당일 MSI가 Stress 기준 이상 (Stress Event)")
     add("")
 
@@ -153,12 +171,13 @@ def render_markdown(events, diagnoses, rows, provenance, scan_start):
     add("")
     add(
         "| 날짜 | 트리거 | 보도 등락 (KOSPI) | 데이터 KOSPI200 | 전일 위험도 | "
-        f"직전 {PRE_WARNING_DAYS}일 최고 | 경보일 | 당일 MSI / 기준 | 판정 |"
+        f"직전 {PRE_WARNING_DAYS}일 최고 | 경보일 | 당일 MSI / 기준 | 판정 | 뉴스 출처 |"
     )
-    add("|---|---|---:|---:|---:|---:|---:|---:|---|")
+    add("|---|---|---:|---:|---:|---:|---:|---:|---|---|")
     for d in diagnoses:
         e = by_id[d.event_id]
-        add(_diagnosis_row(d, [d.date, TRIGGERS[e.trigger_primary], _reported(e)]))
+        quality = "출처 미확인" if e.source_quality == "unsourced" else e.source_quality
+        add(_diagnosis_row(d, [d.date, TRIGGERS[e.trigger_primary], _reported(e)]) + f" {quality} |")
     add("")
     retro = [d.date for d in diagnoses if d.record_type in ("RETROSPECTIVE_INFERENCE", "OPERATIONAL")]
     if retro:
@@ -169,7 +188,7 @@ def render_markdown(events, diagnoses, rows, provenance, scan_start):
         )
     missing = [d.date for d in diagnoses if d.verdict == "NO_DATA"]
     if missing:
-        add(f"- {', '.join(missing)}: 점수 데이터({provenance['last_date']}까지) 밖이라 진단하지 못했습니다.")
+        add(f"- {', '.join(missing)}: 진단 가능한 거래일 자료가 없어 판정하지 못했습니다. 입력 마지막 관측일은 {provenance['last_date']}입니다.")
     add("")
 
     add("## 트리거 유형별 요약")
@@ -192,6 +211,7 @@ def render_markdown(events, diagnoses, rows, provenance, scan_start):
     add(
         f"유형별 건수가 {min(sizes)}~{max(sizes)}건이라 비율로 일반화할 수 없습니다. "
         "어떤 유형에서 경보가 비었는지 보는 기술 통계입니다."
+        if sizes else "이벤트 주석이 없습니다. 아래 가격 기반 급락일 조사는 계속합니다."
     )
     add("")
 

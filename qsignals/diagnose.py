@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import hashlib
 from collections import Counter
 from pathlib import Path
 
@@ -30,6 +31,16 @@ def main(argv=None):
     rows = read_scores(args.scores)
     events = read_events(args.events)
     provenance = json.loads(args.provenance.read_text(encoding="utf-8"))
+    if not rows or provenance.get("scores_sha256") != hashlib.sha256(args.scores.read_bytes()).hexdigest():
+        raise ValueError("Scores do not match provenance; run qsignals.import_scores")
+    if provenance.get("rows") != len(rows) or provenance.get("last_date") != rows[-1].date:
+        raise ValueError("Provenance row/date mismatch")
+    price_path = args.provenance.parent / "kospi200_naver.xml"
+    if not price_path.exists() or hashlib.sha256(price_path.read_bytes()).hexdigest() != provenance.get("price_source", {}).get("sha256"):
+        raise ValueError("Retained price response does not match provenance")
+    calendar_path = PROJECT_ROOT / "data/calendar/xkrx_sessions.csv"
+    if hashlib.sha256(calendar_path.read_bytes()).hexdigest() != provenance.get("calendar_sha256"):
+        raise ValueError("Input/calendar version mismatch; rerun qsignals.import_scores")
 
     diagnoses = diagnose_all(events, rows)
     write_csv(diagnoses, args.out_dir / "event_diagnostics.csv")

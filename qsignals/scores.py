@@ -1,8 +1,8 @@
 """Korea V1 Risk Score series used for the event diagnostics.
 
 The deployed project (market-portfolio-risk-intelligence) is read-only from
-here. `qsignals.import_scores` copies the Korea series out of its frozen
-frontend exports once and records SHA-256 provenance; everything else in this
+here. `qsignals.import_scores` refreshes the Korea series from its frozen
+frontend exports and records SHA-256 provenance; everything else in this
 project works from that copy (data/input/korea_scores.csv).
 """
 
@@ -13,6 +13,8 @@ import math
 import re
 from dataclasses import dataclass
 from pathlib import Path
+
+from qsignals.calendar import valid_date
 
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -50,6 +52,8 @@ class ScoreRow:
 def _num(value):
     if value is None or value == "":
         return None
+    if isinstance(value, bool):
+        raise ValueError("Boolean is not a market observation")
     x = float(value)
     if not math.isfinite(x):
         raise ValueError(f"Non-finite value: {value!r}")
@@ -59,13 +63,15 @@ def _num(value):
 def validate_rows(rows):
     previous = ""
     for row in rows:
-        if not DATE_RE.match(row.date):
-            raise ValueError(f"Bad date: {row.date!r}")
+        valid_date(row.date)
         if row.date <= previous:
             raise ValueError(
                 f"Dates must be unique and ascending: {previous} -> {row.date}"
             )
         previous = row.date
+        for value in (row.kospi200_close, row.risk_v1, row.msi, row.stress_threshold):
+            if value is not None:
+                _num(value)
         if row.record_type not in RECORD_TYPES:
             raise ValueError(f"Unknown record type on {row.date}: {row.record_type}")
         if (row.risk_v1 is None) != (row.record_type == "NO_SCORE"):
@@ -77,17 +83,19 @@ def validate_rows(rows):
     return rows
 
 
-def build_rows(global_markets, operational):
+def build_rows(global_markets, operational, prices=None):
     """Merge the walk-forward OOS series with the frozen-model series.
 
     Walk-forward OOS rows take precedence on any shared date. Operational rows
-    only fill dates without an OOS score and keep the OOS file's price, because
-    the operational export carries no price.
+    only fill dates without an OOS score. Independent diagnostic prices can
+    fill missing closes after reconciliation with the frozen price history.
     """
 
     by_date = {}
 
     for item in global_markets["korea"]:
+        if item["date"] in by_date:
+            raise ValueError(f"Duplicate research date: {item['date']}")
         risk = _num(item.get("risk"))
         by_date[item["date"]] = ScoreRow(
             date=item["date"],
@@ -98,25 +106,54 @@ def build_rows(global_markets, operational):
             record_type="OOS_WALK_FORWARD" if risk is not None else "NO_SCORE",
         )
 
-    for item in operational["markets"]["korea"]["history"]:
+    validate_rows(list(by_date.values()))
+    seen = set()
+    previous = ""
+    market = operational["markets"]["korea"]
+    for item in market["history"]:
         date = item["date"]
+        valid_date(date)
+        if date in seen or date <= previous:
+            raise ValueError(f"Duplicate or unordered operational date: {date}")
+        seen.add(date)
+        previous = date
+        risk = _num(item.get("risk"))
+        kind = item.get("recordType") if risk is not None else "NO_SCORE"
+        validate_rows([ScoreRow(date, None, risk, _num(item.get("msi")),
+                                _num(item.get("threshold")), kind)])
+        if risk is not None and kind not in ("OPERATIONAL", "RETROSPECTIVE_INFERENCE"):
+            raise ValueError("Operational input cannot claim walk-forward OOS")
+        if risk is not None and market.get("trainingCutoff") and date <= market["trainingCutoff"]:
+            raise ValueError("Frozen-model score is not after its training cutoff")
         existing = by_date.get(date)
         if existing is not None and existing.risk_v1 is not None:
             continue
-        risk = _num(item.get("risk"))
         by_date[date] = ScoreRow(
             date=date,
             kospi200_close=existing.kospi200_close if existing else None,
             risk_v1=risk,
             msi=_num(item.get("msi")),
             stress_threshold=_num(item.get("threshold")),
-            record_type=item["recordType"] if risk is not None else "NO_SCORE",
+            record_type=kind,
         )
 
+    # Price enrichment changes only event returns, never the frozen score/MSI.
+    for day, price in (prices or {}).items():
+        valid_date(day)
+        price = _num(price)
+        existing = by_date.get(day)
+        if existing and existing.kospi200_close is not None:
+            if abs(price - existing.kospi200_close) > 0.005:
+                raise ValueError(f"Price provider disagrees with frozen reference on {day}")
+        elif existing:
+            by_date[day] = ScoreRow(**{**existing.__dict__, "kospi200_close": price})
+        else:
+            by_date[day] = ScoreRow(day, price, None, None, None, "NO_SCORE")
     return validate_rows([by_date[d] for d in sorted(by_date)])
 
 
 def write_scores(rows, path):
+    validate_rows(rows)
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as f:

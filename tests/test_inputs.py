@@ -61,6 +61,11 @@ class EventFileTest(unittest.TestCase):
             "secondary repeats primary": event_record(trigger_secondary="geopolitics"),
             "no move": event_record(reported_close="", reported_change_pct=""),
             "unknown halt": event_record(market_halt="CB;halt"),
+            "impossible date": event_record(date="2026-02-30"),
+            "NaN close": event_record(reported_close="nan"),
+            "infinite return": event_record(reported_change_pct="inf"),
+            "negative close": event_record(reported_close="-1"),
+            "empty host": event_record(source_urls="https://"),
         }
         for name, rec in cases.items():
             with self.subTest(name):
@@ -118,6 +123,9 @@ class ScoreImportTest(unittest.TestCase):
             "unsorted": [ScoreRow("2026-01-03", 1.0, 0.1, 0.0, 1.0, "OOS_WALK_FORWARD"), ScoreRow("2026-01-02", 1.0, 0.1, 0.0, 1.0, "OOS_WALK_FORWARD")],
             "score without type": [ScoreRow("2026-01-02", 1.0, 0.1, 0.0, 1.0, "NO_SCORE")],
             "unknown type": [ScoreRow("2026-01-02", 1.0, 0.1, 0.0, 1.0, "BACKFIT")],
+            "impossible date": [ScoreRow("2026-02-30", 1.0, 0.1, 0.0, 1.0, "OOS_WALK_FORWARD")],
+            "nan price": [ScoreRow("2026-01-02", float("nan"), 0.1, 0.0, 1.0, "OOS_WALK_FORWARD")],
+            "nan MSI": [ScoreRow("2026-01-02", 1.0, 0.1, float("nan"), 1.0, "OOS_WALK_FORWARD")],
         }
         for name, rows in bad.items():
             with self.subTest(name), self.assertRaises(ValueError):

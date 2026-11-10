@@ -7,10 +7,12 @@ they are never model features or tuning targets.
 from __future__ import annotations
 
 import csv
+import math
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlsplit
 
-from qsignals.scores import DATE_RE
+from qsignals.calendar import valid_date
 
 TRIGGERS = {
     "geopolitics": "지정학",
@@ -115,8 +117,14 @@ def validate_event(e):
     if not e.event_id:
         raise ValueError("Missing event_id")
     for name in ("date", "recorded_at"):
-        if not DATE_RE.match(getattr(e, name)):
-            raise ValueError(f"{where}: bad {name}")
+        valid_date(getattr(e, name))
+    for value in (e.reported_close, e.reported_change_pct):
+        if value is not None and not math.isfinite(value):
+            raise ValueError(f"{where}: non-finite reported market move")
+    if e.reported_close is not None and e.reported_close <= 0:
+        raise ValueError(f"{where}: non-positive reported close")
+    if e.reported_change_pct is not None and e.reported_change_pct <= -100:
+        raise ValueError(f"{where}: impossible index return")
     if e.recorded_at < e.date:
         raise ValueError(f"{where}: recorded before the event date")
     if e.trigger_primary not in TRIGGERS:
@@ -137,7 +145,7 @@ def validate_event(e):
         raise ValueError(f"{where}: unknown source_quality {e.source_quality!r}")
     if (e.source_quality == "unsourced") != (not e.source_urls):
         raise ValueError(f"{where}: source_quality and source_urls disagree")
-    if any(not u.startswith("https://") for u in e.source_urls):
+    if any(urlsplit(u).scheme != "https" or not urlsplit(u).hostname for u in e.source_urls):
         raise ValueError(f"{where}: source URLs must be https")
     if e.basis not in BASIS:
         raise ValueError(f"{where}: unknown basis {e.basis!r}")
