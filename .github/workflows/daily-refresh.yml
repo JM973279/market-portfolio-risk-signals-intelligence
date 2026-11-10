@@ -1,0 +1,103 @@
+name: Daily Korea score refresh
+
+# Collect the latest Korea V1 scores with the deployed repo's frozen pipeline
+# (python -m qsignals.refresh) and commit data/input/ and reports/.
+# Required repository secrets: KRX_API_KEY, ECOS_API_KEY.
+# The first run rebuilds the Korea raw history from 2010 (~8,800 KRX calls,
+# about 90 minutes); later runs restore it from the Actions cache.
+
+on:
+  schedule:
+    - cron: "0 13 * * 1-5"   # 22:00 KST, after the pipeline's Korea publication deadline
+  workflow_dispatch:
+  push:
+    branches: [feat/live-score-refresh]
+    paths: [".github/workflows/daily-refresh.yml", "qsignals/refresh.py"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
+      ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
+      V1_DATA: /home/runner/.cache/qsignals/v1-data
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out the deployed repo (read-only)
+        uses: actions/checkout@v4
+        with:
+          repository: tina77302/market-portfolio-risk-intelligence
+          path: _deployed
+
+      - name: Check out the original V1 repo, all branches (read-only)
+        uses: actions/checkout@v4
+        with:
+          repository: tina77302/market-stress-early-warning
+          path: _v1
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: _deployed/market_engine/operations/requirements.txt
+
+      - name: Create the inference environment
+        run: |
+          python -m venv "$RUNNER_TEMP/mpri-inference"
+          "$RUNNER_TEMP/mpri-inference/bin/pip" install -q -r _deployed/market_engine/operations/requirements.txt
+
+      - name: Restore Korea raw history
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.V1_DATA }}
+          key: korea-raw-${{ github.run_id }}
+          restore-keys: korea-raw-
+
+      - name: Refresh scores
+        id: refresh
+        run: |
+          python -m qsignals.refresh \
+            --python "$RUNNER_TEMP/mpri-inference/bin/python" \
+            --source-root _deployed \
+            --v1-repo _v1 \
+            --v1-data "$V1_DATA" \
+            --work-root "$RUNNER_TEMP/runs" | tee "$RUNNER_TEMP/summary.json"
+
+      - name: Save Korea raw history
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.V1_DATA }}
+          key: korea-raw-${{ github.run_id }}
+
+      - name: Upload pipeline logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: refresh-logs
+          path: ${{ runner.temp }}/runs/*/refresh.log
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Rebuild diagnostics
+        run: python -m qsignals.diagnose
+
+      - name: Commit refreshed data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/input reports
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          last=$(python -c "import json;print(json.load(open('data/input/provenance.json'))['last_risk_date'])")
+          git commit -m "data: refresh Korea V1 scores through $last"
+          git push

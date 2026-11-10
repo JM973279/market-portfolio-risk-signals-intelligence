@@ -132,6 +132,13 @@ def top_up_korea_raw(python, v1_tree, v1_data, env, log):
         shutil.copy2(raw / name, target / name)
 
 
+def prune_runs(work_root, keep):
+    """Delete older snapshot folders (names are UTC stamps, so they sort by time)."""
+    runs = sorted(p for p in Path(work_root).iterdir() if p.is_dir() and p.name[:8].isdigit())
+    for old in runs[:-keep]:
+        shutil.rmtree(old, ignore_errors=True)
+
+
 def freshness(market):
     """CURRENT only when the frozen pipeline verified its expected session."""
     current = market.get("current") or {}
@@ -156,6 +163,7 @@ def main(argv=None):
     parser.add_argument("--env-file", type=Path, help="defaults to <v1-repo>/.env")
     parser.add_argument("--v1-data", type=Path, default=DEFAULT_V1_DATA, help="persistent Korea raw history cache")
     parser.add_argument("--work-root", type=Path, default=DEFAULT_WORK_ROOT)
+    parser.add_argument("--keep-runs", type=int, default=3, help="snapshot folders kept in --work-root (~110 MB each)")
     parser.add_argument("--output-dir", type=Path, default=PROJECT_ROOT / "data" / "input")
     args = parser.parse_args(argv)
 
@@ -164,6 +172,7 @@ def main(argv=None):
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     work = args.work_root / stamp
     work.mkdir(parents=True)
+    prune_runs(args.work_root, max(args.keep_runs, 1))
     log = work / "refresh.log"
 
     source_commit = archive(args.source_root, args.source_ref, work / "mpri")

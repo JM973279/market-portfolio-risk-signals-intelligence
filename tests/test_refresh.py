@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from qsignals.refresh import RefreshError, archive, find_v1_commit, freshness, load_env
+from qsignals.refresh import RefreshError, archive, find_v1_commit, freshness, load_env, prune_runs
 
 
 def sha(text):
@@ -56,6 +56,15 @@ class V1CommitTest(unittest.TestCase):
         self.assertEqual(archive(self.repo, rev, dest), rev)
         self.assertEqual((dest / "src/a.py").read_text(encoding="utf-8"), "a1\n")
         self.assertEqual((self.repo / "src/a.py").read_text(encoding="utf-8"), "local edit\n")
+
+
+class PruneTest(unittest.TestCase):
+    def test_keeps_newest_runs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            for name in ["20261101T000000Z", "20261102T000000Z", "20261103T000000Z", "notes"]:
+                (Path(tmp) / name).mkdir()
+            prune_runs(tmp, 2)
+            self.assertEqual(sorted(p.name for p in Path(tmp).iterdir()), ["20261102T000000Z", "20261103T000000Z", "notes"])
 
 
 class EnvTest(unittest.TestCase):
