@@ -1,13 +1,18 @@
 "use client";
 import { useState } from "react";
 import { useDashboard } from "./dashboard-shell";
-import { currentOperationalPoint, operationalMessage } from "@/lib/operational-status";
+import { currentOperationalPoint, lastValidOperationalPoint, operationalMessage, staleScoreNote } from "@/lib/operational-status";
 
 export default function OperationalMarket({ country }: { country: "us" | "korea" }) {
  const { operational, language } = useDashboard();
  const market = operational?.markets[country];
  const ko = language === "ko";
  const current = currentOperationalPoint(market);
+ // 최신 자료가 안 들어왔으면 N/A 대신 마지막 유효 점수를 보여 주고, 제목을 "마지막 유효"로 바꾼 뒤 아래에 주석을 단다.
+ const fallback = lastValidOperationalPoint(market);
+ const shown = current ?? fallback;
+ const note = staleScoreNote(market, language);
+ const label = (koText: string, enText: string) => fallback ? (ko ? `마지막 유효 ${koText}` : `Last valid ${enText}`) : (ko ? `현재 ${koText}` : `Current ${enText}`);
  const [selected, setSelected] = useState("");
  const row = market?.history.find(point => point.date === (selected || market.lastValid?.date));
  const availability = market?.availability?.find(point => point.date === (selected || market.lastValid?.date));
@@ -17,7 +22,8 @@ export default function OperationalMarket({ country }: { country: "us" | "korea"
   <div className="panel-header"><h2>{ko ? "운영 데이터 · Frozen V1 추론" : "Operational data · Frozen V1 inference"}</h2><span className="tag">{status}</span></div>
   <p>{ko ? "과거 OOS 검증과 별도로 실행한 고정 모델 추론입니다. 시장 스트레스의 보정된 확률이나 포트폴리오 손실 확률을 뜻하지 않습니다." : "Frozen model inference is separate from historical OOS validation. It is not a calibrated stress or portfolio-loss probability."}</p>
   <div className="country-meta"><span>{ko ? "현재 수집 기준 관측일" : "Due observation date"}: <b>{market?.expectedDate ?? "N/A"}</b></span><span>{ko ? "내보내기 생성 시각 (UTC)" : "Export generated (UTC)"}: <b>{operational?.generatedAt ?? "N/A"}</b></span></div>
-  <div className="selected-metrics"><div><span>{ko ? "현재 Risk Score" : "Current Risk Score"}</span><strong>{metric(current?.risk, true)}</strong></div><div><span>{ko ? "현재 MSI" : "Current MSI"}</span><strong>{metric(current?.msi)}</strong></div><div><span>{ko ? "현재 공식 임계값" : "Current official threshold"}</span><strong>{metric(current?.threshold)}</strong></div><div><span>{ko ? "실제 점수 관측일" : "Score observation date"}</span><strong className="selected-date">{current?.date ?? "N/A"}</strong></div></div>
+  <div className="selected-metrics"><div><span>{label("Risk Score", "Risk Score")}</span><strong>{metric(shown?.risk, true)}</strong></div><div><span>{label("MSI", "MSI")}</span><strong>{metric(shown?.msi)}</strong></div><div><span>{label("공식 임계값", "official threshold")}</span><strong>{metric(shown?.threshold)}</strong></div><div><span>{ko ? "실제 점수 관측일" : "Score observation date"}</span><strong className="selected-date">{shown?.date ?? "N/A"}</strong></div></div>
+  {note && <p className="stale-note">{note}</p>}
   <p className="panel-note">{ko ? "추론 실행 시각 (UTC)" : "Inference time (UTC)"}: {market?.inferenceAt ?? "N/A"}</p>
   <p role="status">{operationalMessage(market, language)}</p>
   <div className="table-scroll"><table><caption>{ko ? "원천별 실제 관측일과 수집 시각" : "Source observation and retrieval times"}</caption><thead><tr><th>{ko ? "자료 / 출처" : "Series / provider"}</th><th>{ko ? "실제 관측일" : "Observation date"}</th><th>{ko ? "수집 시각 (UTC)" : "Retrieved (UTC)"}</th><th>{ko ? "품질 상태" : "Quality"}</th></tr></thead><tbody>{market?.series.map(source => <tr key={source.name}><th scope="row">{source.name}<small className="operational-provider">{source.provider}</small></th><td>{source.observationDate ?? "N/A"}</td><td>{source.retrievedAt ?? (ko ? "기존 캐시 · 시각 미확인" : "Legacy cache · time unknown")}</td><td>{source.reason ? (ko ? source.reason : source.status === "ERROR" ? "Source retrieval failed; see original diagnostics." : "Legacy source or delayed observation; see dates.") : (ko ? "원천 응답 확인 · 날짜별 가용성 참조" : "Response verified · see date availability")}</td></tr>)}</tbody></table></div>

@@ -10,7 +10,7 @@ const source = fs.readFileSync('src/lib/operational-status.ts', 'utf8');
 const code = ts.transpileModule(source, {compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText;
 const moduleValue = {exports:{}};
 vm.runInNewContext(code, {module:moduleValue,exports:moduleValue.exports});
-const {currentOperationalPoint, lastValidOperationalPoint, operationalMessage} = moduleValue.exports;
+const {currentOperationalPoint, lastValidOperationalPoint, operationalMessage, staleScoreNote} = moduleValue.exports;
 const data = JSON.parse(fs.readFileSync('public/data/operational-markets.json', 'utf8'));
 assert.equal(data.schema_version, 1);
 assert.equal(data.sourceValuesIncluded, false);
@@ -22,7 +22,13 @@ for (const [name, market] of Object.entries(data.markets)) {
   assert.ok(operationalMessage(market, 'en').includes('verified'));
  } else {
   assert.equal(current, null, `${name}: no current score unless CURRENT`);
-  if (market.lastValid) assert.equal(lastValidOperationalPoint(market).date, market.lastValid.date);
+  if (market.lastValid) {
+   assert.equal(lastValidOperationalPoint(market).date, market.lastValid.date);
+   // Footnote names the due date and the date actually shown.
+   const note = staleScoreNote(market, 'ko');
+   assert.ok(note.includes(market.expectedDate) && note.includes(market.lastValid.date), `${name}: footnote dates`);
+   assert.ok(!/[가-힣]/.test(staleScoreNote(market, 'en')));
+  }
   assert.ok(!/[가-힣]/.test(operationalMessage(market, 'en')));
  }
  for (const point of market.history) {
@@ -36,6 +42,9 @@ for (const [name, market] of Object.entries(data.markets)) {
 const point = {date:'2026-11-09', price:null, risk:0.4, msi:1, threshold:1.1, recordType:'OPERATIONAL'};
 const ok = {status:'CURRENT', expectedDate:'2026-11-09', current:point, lastValid:point, history:[point], reason:null};
 assert.equal(currentOperationalPoint(ok).date, '2026-11-09');
+assert.equal(staleScoreNote(ok, 'ko'), null);  // no footnote when the current score exists
+const late = {...ok, status:'DELAYED', current:null, expectedDate:'2026-11-10', series:[{name:'KOSPI200', observationDate:'2026-11-09', status:'ERROR'}, {name:'VKOSPI', observationDate:'2026-11-10', status:'OBSERVED'}]};
+assert.ok(staleScoreNote(late, 'ko').includes('KOSPI200 2026-11-09') && !staleScoreNote(late, 'ko').includes('VKOSPI'));
 assert.equal(currentOperationalPoint({...ok, current:{...point, date:'2026-11-08'}}), null);
 for (const risk of [NaN, Infinity, -0.1, 1.1, null]) assert.equal(currentOperationalPoint({...ok, current:{...point, risk}}), null);
 assert.equal(currentOperationalPoint({...ok, current:{...point, msi:null}}), null);

@@ -41,6 +41,25 @@ export function lastValidOperationalPoint(market?: OperationalMarketData | null)
  return point?.date && validPoint(point) ? point : null;
 }
 
+// 자료가 늦을 때 값 아래에 붙이는 주석
+// - 최신 자료가 아직 안 들어와 마지막 유효 점수를 대신 보여 줄 때만 문장을 돌려준다(그 외 null).
+// - 기대 관측일, 실제로 표시한 날짜, 기대 관측일보다 늦은 원천(관측일 포함)을 적는다.
+//   예: "기대 관측일 2026-11-09 자료가 아직 들어오지 않아 2026-11-06 점수를 표시했습니다.
+//        늦은 원천: DBAA 2026-11-06 · DGS10 2026-11-06. 현재 점수로 이월한 값이 아닙니다."
+export function staleScoreNote(market: OperationalMarketData | null | undefined, language: Language): string | null {
+ const point = lastValidOperationalPoint(market);
+ if (!market || !point) return null;
+ const ko = language === "ko";
+ const expected = market.expectedDate;
+ const late = market.series
+  .filter(source => source.status === "ERROR" || !source.observationDate || (expected && source.observationDate < expected))
+  .map(source => `${source.name} ${source.observationDate ?? (ko ? "없음" : "none")}`);
+ const lateText = late.length ? (ko ? ` 늦은 원천: ${late.join(" · ")}.` : ` Late sources: ${late.join(" · ")}.`) : "";
+ return ko
+  ? `※ 기대 관측일 ${expected ?? "N/A"} 자료가 아직 들어오지 않아 ${point.date} 점수를 표시했습니다.${lateText} 현재 점수로 이월한 값이 아닙니다.`
+  : `※ Data for the due date ${expected ?? "N/A"} has not arrived, so the ${point.date} score is shown.${lateText} It is not carried forward as the current score.`;
+}
+
 export function operationalMessage(market: OperationalMarketData | null | undefined, language: Language): string {
  const ko = language === "ko";
  if (!market) return ko ? "운영 export가 없습니다. 수집·검증 후 다시 빌드해야 합니다." : "No operational export. Collect, validate and rebuild.";
