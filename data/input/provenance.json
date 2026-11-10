@@ -1,0 +1,32 @@
+{
+  "imported_at": "2026-11-10T07:13:56+00:00",
+  "source_repo": "market-portfolio-risk-intelligence",
+  "source_git_branch": "integrate/stress-forward-validation",
+  "source_git_commit": "eb2c9acea6a87298204a6d87bf0f001027d026cc",
+  "source_files_modified_locally": false,
+  "files": {
+    "global_markets": {
+      "path": "frontend/public/data/global-markets.json",
+      "bytes": 1611404,
+      "sha256": "21b2b6fab853da7e078c3194887d2b665717e867b8491ab3ad9e410bcd2d857b"
+    },
+    "operational_markets": {
+      "path": "frontend/public/data/operational-markets.json",
+      "bytes": 41309,
+      "sha256": "14d6ebc441b40666b2eb06a80648acc521bf4ad7d162bcc2179b545ec07bbcd7"
+    }
+  },
+  "operational_run_id": "20261103T051707Z-f473940b",
+  "operational_model_sha256": "b8524d9dab692434e051011987bc6a86ffbd18c20a0c30ff00b4b30856318247",
+  "training_cutoff": "2026-09-16",
+  "rows": 2483,
+  "record_type_counts": {
+    "OOS_WALK_FORWARD": 2454,
+    "OPERATIONAL": 12,
+    "RETROSPECTIVE_INFERENCE": 17
+  },
+  "first_date": "2016-09-13",
+  "last_date": "2026-11-02",
+  "last_risk_date": "2026-11-02",
+  "last_price_date": "2026-10-02"
+}
