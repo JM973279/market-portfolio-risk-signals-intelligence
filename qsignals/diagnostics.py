@@ -9,6 +9,9 @@ from __future__ import annotations
 
 from collections import Counter
 from dataclasses import dataclass
+from bisect import bisect_left
+
+from qsignals.calendar import load_sessions, require_coverage
 
 # Frozen V1 operational threshold (market_engine/early_warning_v2/EXPERIMENTS.md).
 WARNING_THRESHOLD = 0.50
@@ -48,11 +51,16 @@ class EventDiagnosis:
     stress_threshold_on_event: float | None
     stress_on_event: bool | None
     verdict: str
+    missing_pre_sessions: str = ""
 
 
-def pct_return(rows, i):
+def pct_return(rows, i, sessions=None):
     if i <= 0:
         return None
+    sessions = sessions or load_sessions()
+    pos = bisect_left(sessions, rows[i].date)
+    if pos == 0 or pos >= len(sessions) or sessions[pos] != rows[i].date or sessions[pos - 1] != rows[i - 1].date:
+        return None  # A multi-session move is not a one-day return.
     before, now = rows[i - 1].kospi200_close, rows[i].kospi200_close
     if before is None or now is None:
         return None
@@ -65,7 +73,7 @@ def is_stress(row):
     return row.msi >= row.stress_threshold
 
 
-def diagnose_event(event, rows, index=None):
+def diagnose_event(event, rows, index=None, sessions=None):
     if index is None:
         index = {r.date: i for i, r in enumerate(rows)}
 
@@ -91,11 +99,17 @@ def diagnose_event(event, rows, index=None):
             verdict="NO_DATA",
         )
 
+    sessions = sessions or load_sessions()
+    require_coverage(event.date, event.date)
+    pos = bisect_left(sessions, event.date)
+    if pos == len(sessions) or sessions[pos] != event.date:
+        raise ValueError(f"Event on a non-session: {event.date}")
     row = rows[i]
-    pre = rows[max(0, i - PRE_WARNING_DAYS):i]
-    pre_stress = rows[max(0, i - PRE_STRESS_DAYS):i]
-    risks = [r.risk_v1 for r in pre]
-    stress_flags = [is_stress(r) for r in pre_stress]
+    days = sessions[max(0, pos - PRE_WARNING_DAYS):pos]
+    pre = [rows[index[day]] if day in index else None for day in days]
+    pre_stress = pre[-PRE_STRESS_DAYS:]
+    risks = [r.risk_v1 if r else None for r in pre]
+    stress_flags = [is_stress(r) if r else None for r in pre_stress]
 
     complete = (
         len(pre) == PRE_WARNING_DAYS
@@ -128,10 +142,10 @@ def diagnose_event(event, rows, index=None):
         date=event.date,
         trigger_primary=event.trigger_primary,
         record_type=row.record_type,
-        window_record_types=";".join(sorted({r.record_type for r in pre})) or None,
-        kospi200_return_pct=pct_return(rows, i),
+        window_record_types=";".join(sorted({r.record_type if r else "MISSING_SESSION" for r in pre})) or None,
+        kospi200_return_pct=pct_return(rows, i, sessions),
         reported_change_pct=event.reported_change_pct,
-        risk_prev=rows[i - 1].risk_v1 if i > 0 else None,
+        risk_prev=pre[-1].risk_v1 if pre and pre[-1] else None,
         risk_on_event=row.risk_v1,
         max_risk_pre=max_risk,
         warning_days_pre=warning_days,
@@ -141,6 +155,7 @@ def diagnose_event(event, rows, index=None):
         stress_threshold_on_event=row.stress_threshold,
         stress_on_event=is_stress(row),
         verdict=verdict,
+        missing_pre_sessions=";".join(day for day, r in zip(days, pre) if r is None),
     )
 
 
