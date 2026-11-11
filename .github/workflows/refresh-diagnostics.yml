@@ -57,4 +57,4 @@ jobs:
           git add data/input reports/event_diagnostics.csv reports/event_diagnostics.md
           if git diff --cached --quiet; then exit 0; fi
           git commit -m 'data: refresh Korea event diagnostics'
-          git push origin HEAD:main
+          bash scripts/push_data_commit.sh
