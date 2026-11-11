@@ -1,4 +1,6 @@
 'use strict';
+// 사이트(frontend) 안 iframe으로 열리면 자체 상단 바를 숨긴다.
+if(window.self!==window.top)document.documentElement.classList.add('embedded');
 const $=id=>document.getElementById(id),esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=(v,d=1)=>Number.isFinite(v)?Math.abs(v).toLocaleString('ko-KR',{minimumFractionDigits:d,maximumFractionDigits:d}):'N/A';
 const sign=v=>v>1e-12?'+':v< -1e-12?'−':'';

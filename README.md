@@ -116,7 +116,7 @@ cd frontend && npm ci && npm run build && npm run start   # http://localhost:300
 - **이 저장소 데이터로 바뀌는 것:** `operational-markets.json`(시장 카드, 미국·한국 시장 페이지의 운영 추론, 헤더 날짜)과 그것을 읽는 `korea-scenarios.json`. `export_frontend`는 `data/input/operational/<시장>.json`(점수 CSV와 같은 export에서 import가 저장한 시장별 상태 블록, 가격 없음)을 합치고, 모든 점수가 `<시장>_scores.csv`와 같은지 확인한 뒤 씁니다. 두 시장은 서로 다른 수집 실행에서 올 수 있고 `runId`에 둘 다 적힙니다.
 - **복사본 그대로인 것:** `global-markets.json`(walk-forward OOS 연구 export), `korea-monitor.json`(시장 확산도·과거 검증). 동결 연구 자료라 갱신하지 않습니다.
 - **배포 화면과 다른 점(refresh로 갱신한 경우):** refresh가 한국 원천 이력을 매번 최신으로 채우므로 학습 기준일 이후 한국 행은 모두 `RETROSPECTIVE_INFERENCE`(과거 캐시 재현 추론)로 표시됩니다. 배포 사이트는 V1 캐시 끝(10/15) 이후를 `OPERATIONAL`로 표시합니다. 점수 값은 같습니다.
-- 포트폴리오 화면은 별도 API 서버가 필요해 이 저장소에서는 데이터 없이 뜹니다.
+- **포트폴리오 분석 메뉴**는 이 저장소의 포트폴리오 분석(`python3 -m qsignals.portfolio_server`, 기본 3108)을 사이트 안에 iframe으로 보여 줍니다. 사이트가 `/portfolio-lab`, `/portfolio/{app.js,style.css}`, `/api/portfolio/*`를 그 서버로 넘깁니다. 주소가 다르면 빌드할 때 `PORTFOLIO_API_INTERNAL_URL`로 지정합니다. 서버는 같은 출처만 iframe을 허용하고(`frame-ancestors 'self'`), 같은 PC의 프록시가 보낸 `X-Forwarded-Host`만 출처로 인정합니다.
 
 ## 구조
 

@@ -34,7 +34,9 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header('Cache-Control', 'no-store')
         self.send_header('X-Content-Type-Options', 'nosniff')
         self.send_header('Referrer-Policy', 'no-referrer')
-        self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'")
+        # frame-ancestors 'self': only the same origin may frame this page — the mqs site
+        # (frontend/) shows it in an iframe through its /portfolio-lab proxy. Other sites stay blocked.
+        self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'self'; base-uri 'none'; form-action 'self'")
         self.end_headers()
         self.wfile.write(content)
 
@@ -63,7 +65,13 @@ class Handler(BaseHTTPRequestHandler):
             self.respond(404, {'error': 'Not found'})
             return
         origin = self.headers.get('Origin')
-        if origin and origin != 'http://' + self.headers.get('Host', ''):
+        allowed = {'http://' + self.headers.get('Host', '')}
+        # The mqs site (frontend/) proxies /api/portfolio/* from the same machine and keeps the
+        # browser's host in X-Forwarded-Host. Trust that header only from a loopback client.
+        forwarded = self.headers.get('X-Forwarded-Host')
+        if forwarded and self.client_address[0] in ('127.0.0.1', '::1'):
+            allowed |= {'http://' + forwarded, 'https://' + forwarded}
+        if origin and origin not in allowed:
             self.respond(403, {'error': '다른 출처의 요청은 허용하지 않습니다.'})
             return
         if self.headers.get('Content-Type', '').split(';')[0].strip() != 'application/json':

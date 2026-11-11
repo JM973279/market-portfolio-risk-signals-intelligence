@@ -10,3 +10,8 @@
 .replay-more button{border:0;background:transparent;color:var(--blue);font-size:13px;cursor:pointer}
 .replay-more button:hover{text-decoration:underline}
 .replay table th:first-child{white-space:normal;min-width:140px}
+/* 사이트 안에 표시될 때 */
+.embedded body>header{display:none}
+.embedded main{padding-top:0}
+.embedded .hero>div:first-child{display:none}
+.embedded .hero{margin-top:0;padding-top:0}

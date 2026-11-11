@@ -186,3 +186,5 @@ svg.country-flag {width:44px;height:30px;flex-shrink:0;border:1px solid #e6edf6;
 /* Footnote under scores shown while the due-date data has not arrived */
 .stale-note {margin:8px 0 0;padding:8px 10px;border-left:3px solid var(--amber, #c98a12);background:#fff8eb;color:#6b4f12;font-size:12px;line-height:1.5;border-radius:4px}
 .scenario-more {margin:12px 0 0;text-align:center}
+/* mqs portfolio app shown inside the site */
+.mqs-portfolio-frame {display:block;width:100%;border:0;border-radius:12px;background:transparent;margin:0 0 8px}
