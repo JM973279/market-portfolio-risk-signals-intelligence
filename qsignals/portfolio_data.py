@@ -113,10 +113,12 @@ def parse_files(raw, provenance):
             raise PortfolioError('가격은 양수이며 SPY 관측이 필요합니다.', 'invalid_data', date=day)
     factors = _matrix(raw['factors.csv'], ('VIX', 'DGS10'))
     meta, scenarios = (json.loads(raw[n]) for n in ('snapshot_meta.json', 'scenarios.json'))
-    if iso_day(meta['as_of']) != max(prices) or scenarios['as_of'] != meta['as_of']:
+    if iso_day(meta['as_of']) != max(prices) or scenarios['as_of'] != meta.get('scenario_as_of', meta['as_of']):
         raise PortfolioError('가격·시나리오 기준일이 다릅니다.', 'invalid_data')
     for key in ('window_start', 'window_end'):
         iso_day(meta[key])
+    if not meta['window_start'] <= meta['window_end'] <= meta['as_of'] or meta.get('scenario_as_of', scenarios['as_of']) > meta['as_of']:
+        raise PortfolioError('자료 기준일 순서가 잘못됐습니다.', 'invalid_data')
     for s in scenarios['scenarios']:
         if s['factor'] not in ('market', 'rate', 'volatility'):
             raise PortfolioError('알 수 없는 충격 팩터입니다.', 'invalid_data')
@@ -128,7 +130,10 @@ def load_dataset(directory=DEFAULT_DATA):
     directory = Path(directory)
     try:
         manifest = json.loads((directory / 'current.json').read_text())
-        sha = manifest['source_commit']
+        source_sha = manifest['source_commit']
+        if not re.fullmatch(r'[a-f0-9]{40}', source_sha):
+            raise PortfolioError('잘못된 원본 커밋입니다.', 'invalid_data')
+        sha = manifest.get('snapshot_id', source_sha)
         if not re.fullmatch(r'[a-f0-9]{40}', sha):
             raise PortfolioError('잘못된 원본 버전입니다.', 'invalid_data')
         raw = {}
@@ -140,6 +145,12 @@ def load_dataset(directory=DEFAULT_DATA):
             if hashlib.sha256(data).hexdigest() != record['sha256']:
                 raise PortfolioError('입력 파일 해시가 일치하지 않습니다.', 'invalid_data')
             raw[name] = data
+        for record in manifest.get('collection', {}).get('receipts', {}).values():
+            relative = record['path']
+            if not relative.startswith(f'snapshots/{sha}/receipts/') or '/' in relative.split('/receipts/', 1)[1]:
+                raise PortfolioError('잘못된 수집 기록 경로입니다.', 'invalid_data')
+            if hashlib.sha256((directory / relative).read_bytes()).hexdigest() != record['sha256']:
+                raise PortfolioError('수집 기록 해시가 일치하지 않습니다.', 'invalid_data')
         from dataclasses import replace
         from qsignals.portfolio_sectors import load_sector_records
         return replace(parse_files(raw, manifest), sector_records=load_sector_records(directory))

@@ -47,7 +47,7 @@ def sector_attribution(data, days, weights, bm):
     reason = '과거 벤치마크 섹터 비중·수익률 및 시점별 분류 자료 연결이 필요합니다. 현재 섹터 분류를 과거에 소급 적용하지 않습니다.'
     candidates = [r for r in data.sector_records if r.get('period') == {'start': days[0], 'end': days[-1]}
                   and r.get('benchmark_weights') == bm['weights']
-                  and r.get('price_snapshot_sha') == data.provenance.get('source_commit')]
+                  and r.get('price_snapshot_sha') == data.provenance.get('snapshot_id', data.provenance.get('source_commit'))]
     if len(candidates) != 1:
         if data.sector_records and 'adapter_error' in data.sector_records[0]:
             reason = '섹터 자료 검증 실패: ' + data.sector_records[0]['adapter_error']

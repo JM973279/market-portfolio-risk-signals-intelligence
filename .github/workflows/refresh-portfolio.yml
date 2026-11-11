@@ -10,14 +10,16 @@ on:
       - '.github/workflows/refresh-portfolio.yml'
       - 'qsignals/portfolio*.py'
       - 'qsignals/portfolio_web/**'
-      - 'tests/test_portfolio.py'
+      - 'tests/test_portfolio*.py'
+      - 'requirements.portfolio-refresh.txt'
   pull_request:
     paths:
       - '.github/workflows/refresh-portfolio.yml'
       - 'qsignals/portfolio*.py'
       - 'qsignals/portfolio_web/**'
       - 'data/portfolio/**'
-      - 'tests/test_portfolio.py'
+      - 'tests/test_portfolio*.py'
+      - 'requirements.portfolio-refresh.txt'
 
 permissions:
   contents: read
@@ -43,8 +45,12 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: main
-      - name: Import portfolio snapshot at one upstream commit
-        run: python3 -m qsignals.portfolio_import
+      - name: Prepare isolated collection dependencies
+        run: |
+          python3 -m venv /tmp/portfolio-collector
+          /tmp/portfolio-collector/bin/pip install -r requirements.portfolio-refresh.txt
+      - name: Collect and validate a full provider vintage using the pinned GitHub seed
+        run: /tmp/portfolio-collector/bin/python -m qsignals.portfolio_refresh
       - name: Check imported data and existing diagnostics
         run: python3 -m unittest discover -s tests -t .
       - name: Commit only validated portfolio data

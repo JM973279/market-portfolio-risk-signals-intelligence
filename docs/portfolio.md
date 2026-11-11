@@ -14,16 +14,24 @@ python3 -m qsignals.portfolio_server
 처음부터 GitHub에서 검증 파일을 다시 받아 재현하려면 다음을 실행합니다. 웹/API 요청에서는 외부 제공처를 호출하지 않습니다.
 
 ```bash
-python3 -m qsignals.portfolio_import
+# 운영 갱신은 아래 Actions가 수행합니다. 명시적 수동 재현 시에만 수집 의존성을 설치합니다.
+python3 -m venv /tmp/portfolio-collector
+/tmp/portfolio-collector/bin/pip install -r requirements.portfolio-refresh.txt
+/tmp/portfolio-collector/bin/python -m qsignals.portfolio_refresh
+# 동결 원본만 다시 확인하는 수동 옵션(운영 갱신 경로가 아님)
 python3 -m qsignals.portfolio_import --source-ref COMMIT_SHA
 python3 -m unittest discover -s tests -t .
 ```
 
-기본 원본은 기존 데이터 연결과 같은 `tina77302/market-portfolio-risk-intelligence`, ref `main`입니다. 조회 시 SHA 하나로 고정하고 그 커밋의 `data/portfolio/{prices.csv,factors.csv,universe.csv,snapshot_meta.json,scenarios.json}`만 읽습니다. 실패하면 기존 `current.json`은 보존하며, 내용이 동일하면 코드 커밋만 바뀌어도 기존 가격 버전·수집시각을 보존해 불필요한 데이터 커밋을 만들지 않습니다. 과거 버전은 `snapshots/<SHA>/`에 보존합니다.
+기본 원본은 기존 데이터 연결과 같은 `tina77302/market-portfolio-risk-intelligence`, ref `main`입니다. 조회 시 SHA 하나로 고정하고 그 커밋의 `data/portfolio/{prices.csv,factors.csv,universe.csv,snapshot_meta.json,scenarios.json}`만 읽습니다. 실패하면 기존 `current.json`은 보존하며, 내용이 동일하면 코드 커밋만 바뀌어도 기존 가격 버전·수집시각을 보존해 불필요한 데이터 커밋을 만들지 않습니다. 과거 버전은 `snapshots/<가격 버전 ID>/`에 보존합니다. 기본 원본 SHA는 `source_commit`에, 새 수집본의 내용 해시는 `snapshot_id`에 따로 기록합니다. 제공처 정규화 응답·FRED 원응답·거래일 달력도 해시와 함께 보관합니다.
 
-저장소에 포함된 가격은 **2026-10-23**까지입니다. 이는 실제 가격 관측 종료일이며 새 기능 구현일이나 수집시각과 다릅니다. Actions가 실행되더라도 원본 스냅샷이 그대로면 가격 종료일은 바뀌지 않습니다. Yahoo 등 외부 가격 수집을 웹 요청에 넣거나, 로컬 다른 프로젝트를 기본 입력으로 사용하지 않습니다.
+최초 원본 스냅샷은 2026-10-23에서 멈춰 있었습니다. 현재 Actions는 같은 GitHub 원본 저장소·main·입력 경로에서 자산 목록과 동결 기준을 읽은 뒤, Yahoo 전체 수정종가 이력과 VIX·FRED DGS10을 직접 수집·검증해 이 저장소에 별도 운영 버전으로 저장합니다. 웹/API는 계속 `data/portfolio/current.json`과 그 파일이 지정한 GitHub 검증 파일만 읽습니다.
 
-[Validate and refresh portfolio analysis](../.github/workflows/refresh-portfolio.yml)는 4시간마다 원본 스냅샷을 확인하고 검증 성공 시 데이터만 커밋합니다. `workflow_dispatch`도 지원합니다. GitHub Actions 자체의 실행 허용 및 저장소 규칙을 따릅니다.
+실제 최신 가격일은 `price_as_of`, 금리 자료까지 있는 위험 추정일은 `collection.risk_as_of`로 구분합니다. 금리 결측을 채우지 않으며 3거래일 넘게 지연되면 발행을 보류합니다. XNYS 휴장·조기 폐장을 반영해 장 마감 2시간 뒤의 완료된 세션까지만 수집합니다. 지원 자산 하나라도 그 구간에서 관측이 누락되면 기존 검증본을 보존합니다.
+
+과거 수정종가의 재수정이 있으므로 전체 이력을 같은 수집본으로 교체하고 과거/신규 가격을 이어 붙이지 않습니다. 원본 연구 스냅샷은 보존하며 차이 감사표를 기록합니다. 원본 기준 저장소·ref·수신 경로를 다른 저장소로 바꾸지 않았습니다. 웹/API에서 외부 가격을 수집하거나 로컬 다른 프로젝트를 기본 입력으로 사용하지 않습니다.
+
+[Validate and refresh portfolio analysis](../.github/workflows/refresh-portfolio.yml)는 4시간마다 고정한 GitHub 기준과 전체 제공처 시계열을 수집·검증한 뒤 데이터만 커밋합니다. `workflow_dispatch`도 지원합니다. GitHub Actions 자체의 실행 허용 및 저장소 규칙을 따릅니다.
 
 ## 화면 흐름
 
@@ -139,3 +147,11 @@ PLAYWRIGHT_MODULE=/path/to/playwright node scripts/check_portfolio_browser.cjs
 런타임 설치 의존성은 없습니다. 브라우저 검사는 실제 계산 API·커스텀 벤치마크·비중 비교 차트·단위 전환·키보드 날짜 선택·섹터 미연결 상태·입력 거부·360px 화면을 확인합니다. 선택적 `PORTFOLIO_QA_FONT`는 한글 글꼴이 없는 개발 환경의 스크린샷에만 사용합니다.
 
 참고: [PortfolioAttribution 공식 계산 문서](https://github.com/braverock/PortfolioAttribution/blob/master/man/Attribution.Rd), [CFA Society Netherlands 방법론](https://cfasociety.nl/en/publications/setting-up-a-performance-attribution-framework/be2d24cc-f833-11ea-8a1e-005056b303d3).
+
+## 최신 수집본 재현
+
+```bash
+/tmp/portfolio-collector/bin/python -m qsignals.portfolio_refresh --replay data/portfolio/current.json --output-dir /tmp/portfolio-replay
+```
+
+이 옵션은 기록된 GitHub 원본 SHA를 다시 읽고, 가격·금리 제공처 호출 대신 보존된 응답을 해시 검증해 재사용합니다. 제공처 재현이며 GitHub 원본 조회는 남아 있습니다. 원본의 역사적 충격 정의는 다시 추정하지 않고 `scenario_as_of`를 별도로 표시합니다. 위험 베타·변동성 추정 기간은 새로 확보한 자료로 이동합니다. 새 수집본이 기존 가격 기준일보다 과거이면 게시하지 않습니다.

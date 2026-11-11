@@ -268,7 +268,7 @@ def risk_analysis(data, weights, value):
                 'share': weights[t] * _cov(returns[t], portfolio_returns) / variance if variance > 1e-20 else None}
                 for t in tickers], 'correlation': {'tickers': tickers, 'matrix': corr},
             'factor_exposure': exposures, 'asset_exposure': asset_exposures, 'stress': stress,
-            'stress_value_usd': value, 'methodology': 'separate_univariate_daily; no factor controls; scenarios not additive; not a forecast'}
+            'stress_value_usd': value, 'scenario_as_of': data.meta.get('scenario_as_of', data.scenarios.get('as_of')), 'methodology': 'separate_univariate_daily; no factor controls; scenarios not additive; not a forecast'}
 
 
 def analyze(data: Dataset, request):
