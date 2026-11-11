@@ -1,3 +1,6 @@
 __pycache__/
 *.pyc
 .venv/
+
+# Korea portfolio demo data: local only, providers do not allow redistribution
+data/portfolio-kr/

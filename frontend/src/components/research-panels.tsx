@@ -4,6 +4,7 @@ import { currentOperationalPoint, lastValidOperationalPoint, operationalMessage,
 import CountryFlag from "./country-flag";
 import { useState } from "react";
 import { useDashboard } from "./dashboard-shell";
+import { marketOrder } from "@/lib/market-order";
 import { signalCopy, stateCopy, stateRules, reasonCopy } from "@/lib/monitor-copy";
 import type { MonitorData } from "@/lib/dashboard-types";
 type Row = MonitorData["history"][number];
@@ -13,7 +14,7 @@ const num=(value:unknown,digits=3)=>typeof value==="number"?value.toFixed(digits
 export function CountryCards({only}:{only?:"us"|"korea"}) {
  const {t,global,monitor,language,operational}=useDashboard();
  const asOf=global?.asOf ?? monitor?.latest?.Date;
- return <div className={`country-grid ${only ? "single" : ""}`}>{(["us","korea"] as const).filter(c=>!only||c===only).map(country=>{
+ return <div className={`country-grid ${only ? "single" : ""}`}>{marketOrder(language).filter(c=>!only||c===only).map(country=>{
   const points=country==="us"?global?.us:global?.korea;
   const latestSource=points?.filter(p=>p.price!==null||p.msi!==null||p.risk!==null).at(-1);
   const current=points?.find(p=>p.date===asOf);

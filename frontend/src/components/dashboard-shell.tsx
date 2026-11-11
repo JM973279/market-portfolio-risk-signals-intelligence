@@ -6,6 +6,7 @@ import type { DashboardData } from "@/lib/dashboard-types";
 import { dashboardCopy, type CopyKey } from "@/lib/dashboard-copy";
 import type { Language } from "@/lib/monitor-copy";
 import { headerSnapshot } from "@/lib/operational-status";
+import { marketOrder } from "@/lib/market-order";
 
 type Context = DashboardData & { language: Language; t: (key: CopyKey) => string };
 const DashboardContext = createContext<Context | null>(null);
@@ -31,6 +32,11 @@ export default function DashboardShell({ data, children }: { data: DashboardData
  const pathname = usePathname();
  const t = (key: CopyKey) => dashboardCopy[key][language === "en" ? 0 : 1];
  const snapshot = headerSnapshot(data, pathname === "/us" ? "us" : pathname === "/korea" ? "korea" : undefined);
+ // KR 화면은 한국 시장 → 미국 시장, EN 화면은 US → Korea 순서로 메뉴를 보여 준다.
+ const order = marketOrder(language);
+ const markets = navigation.filter(n => n.key === "us" || n.key === "korea")
+  .sort((a, b) => order.indexOf(a.key as "us" | "korea") - order.indexOf(b.key as "us" | "korea"));
+ const menu = navigation.flatMap(item => item.key === "us" ? markets : item.key === "korea" ? [] : [item]);
  useEffect(() => { document.documentElement.lang = language; }, [language, pathname]);
  useEffect(() => {
   const timer = setTimeout(() => {
@@ -46,7 +52,7 @@ export default function DashboardShell({ data, children }: { data: DashboardData
   <aside className={`sidebar ${open ? "is-open" : ""}`}>
    <Link href="/" className="wordmark" aria-label="M/PRI home">M / PRI</Link>
    <p className="brand-description">Market &amp; Portfolio<br/>Risk Intelligence</p>
-   <nav id="primary-navigation" aria-label={language === "ko" ? "주요 탐색" : "Main navigation"}>{navigation.map(item => <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className={pathname === item.href ? "active" : ""} aria-current={pathname === item.href ? "page" : undefined}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={item.icon}/></svg>{t(item.key)}</Link>)}</nav>
+   <nav id="primary-navigation" aria-label={language === "ko" ? "주요 탐색" : "Main navigation"}>{menu.map(item => <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className={pathname === item.href ? "active" : ""} aria-current={pathname === item.href ? "page" : undefined}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={item.icon}/></svg>{t(item.key)}</Link>)}</nav>
    <div className="sidebar-bottom"><div className="sidebar-snapshot"><small>{t(snapshot.operational ? "operationalSnapshot" : "snapshot")}</small><b>{snapshot.date ?? "N/A"}</b><span className="live-label"><i/>{t("notLive")}</span></div><div className="language-toggle" role="group" aria-label={language === "ko" ? "언어 / Language" : "Language"}>{(["ko","en"] as const).map(lang => <button key={lang} lang={lang} aria-pressed={language===lang} onClick={() => changeLanguage(lang)}>{lang==="ko" ? "KR" : "EN"}</button>)}</div><small className="sidebar-research">{t("research")}</small></div>
   </aside>
   <div className="app-body"><div className="mobile-topbar"><Link href="/" className="wordmark">M / PRI</Link><button aria-label={t("menu")} aria-expanded={open} aria-controls="primary-navigation" onClick={() => setOpen(!open)}>☰</button></div>{open && <button className="nav-backdrop" aria-label={t("menu")} onClick={() => setOpen(false)}/>}{children}<footer><span>M / PRI <span className="footer-divider">/</span> {t("research")}</span><span>{t("footer")}</span></footer></div>

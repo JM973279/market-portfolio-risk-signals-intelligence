@@ -14,7 +14,8 @@ from qsignals.portfolio_server import Handler
 
 ROOT = Path(__file__).resolve().parent.parent
 HANGUL = re.compile('[가-힣]')
-MODULES = ['portfolio', 'portfolio_data', 'portfolio_import', 'portfolio_replay', 'portfolio_sectors', 'portfolio_server']
+MODULES = ['portfolio', 'portfolio_data', 'portfolio_import', 'portfolio_replay', 'portfolio_sectors', 'portfolio_server',
+           'portfolio_markets']
 
 
 def korean_literals(path):
@@ -35,6 +36,12 @@ class EnglishTextTest(unittest.TestCase):
                 if value not in EN and value not in PREFIXES:
                     missing.setdefault(name, []).append(value)
         self.assertEqual(missing, {})
+
+    def test_korea_snapshot_builder_text_has_english(self):
+        # The Korean snapshot is built locally (not committed), so check the builder's text instead.
+        missing = [v for v in korean_literals(ROOT / 'scripts' / 'build_korea_portfolio.py')
+                   if v not in EN and v not in PREFIXES]
+        self.assertEqual(missing, [])
 
     def test_stored_scenario_text_has_english(self):
         for path in (ROOT / 'data' / 'portfolio' / 'snapshots').glob('*/scenarios.json'):

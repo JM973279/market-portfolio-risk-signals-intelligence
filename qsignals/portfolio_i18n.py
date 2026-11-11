@@ -68,6 +68,20 @@ EN = {
     '지원하지 않는 자산 분류입니다.': 'Unsupported asset class.',
     '가격은 양수이며 SPY 관측이 필요합니다.': 'Prices must be positive and SPY must be observed.',
     '알 수 없는 충격 팩터입니다.': 'Unknown shock factor.',
+    '알 수 없는 시장입니다.': 'Unknown market.',
+    # portfolio_markets.py
+    '포트폴리오 분석': 'Portfolio Analysis',
+    '한국 포트폴리오 분석': 'Korea Portfolio Analysis',
+    '시장 (SPY)': 'Market (SPY)',
+    '시장 (KODEX 200)': 'Market (KODEX 200)',
+    '금리 (1bp)': 'Rates (1bp)',
+    '국고채 10년 (1bp)': 'Korea 10Y govt bond (1bp)',
+    '변동성 (1pt)': 'Volatility (1pt)',
+    'SPY · 미국 대형주': 'SPY · US large caps',
+    'KODEX 200 · 국내 대형주': 'KODEX 200 · Korean large caps',
+    '주식·국채 60:40 · SPY/IEF': 'Stocks/Treasuries 60:40 · SPY/IEF',
+    '주식·국채 60:40 (KODEX 200·KOSEF 국고채10년)': 'Stocks/govt bonds 60:40 (KODEX 200/KOSEF 10Y KTB)',
+    '주식·국채 60:40 · KODEX 200/국고채10년': 'Stocks/govt bonds 60:40 · KODEX 200/10Y KTB',
     '잘못된 원본 커밋입니다.': 'Invalid source commit.',
     '잘못된 원본 버전입니다.': 'Invalid source version.',
     '검증된 포트폴리오 입력을 읽을 수 없습니다.': 'The verified portfolio inputs cannot be read.',
@@ -90,7 +104,60 @@ EN = {
     '섹터 합계가 주식 기준 수익률과 일치하지 않습니다.': 'Sector totals do not match the equity benchmark return.',
     '주식 구간을 각각 100%로 환산한 효과입니다. 전체 자산군 효과와 합산하지 않습니다.':
         'Effects with each equity sleeve rescaled to 100%. Do not add them to the asset-class effects.',
+    # scripts/build_korea_portfolio.py (local Korean snapshot: asset names, sectors, scenarios, provenance)
+    '삼성전자': 'Samsung Electronics',
+    'SK하이닉스': 'SK hynix',
+    '현대차': 'Hyundai Motor',
+    '기아': 'Kia',
+    '현대모비스': 'Hyundai Mobis',
+    '카카오': 'Kakao',
+    'LG화학': 'LG Chem',
+    '삼성SDI': 'Samsung SDI',
+    '셀트리온': 'Celltrion',
+    '삼성바이오로직스': 'Samsung Biologics',
+    'KB금융': 'KB Financial Group',
+    '신한지주': 'Shinhan Financial Group',
+    'POSCO홀딩스': 'POSCO Holdings',
+    'LG전자': 'LG Electronics',
+    'SK텔레콤': 'SK Telecom',
+    'KODEX 코스닥150': 'KODEX KOSDAQ 150',
+    'TIGER 미국나스닥100': 'TIGER US NASDAQ 100',
+    'KOSEF 국고채10년': 'KOSEF 10Y KTB',
+    'KODEX 국고채3년': 'KODEX 3Y KTB',
+    'KODEX 골드선물(H)': 'KODEX Gold Futures (H)',
+    '반도체': 'Semiconductors',
+    '자동차': 'Autos',
+    '인터넷': 'Internet',
+    '화학·2차전지': 'Chemicals & batteries',
+    '바이오': 'Biotech',
+    '금융': 'Financials',
+    '철강': 'Steel',
+    '전자': 'Electronics',
+    '통신': 'Telecom',
+    '필수소비재': 'Consumer Staples',
+    '국내 대형주 지수': 'Korean large-cap index',
+    '국내 중소형주 지수': 'Korean small/mid-cap index',
+    '해외주식 (원화)': 'Overseas equity (KRW)',
+    '국고채 10년': 'Korea 10Y govt bond',
+    '국고채 3년': 'Korea 3Y govt bond',
+    '금 (환헤지)': 'Gold (FX-hedged)',
+    '국내 주식시장 급락': 'Korean equity sell-off',
+    '스냅샷 기간 중 KODEX 200 10거래일 수익률의 최저값': 'Lowest 10-session KODEX 200 return in the snapshot period',
+    '국고채 10년 금리 급등': 'Korea 10Y govt bond yield spike',
+    '스냅샷 기간 중 국고채 10년 10거래일 변화(bp)의 최고값': 'Largest 10-session change (bp) in the Korea 10Y govt bond yield in the snapshot period',
+    'VKOSPI 급등': 'VKOSPI spike',
+    '스냅샷 기간 중 VKOSPI 10거래일 변화(pt)의 최고값': 'Largest 10-session VKOSPI change (pt) in the snapshot period',
+    'Bank of Korea ECOS 817Y002 국고채(10년), %': 'Bank of Korea ECOS 817Y002 10Y govt bond, %',
+    'ECOS 국고채(10년)': 'ECOS 10Y govt bond',
+    'ECOS_API_KEY 없음': 'ECOS_API_KEY not set',
+    'ECOS 817Y002/010210000 is not 국고채(10년)': 'ECOS 817Y002/010210000 is not the 10Y govt bond',
+    '한국 섹터 벤치마크 자료가 연결되지 않았습니다.': 'Korean sector benchmark data is not connected.',
+    '10년': '10Y',
     # portfolio_replay.py
+    '검증된 스냅샷의 수정종가를 쓰므로 배당은 반영되지만 거래비용·세금은 반영하지 않습니다. 원화 기준입니다.':
+        'Uses adjusted closes from the verified snapshot, so dividends are included but trading costs and taxes are not. In KRW.',
+    '한국 급락 구간은 충격 직전 KRX 종가부터 KRX 거래일 기준으로 잽니다. 국내발·해외발 사례를 모두 포함합니다.':
+        'Korean sell-off windows are measured in KRX sessions from the KRX close before the shock. Includes both domestic and foreign-source episodes.',
     '현재 비중을 과거 구간 시작일부터 그대로 보유했다고 가정하며, 구간 중 리밸런싱은 반영하지 않습니다.':
         'Assumes the current weights were held unchanged from the start of each past window; no rebalancing within the window.',
     '검증된 스냅샷의 수정종가를 쓰므로 배당은 반영되지만 거래비용·세금·환율은 반영하지 않습니다.':
@@ -134,7 +201,15 @@ EN = {
 }
 
 # Messages built from a fixed Korean prefix plus a technical detail.
-PREFIXES = {'섹터 자료 검증 실패: ': 'Sector data validation failed: '}
+PREFIXES = {
+    '섹터 자료 검증 실패: ': 'Sector data validation failed: ',
+    '배당·분할 수정종가 · 배당 별도 중복 가산 없음 · ': 'Dividend- and split-adjusted closes · dividends not added twice · ',
+    '기준 자산이 필요합니다: ': 'Reference assets are required: ',
+    '로컬 수집 (Yahoo 수정종가 · KRX VKOSPI · ECOS 국고채) · 팀 내부 시험용 · ':
+        'Local collection (Yahoo adjusted close · KRX VKOSPI · ECOS govt bonds) · team-internal trial · ',
+    'ECOS 수집 실패: ': 'ECOS collection failed: ',
+    '가격은 양수이며 시장 기준 자산 관측이 필요합니다: ': 'Prices must be positive and the market reference asset must be observed: ',
+}
 
 # Keys whose values are the Korean original kept on purpose (the English one sits beside it).
 KEEP = {'name_ko'}

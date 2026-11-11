@@ -17,5 +17,7 @@ for (const url of [undefined, '', 'http://localhost:8000', 'https://localhost:80
 }
 const target = await config({ RENDER: 'true', PORTFOLIO_API_INTERNAL_URL: 'https://api.example/' }).rewrites();
 assert.equal(target[0].destination, 'https://api.example/api/portfolio/:path*');
-assert.equal((await config({}).rewrites())[0].destination, 'http://127.0.0.1:8000/api/portfolio/:path*');
+const local = await config({}).rewrites();
+assert.equal(local[0].destination, 'http://127.0.0.1:3108/api/portfolio/:path*');
+assert.equal(local.find(r => r.source === '/api/portfolio-kr/:path*').destination, 'http://127.0.0.1:3110/api/portfolio/:path*');
 console.log('PASS: Render HTTPS origin required; localhost/path/credentials rejected; local fallback retained');

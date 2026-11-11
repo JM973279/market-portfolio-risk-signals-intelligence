@@ -1,37 +1,70 @@
 "use client";
-// mqs 포트폴리오 분석(qsignals.portfolio_server)을 사이트 안에 보여 준다.
-// - /portfolio-lab, /portfolio/{app.js,style.css}, /api/portfolio/* 는 next.config.ts 가
-//   mqs 포트폴리오 서버로 넘긴다(같은 출처라 iframe 높이를 내용에 맞출 수 있다).
-// - EN 토글이면 ?lang=en 을 붙여 iframe 안 화면과 API 응답도 영어로 바꾼다(주소가 바뀌면 다시 불러온다).
-// - 서버가 꺼져 있으면 iframe 안에 오류가 보이므로, 아래 안내 문구로 실행 방법을 함께 적는다.
+// mqs 포트폴리오 분석(qsignals.portfolio_server)을 사이트 안에 보여 준다. 한 메뉴 안에 시장별 탭 두 개:
+// - 한국: /portfolio-kr-lab, /api/portfolio-kr/* → 한국 포트폴리오 서버(--data-dir data/portfolio-kr)
+// - 미국: /portfolio-lab, /api/portfolio/* → 미국 포트폴리오 서버
+//   (next.config.ts 가 넘긴다. 같은 출처라 iframe 높이를 내용에 맞출 수 있다.)
+// 탭 순서와 처음 열리는 탭은 화면 언어를 따른다(KR: 한국 → 미국, EN: US → Korea).
+// 주소 끝의 #korea / #us 로 보던 탭을 유지한다.
 import { useEffect, useRef, useState } from "react";
 import { useDashboard } from "./dashboard-shell";
+import { marketOrder, type Market } from "@/lib/market-order";
+
+const fromHash = (): Market | null => {
+ const hash = typeof window === "undefined" ? "" : window.location.hash.slice(1);
+ return hash === "korea" || hash === "us" ? hash : null;
+};
 
 export default function MqsPortfolioFrame() {
  const { language } = useDashboard();
  const ko = language !== "en";
+ const order = marketOrder(language);
+ const [chosen, setChosen] = useState<Market | null>(null);
+ const market: Market = chosen ?? order[0];
+ const korea = market === "korea";
  const frame = useRef<HTMLIFrameElement>(null);
  const [height, setHeight] = useState(1600);
  useEffect(() => {
-  const node = frame.current;
-  if (!node) return;
-  let observer: ResizeObserver | null = null;
-  const fit = () => {
-   const body = node.contentDocument?.body;
-   if (!body) return;
-   const update = () => setHeight(Math.max(800, body.scrollHeight + 24));
-   update();
-   observer?.disconnect();
-   observer = new ResizeObserver(update);
-   observer.observe(body);
-  };
-  node.addEventListener("load", fit);
-  fit();
-  return () => { node.removeEventListener("load", fit); observer?.disconnect(); };
+  const sync = () => setChosen(fromHash());
+  const timer = setTimeout(sync, 0);
+  window.addEventListener("hashchange", sync);
+  return () => { clearTimeout(timer); window.removeEventListener("hashchange", sync); };
  }, []);
+ const observers = useRef<{ disconnect(): void }[]>([]);
+ const stop = () => { observers.current.forEach(o => o.disconnect()); observers.current = []; };
+ // iframe 문서의 높이에 맞춘다. 로드 이벤트(onLoad)와, 이미 로드된 경우(마운트 직후) 둘 다에서 부른다.
+ // 크기 변화(ResizeObserver)와 내용 변화(MutationObserver)를 함께 본다. 화면이 그려지지 않는 동안에는
+ // 크기 변화 알림이 늦을 수 있어, 분석 결과가 들어오는 순간(내용 변화)에도 다시 잰다.
+ const fit = (node: HTMLIFrameElement | null) => {
+  const doc = node?.contentDocument;
+  if (!doc?.body || doc.location.href === "about:blank") return;
+  const update = () => setHeight(Math.max(800, doc.documentElement.scrollHeight + 24));
+  update();
+  stop();
+  const resize = new ResizeObserver(update);
+  resize.observe(doc.body);
+  const mutate = new MutationObserver(update);
+  mutate.observe(doc.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["hidden", "open", "class"] });
+  observers.current = [resize, mutate];
+ };
+ useEffect(() => {
+  fit(frame.current);
+  return stop;
+ }, [market]); // 탭을 바꾸면 iframe이 새로 만들어지므로 다시 연결한다.
+ const select = (next: Market) => { setChosen(next); history.replaceState(null, "", `#${next}`); };
+ const tabLabel = (m: Market) => m === "korea" ? (ko ? "한국 (원화)" : "Korea (KRW)") : (ko ? "미국 (달러)" : "US (USD)");
+ const subtitle = korea
+  ? (ko ? "국내 상장 주식·ETF의 과거 가상성과, 수익 기여도, KODEX 200 대비 성과요인, 위험과 역사적 재현을 원화 기준으로 봅니다." : "Korean listed stocks and ETFs in KRW: hypothetical past performance, attribution against KODEX 200, risk and historical replay.")
+  : (ko ? "미국 상장 주식·ETF의 과거 가상성과, 수익 기여도, 벤치마크 대비 성과요인, 위험과 역사적 재현을 달러 기준으로 봅니다." : "US listed stocks and ETFs in USD: hypothetical past performance, contribution, benchmark attribution, risk and historical replay.");
+ const note = korea
+  ? (ko ? "팀 내부 시험용 화면입니다. 가격은 Yahoo Finance 수정종가, 변동성은 한국거래소 통계정보(VKOSPI), 금리는 한국은행 ECOS 국고채 10년이며, 각자 로컬에서 수집한 자료로 계산합니다. 원자료는 공유·게시하지 않습니다." : "Team-internal trial. Prices: Yahoo Finance adjusted close; volatility: KRX statistics (VKOSPI); rate: Bank of Korea ECOS 10Y KTB. Collected locally; raw data is not shared or published.")
+  : (ko ? "검증된 GitHub 포트폴리오 자료만 읽는 mqs 포트폴리오 서버(python3 -m qsignals.portfolio_server)가 켜져 있어야 합니다." : "Requires the mqs portfolio server (python3 -m qsignals.portfolio_server), which reads only verified GitHub portfolio data.");
+ const title = ko ? "포트폴리오 분석" : "Portfolio Analysis";
  return <main className="dashboard-content view-portfolio">
-  <div className="page-hero compact-hero"><div className="hero-copy"><p className="eyebrow">{ko ? "포트폴리오 분석 · Market Qualitative Signals" : "Portfolio analysis · Market Qualitative Signals"}</p><h1>{ko ? "포트폴리오 분석" : "Portfolio Analysis"}</h1><p className="hero-subtitle">{ko ? "과거 가상성과, 수익 기여도, 벤치마크 대비 성과요인, 위험과 역사적 재현을 한 화면에서 봅니다." : "Hypothetical past performance, contribution, benchmark attribution, risk and historical replay."}</p></div></div>
-  <iframe ref={frame} className="mqs-portfolio-frame" src={ko ? "/portfolio-lab" : "/portfolio-lab?lang=en"} title={ko ? "포트폴리오 분석" : "Portfolio analysis"} style={{ height }}/>
-  <p className="panel-note">{ko ? "검증된 GitHub 포트폴리오 자료만 읽는 mqs 포트폴리오 서버(python3 -m qsignals.portfolio_server)가 켜져 있어야 합니다." : "Requires the mqs portfolio server (python3 -m qsignals.portfolio_server), which reads only verified GitHub portfolio data."}</p>
+  <div className="page-hero compact-hero"><div className="hero-copy"><p className="eyebrow">{`${title} · Market Qualitative Signals`}</p><h1>{title}</h1><p className="hero-subtitle">{subtitle}</p></div></div>
+  <div className="page-controls small-toggle portfolio-tabs" role="tablist" aria-label={title}>{order.map(m => <button key={m} type="button" role="tab" id={`portfolio-tab-${m}`} aria-selected={market === m} aria-controls="portfolio-panel" aria-pressed={market === m} onClick={() => select(m)}>{tabLabel(m)}</button>)}</div>
+  <div id="portfolio-panel" role="tabpanel" aria-labelledby={`portfolio-tab-${market}`}>
+   <iframe ref={frame} key={market} className="mqs-portfolio-frame" src={(korea ? "/portfolio-kr-lab" : "/portfolio-lab") + (ko ? "" : "?lang=en")} onLoad={e => fit(e.currentTarget)} title={`${title} · ${tabLabel(market)}`} style={{ height }}/>
+  </div>
+  <p className="panel-note">{note}</p>
  </main>;
 }

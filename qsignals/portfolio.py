@@ -10,16 +10,14 @@ from datetime import date, timedelta
 from statistics import fmean
 
 from qsignals.portfolio_data import Dataset, PortfolioError, iso_day, number
+from qsignals.portfolio_markets import PROFILES, profile, public
 
-BENCHMARKS = {
-    'spy': {'name': 'SPY', 'holdings': [{'ticker': 'SPY', 'weight': 100}]},
-    'balanced': {'name': '주식·국채 60:40 (SPY·IEF)', 'holdings': [
-        {'ticker': 'SPY', 'weight': 60}, {'ticker': 'IEF', 'weight': 40}]},
-}
-REFERENCES = {'equity': 'SPY', 'bond': 'IEF', 'commodity': 'GLD'}
+# US defaults, kept as module names for existing callers. Other markets come from
+# qsignals.portfolio_markets via the snapshot's "market".
+BENCHMARKS = {k: {'name': v['name'], 'holdings': v['holdings']} for k, v in PROFILES['us']['benchmarks'].items()}
+REFERENCES = PROFILES['us']['references']
 CLASS_NAMES = {'equity': '주식', 'bond': '채권', 'commodity': '원자재'}
-EXAMPLE = [{'ticker': 'AAPL', 'weight': 30}, {'ticker': 'MSFT', 'weight': 30},
-           {'ticker': 'NVDA', 'weight': 20}, {'ticker': 'AMZN', 'weight': 20}]
+EXAMPLE = PROFILES['us']['example']
 
 
 def holdings(value, universe):
@@ -40,19 +38,21 @@ def holdings(value, universe):
     return {t: w / total for t, w in sorted(result.items())}
 
 
-def benchmark(value, universe):
+def benchmark(value, universe, market=None):
+    market = market or PROFILES['us']
+    default = market['default_benchmark']
     if value is None:
-        value = {'kind': 'spy'}
+        value = {'kind': default}
     if not isinstance(value, dict):
         raise PortfolioError('비교 기준을 선택하세요.')
-    kind = value.get('kind', 'spy')
+    kind = value.get('kind', default)
     if kind == 'custom':
         return {'id': kind, 'name': '사용자 지정 기준 포트폴리오',
                 'weights': holdings(value.get('holdings'), universe),
                 'strategy': 'buy_and_hold'}
-    if kind not in BENCHMARKS:
+    if kind not in market['benchmarks']:
         raise PortfolioError('지원하지 않는 비교 기준입니다.')
-    definition = BENCHMARKS[kind]
+    definition = market['benchmarks'][kind]
     return {'id': kind, 'name': definition['name'],
             'weights': holdings(definition['holdings'], universe),
             'strategy': 'buy_and_hold'}
@@ -152,8 +152,9 @@ def brinson_fachler(portfolio, reference, *, off_benchmark_returns=None):
 def _attribution(data, days, weights, bm):
     p, b = _groups(data, days, weights), _groups(data, days, bm)
     off, declared = {}, []
+    references = profile(data.meta)['references']
     for cls in set(p) - set(b):
-        ticker = REFERENCES[cls]
+        ticker = references[cls]
         _check_prices(data, days, [ticker])
         off[cls] = data.prices[days[-1]][ticker] / data.prices[days[0]][ticker] - 1
         declared.append({'group': cls, 'ticker': ticker, 'return': off[cls]})
@@ -225,7 +226,9 @@ def risk_analysis(data, weights, value):
     if not prior:
         raise PortfolioError('위험 추정 시작 전 가격이 필요합니다.', 'risk_unavailable')
     source_days = [prior[-1], *days]
-    _check_prices(data, source_days, set(weights) | {'SPY'})
+    market = profile(data.meta)
+    anchor, columns = market['market_ticker'], market['factor_columns']
+    _check_prices(data, source_days, set(weights) | {anchor})
     tickers = list(weights)
     returns = {t: [data.prices[d][t] / data.prices[p][t] - 1
                    for p, d in zip(source_days, source_days[1:])] for t in tickers}
@@ -239,9 +242,9 @@ def risk_analysis(data, weights, value):
         x, ys, yport = [], {t: [] for t in tickers}, []
         for index, (previous, day) in enumerate(zip(source_days, source_days[1:])):
             if factor == 'market':
-                change = data.prices[day]['SPY'] / data.prices[previous]['SPY'] - 1
+                change = data.prices[day][anchor] / data.prices[previous][anchor] - 1
             else:
-                column = 'DGS10' if factor == 'rate' else 'VIX'
+                column = columns[factor]
                 before, after = data.factors.get(previous, {}).get(column), data.factors.get(day, {}).get(column)
                 if before is None or after is None:
                     continue
@@ -274,11 +277,13 @@ def risk_analysis(data, weights, value):
 def analyze(data: Dataset, request):
     if not isinstance(request, dict):
         raise PortfolioError('JSON 객체가 필요합니다.')
+    market = profile(data.meta)
     w = holdings(request.get('holdings'), data.universe)
+    # The field keeps its historical name; the amount is in the snapshot's currency.
     amount = number(request.get('initial_value_usd'), positive=True)
     if amount > 1e15:
         raise PortfolioError('분석 기준금액이 너무 큽니다.')
-    bm = benchmark(request.get('benchmark'), data.universe)
+    bm = benchmark(request.get('benchmark'), data.universe, market)
     end = request.get('end', data.days[-1])
     start = request.get('start', max(data.days[0], (date.fromisoformat(data.days[-1]) - timedelta(days=365)).isoformat()))
     proposed = holdings(request['proposed_holdings'], data.universe) if 'proposed_holdings' in request else None
@@ -299,9 +304,9 @@ def analyze(data: Dataset, request):
                   initial_value_usd=amount, benchmark=bm, risk=risk, historical_replay=replay,
                   requested_period={'start': start, 'end': end},
                   effective_period={'start': days[0], 'end': days[-1], 'observations': len(days)},
-                  provenance=data.provenance,
+                  provenance=data.provenance, currency=market['currency'],
                   assumptions=['과거 가상성과 · 시작 비중으로 매수 후 보유 · 기간 중 리밸런싱·입출금 없음',
-                               '배당·분할 수정종가 · 배당 별도 중복 가산 없음 · USD',
+                               f"배당·분할 수정종가 · 배당 별도 중복 가산 없음 · {market['currency']}",
                                '세금·수수료·환율 미반영 · 실제 계좌성과 또는 미래 예측이 아님',
                                '성과 기간과 위험 추정 기간은 별도 표시'])
     if proposed is not None:
@@ -317,7 +322,9 @@ def analyze(data: Dataset, request):
 
 
 def describe(data):
-    return {'assets': list(data.universe.values()), 'benchmarks': BENCHMARKS, 'example': EXAMPLE,
+    market = profile(data.meta)
+    return {'assets': list(data.universe.values()), 'market': public(market),
+            'benchmarks': market['benchmarks'], 'example': market['example'],
             'coverage': {'start': data.days[0], 'end': data.days[-1]},
             'risk_window': {'start': data.meta['window_start'], 'end': data.meta['window_end']},
             'provenance': data.provenance, 'sector_attribution': data.provenance.get('sector_attribution')}
