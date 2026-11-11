@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "source_repo": "tina77302/market-portfolio-risk-intelligence",
+  "source_commit": "9bedc79f3dd9b553d3cbb88502e84cae817b9d1d",
+  "files": {
+    "prices.csv": {
+      "path": "snapshots/9bedc79f3dd9b553d3cbb88502e84cae817b9d1d/prices.csv",
+      "source_path": "data/portfolio/prices.csv",
+      "sha256": "2f45982948c3b0675f7cf1de2a08afa1a98d082af28f02d4f32484b20603ce30",
+      "bytes": 537577
+    },
+    "factors.csv": {
+      "path": "snapshots/9bedc79f3dd9b553d3cbb88502e84cae817b9d1d/factors.csv",
+      "source_path": "data/portfolio/factors.csv",
+      "sha256": "4d8fcb6a5d7dc721444ef4a687d6994ec653624c725280f67ed449163e73905d",
+      "bytes": 48252
+    },
+    "universe.csv": {
+      "path": "snapshots/9bedc79f3dd9b553d3cbb88502e84cae817b9d1d/universe.csv",
+      "source_path": "data/portfolio/universe.csv",
+      "sha256": "2c7ada7fd34d2954162d504696045173bb04f41b76a87d7dd59b6ab4dda5cab9",
+      "bytes": 1526
+    },
+    "snapshot_meta.json": {
+      "path": "snapshots/9bedc79f3dd9b553d3cbb88502e84cae817b9d1d/snapshot_meta.json",
+      "source_path": "data/portfolio/snapshot_meta.json",
+      "sha256": "2c689e92496ab2ce9cf500b7fd2ff6207a419bacc38a140c2ad8a67109f7c1b4",
+      "bytes": 298
+    },
+    "scenarios.json": {
+      "path": "snapshots/9bedc79f3dd9b553d3cbb88502e84cae817b9d1d/scenarios.json",
+      "source_path": "data/portfolio/scenarios.json",
+      "sha256": "c1d072801f93f7691fb4bb6bedee1a7c97ed571ea3673aa84025997e81d2e75c",
+      "bytes": 2373
+    }
+  },
+  "imported_at": "2026-11-10T14:37:37+00:00",
+  "price_basis": "dividend_split_adjusted_close",
+  "currency": "USD",
+  "sector_attribution": {
+    "status": "unavailable",
+    "reason": "과거 벤치마크 섹터 구성·수익률 및 시점별 분류 자료가 연결되지 않았습니다."
+  },
+  "price_as_of": "2026-10-23"
+}

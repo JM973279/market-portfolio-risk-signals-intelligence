@@ -1,0 +1,10 @@
+{
+  "as_of": "2026-10-23",
+  "start": "2018-01-02",
+  "window_start": "2023-10-19",
+  "window_end": "2026-10-23",
+  "window_days": 756,
+  "price_source": "Yahoo Finance adjusted close (auto_adjust)",
+  "rate_source": "FRED DGS10 (10-Year Treasury, %)",
+  "vol_source": "Yahoo Finance ^VIX close"
+}
