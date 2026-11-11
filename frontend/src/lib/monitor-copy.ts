@@ -3,7 +3,7 @@ export type Language = "en" | "ko";
 export const copy = {
   product: ["Korea Signal Divergence Monitor", "한국 신호 괴리 모니터"],
   research: ["Research / Experimental", "연구용 / 실험적"],
-  nav: ["Overview", "모니터 개요"], breadth: ["Market breadth", "시장 확산도"], evidence: ["Historical validation", "과거 검증"], holdout: ["October case study", "10월 사례 연구"],
+  nav: ["Overview", "모니터 개요"], breadth: ["Market breadth", "시장 확산도"], evidence: ["Backtesting", "백테스팅 테스트"], holdout: ["October case study", "10월 사례 연구"],
   eyebrow: ["KOREA EQUITIES · RESEARCH OBSERVATORY", "한국 주식 · 리서치 모니터링"],
   title: ["One market. Different signals.", "하나의 시장, 서로 다른 신호."],
   subtitle: ["Compare predictive risk, observed stress and independent breadth deterioration. Signal divergence is not a crash predictor.", "예측 위험, 관측 스트레스, 독립적인 시장 확산도 악화를 비교합니다. 신호 괴리는 폭락 예측 지표가 아닙니다."],
