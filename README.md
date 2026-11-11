@@ -50,8 +50,25 @@ docker run -p 3108:3108 ghcr.io/jm973279/market-portfolio-risk-signals-intellige
 | 단계 | 내용 | 상태 |
 |---|---|---|
 | ③ 이벤트 레이어 | 급락일·트리거 주석 + V1 사전 경보 진단 | **구현** |
-| ① 정량 프록시 | 신용융자·예탁금, 외국인 순매수, 2종목 시총 비중, SOX, WTI → ablation | 예정 |
+| ① 개장 전 미국 가격 | EWY·SOX 전일 미국 세션 → 동결 V1 위 사전 등록 overlay 실험 | **구현** (Actions 첫 수집 후 판정) |
+| ① MSI 인정 진단 | 공식 MSI가 대형 하락일을 스트레스로 인정했는지, 놓친 이유 | **구현** (진단 전용) |
+| ② 개장 전 뉴스 기록 | 08:30 KST 이전 기록만 받는 실시간 누적 로그 | **구현** (기록 대기) |
+| 표시 | 예정된 미국 발표(FOMC·CPI·고용·선거) 일정표 | **구현** (점수 미사용) |
+| ① 정량 프록시 | 신용융자·예탁금, 외국인 순매수, 2종목 시총 비중, WTI → ablation | 예정 |
 | ② 텍스트 지수 | 한국은행 뉴스심리지수(NSI), 일별 지정학 위험지수(GPR) → ablation | 예정 |
+
+## 신호 보강 점검 (사전 등록)
+
+결과: [reports/signal_checks.md](reports/signal_checks.md). 규칙은 코드 상수로 먼저 고정했고 결과를 보고 바꾸지 않습니다. 설계 구간은 2025-12-31까지, 2026년은 보고만 하는 홀드아웃입니다.
+
+| 항목 | 무엇을 | 판정 규칙 | 모델 영향 |
+|---|---|---|---|
+| 개장 전 미국 가격 | KRX t+1일 개장 전에 끝난 미국 세션의 EWY·SOX 수익률을 V1(t)과 당일 KOSPI200 수익률에 더함 | 다음 거래일 −2% 이하 라벨에서 PR-AUC 개선의 월 블록 부트스트랩 95% 구간이 0 초과면 '후보' | 없음. 후보는 배포 저장소에서 17개 피처 ablation으로 재검증 |
+| MSI 인정 진단 | 하루 −3% 이하 급락일에 공식 MSI ≥ 기준이었는지, 놓친 날의 21일 랠리 상쇄, 1년 고점 대비 낙폭 채널 | 설계 구간에서 놓침 ≥30%, 보강 채널 회수 ≥50%, 전체 표시 ≤15%면 'MSI 개정 제안 근거' | 없음. 공식 MSI·라벨은 동결 |
+| 개장 전 뉴스 기록 | `data/events/preopen_log.csv`, 직전 거래일 15:30~당일 08:30 KST에 기록한 행만 허용 | 분류자별 250거래일·하락일 10일 이후에만 평가, 위험 회피 표시 연 5회 이하 | 없음. 사후 백필은 검증에서 거부 |
+| 예정 발표 일정표 | `data/events/scheduled_us_2026.csv`, 발표일 다음 KRX 거래일에 표시 | 표시 전용 | 없음 |
+
+개장 전 가격은 외부 조회라 `Refresh overnight US prices` workflow의 격리 venv에서만 수집하고(`AGENTS.md`), 보고서·검사는 저장된 CSV와 sha256 provenance만 읽습니다. 제공처 결측 종가는 비워 두고 채우지 않습니다.
 
 ## 진단 결과와 데이터 갱신
 
@@ -78,6 +95,7 @@ docker run -p 3108:3108 ghcr.io/jm973279/market-portfolio-risk-signals-intellige
 python3 -m qsignals.import_scores   # 공개 원본 main을 한 커밋으로 고정 + KOSPI200 일봉 검증
 python3 -m qsignals.import_scores --source-root /path/to/checkout  # 명시적 로컬 입력
 python3 -m qsignals.diagnose        # → reports/event_diagnostics.{csv,md}
+python3 -m qsignals.signal_checks   # → reports/signal_checks.md
 python3 -m unittest discover -s tests -t .
 ```
 
@@ -89,6 +107,9 @@ python3 -m unittest discover -s tests -t .
 
 ```text
 data/events/kospi_2026_events.csv   급락일 주석 (사람이 작성)
+data/events/scheduled_us_2026.csv   예정 미국 발표 (공식 출처·확인일)
+data/events/preopen_log.csv         개장 전 뉴스 기록 (실시간 누적)
+data/input/overnight_*              EWY·SOX 종가와 provenance (overnight workflow가 생성)
 data/input/korea_scores.csv         V1 점수·MSI·KOSPI200 (import_scores가 생성)
 data/input/provenance.json          출처 커밋·sha256·가격/점수 종료일·누락 거래일
 data/input/kospi200_naver.xml        가격 제공처 원응답 (재현용)
@@ -97,6 +118,12 @@ qsignals/scores.py                  점수 시계열 병합·검증
 qsignals/events.py                  이벤트 스키마·검증
 qsignals/diagnostics.py             사전 경보 판정, 대형 하락일 스캔
 qsignals/report.py                  CSV / 한국어 Markdown 출력
+qsignals/overnight*.py              개장 전 미국 가격 수집(Actions 전용)·정렬·overlay 실험
+qsignals/msi_check.py               공식 MSI 급락 인정 진단
+qsignals/preopen.py                 개장 전 뉴스 기록 검증·평가 조건
+qsignals/schedule.py                예정 미국 발표 → KRX 반영 거래일
+qsignals/stats.py                   로지스틱·PR-AUC·블록 부트스트랩 (표준 라이브러리)
+qsignals/signal_checks.py           신호 보강 점검 보고서
 reports/                            진단 결과
 ```
 

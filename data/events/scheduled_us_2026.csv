@@ -1,0 +1,24 @@
+event_id,us_date,event_type,description,release_time_et,source_url,verified_at
+CPI-20260113,2026-01-13,CPI,CPI 2025년 12월분,08:30,https://www.bls.gov/news.release/archives/cpi_01132026.htm,2026-11-11
+FOMC-20260128,2026-01-28,FOMC,FOMC 1월 회의 결정,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,2026-11-11
+CPI-20260213,2026-02-13,CPI,CPI 2026년 1월분,08:30,https://www.bls.gov/bls/news-release/cpi.htm,2026-11-11
+CPI-20260311,2026-03-11,CPI,CPI 2026년 2월분,08:30,https://www.bls.gov/bls/news-release/cpi.htm,2026-11-11
+FOMC-20260318,2026-03-18,FOMC,FOMC 3월 회의 결정 (경제전망 포함),14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,2026-11-11
+CPI-20260410,2026-04-10,CPI,CPI 2026년 3월분,08:30,https://www.bls.gov/bls/news-release/cpi.htm,2026-11-11
+FOMC-20260429,2026-04-29,FOMC,FOMC 4월 회의 결정,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,2026-11-11
+CPI-20260512,2026-05-12,CPI,CPI 2026년 4월분,08:30,https://www.bls.gov/bls/news-release/cpi.htm,2026-11-11
+CPI-20260610,2026-06-10,CPI,CPI 2026년 5월분,08:30,https://www.bls.gov/bls/news-release/cpi.htm,2026-11-11
+FOMC-20260617,2026-06-17,FOMC,FOMC 6월 회의 결정 (경제전망 포함),14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,2026-11-11
+CPI-20260714,2026-07-14,CPI,CPI 2026년 6월분,08:30,https://www.bls.gov/bls/news-release/cpi.htm,2026-11-11
+FOMC-20260729,2026-07-29,FOMC,FOMC 7월 회의 결정,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,2026-11-11
+CPI-20260812,2026-08-12,CPI,CPI 2026년 7월분,08:30,https://www.bls.gov/bls/news-release/cpi.htm,2026-11-11
+CPI-20260911,2026-09-11,CPI,CPI 2026년 8월분,08:30,https://www.bls.gov/bls/news-release/cpi.htm,2026-11-11
+FOMC-20260916,2026-09-16,FOMC,FOMC 9월 회의 결정 (경제전망 포함),14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,2026-11-11
+CPI-20261014,2026-10-14,CPI,CPI 2026년 9월분,08:30,https://www.bls.gov/bls/news-release/cpi.htm,2026-11-11
+FOMC-20261028,2026-10-28,FOMC,FOMC 10월 회의 결정,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,2026-11-11
+ELECTION-20261103,2026-11-03,ELECTION,미국 중간선거,,https://www.sos.ca.gov/elections/upcoming-elections/general-election-november-3-2026/key-dates-deadlines,2026-11-11
+NFP-20261106,2026-11-06,NFP,고용보고서 2026년 10월분,08:30,https://www.bls.gov/schedule/news_release/empSit.htm,2026-11-11
+CPI-20261110,2026-11-10,CPI,CPI 2026년 10월분,08:30,https://www.bls.gov/schedule/news_release/cpi.htm,2026-11-11
+NFP-20261204,2026-12-04,NFP,고용보고서 2026년 11월분,08:30,https://www.bls.gov/schedule/news_release/empSit.htm,2026-11-11
+FOMC-20261209,2026-12-09,FOMC,FOMC 12월 회의 결정 (경제전망 포함),14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,2026-11-11
+CPI-20261210,2026-12-10,CPI,CPI 2026년 11월분,08:30,https://www.bls.gov/schedule/news_release/cpi.htm,2026-11-11

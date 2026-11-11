@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Two independent data workflows write disjoint paths on main. Keep both commits.
+# Independent data workflows (Korea diagnostics, overnight prices, portfolio) write
+# disjoint paths on main. Keep every commit.
 set -euo pipefail
 for attempt in 1 2 3; do
   git fetch origin main
