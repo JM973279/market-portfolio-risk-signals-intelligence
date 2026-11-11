@@ -1,0 +1,1108 @@
+{
+ "schema_version": 1,
+ "asOf": "2026-10-02",
+ "is_forecast": false,
+ "parameters": {
+  "selection": "KOSPI200 one-session return <= -3% or <= -10% within ten sessions, clustered into episodes.",
+  "window_sessions": 60,
+  "prior_sessions": 10,
+  "verdict_rule": {
+   "warned": "prior-session V1 >= 0.5",
+   "borderline": "0.4 <= prior-session V1 < 0.5",
+   "missed": "prior-session V1 < 0.4"
+  },
+  "drawdown_reference": "close of the session before onset",
+  "note_codes": {
+   "price_missing": "KOSPI200 price for the onset date is not in the repository snapshot.",
+   "window_incomplete": "Fewer than 60 sessions after onset are stored; the low may not be final.",
+   "trough_at_window_end": "The low falls on the last session of the window; the decline may have continued.",
+   "source_unverified": "Source link not yet verified for this episode.",
+   "window_overlaps": "The drawdown window includes later episodes listed in overlaps."
+  }
+ },
+ "taxonomy": {
+  "name": "Baker, Bloom, Davis and Sammon, What Triggers Stock Market Jumps? (NBER Working Paper 28687)",
+  "url": "https://www.nber.org/system/files/working_papers/w28687/w28687.pdf",
+  "note": "Category names follow the paper. Assigning each episode to a category is a post-hoc judgment made in this project from the cited articles, not the authors' coding."
+ },
+ "categories": {
+  "macro": "Macroeconomic News & Outlook",
+  "earnings": "Corporate Earnings & Outlook",
+  "monetary": "Monetary Policy & Central Banking",
+  "trade": "International Trade Policy",
+  "foreign_markets": "Foreign Stock Markets",
+  "military": "Sovereign Military & Security Actions",
+  "elections": "Elections & Political Transitions",
+  "taxes": "Taxes",
+  "unclassified": "No matching category confirmed"
+ },
+ "sources": {
+  "episodes": {
+   "path": "market_engine/scenarios/korea_episodes.json",
+   "sha256": "c26f64421601b5315b5b65c4c5a45ae4a351425a089c3418c4db4a8a4ce74e20"
+  },
+  "prices_and_model": {
+   "path": "frontend/public/data/global-markets.json",
+   "sha256": "21b2b6fab853da7e078c3194887d2b665717e867b8491ab3ad9e410bcd2d857b"
+  },
+  "operational": {
+   "path": "frontend/public/data/operational-markets.json",
+   "sha256": "fbf2cdb027178cb55ed984caf404b01bec01828ab7746a89e4a56bfa6313fddc"
+  }
+ },
+ "summary": [
+  {
+   "category": "macro",
+   "episodes": 6,
+   "with_prices": 5,
+   "median_max_drawdown": -0.115856,
+   "worst_max_drawdown": -0.340853,
+   "warned": 2,
+   "judged": 6
+  },
+  {
+   "category": "earnings",
+   "episodes": 4,
+   "with_prices": 3,
+   "median_max_drawdown": -0.183994,
+   "worst_max_drawdown": -0.327312,
+   "warned": 1,
+   "judged": 4
+  },
+  {
+   "category": "monetary",
+   "episodes": 3,
+   "with_prices": 3,
+   "median_max_drawdown": -0.040518,
+   "worst_max_drawdown": -0.082035,
+   "warned": 1,
+   "judged": 3
+  },
+  {
+   "category": "trade",
+   "episodes": 2,
+   "with_prices": 2,
+   "median_max_drawdown": -0.068004,
+   "worst_max_drawdown": -0.068972,
+   "warned": 0,
+   "judged": 2
+  },
+  {
+   "category": "foreign_markets",
+   "episodes": 2,
+   "with_prices": 2,
+   "median_max_drawdown": -0.087789,
+   "worst_max_drawdown": -0.111447,
+   "warned": 1,
+   "judged": 2
+  },
+  {
+   "category": "military",
+   "episodes": 1,
+   "with_prices": 1,
+   "median_max_drawdown": -0.133616,
+   "worst_max_drawdown": -0.133616,
+   "warned": 1,
+   "judged": 1
+  },
+  {
+   "category": "elections",
+   "episodes": 1,
+   "with_prices": 0,
+   "median_max_drawdown": null,
+   "worst_max_drawdown": null,
+   "warned": 0,
+   "judged": 1
+  },
+  {
+   "category": "taxes",
+   "episodes": 1,
+   "with_prices": 1,
+   "median_max_drawdown": -0.040766,
+   "worst_max_drawdown": -0.040766,
+   "warned": 0,
+   "judged": 1
+  },
+  {
+   "category": "unclassified",
+   "episodes": 1,
+   "with_prices": 1,
+   "median_max_drawdown": -0.40937,
+   "worst_max_drawdown": -0.40937,
+   "warned": 1,
+   "judged": 1
+  }
+ ],
+ "episodes": [
+  {
+   "id": "H01",
+   "onset": "2018-03-23",
+   "tier": "supporting",
+   "category": "trade",
+   "geo": "foreign",
+   "name": {
+    "en": "US tariffs on China",
+    "ko": "미국의 대중 관세 발표"
+   },
+   "cause": {
+    "en": "US tariffs on USD 50bn of Chinese goods raised trade-war fears.",
+    "ko": "미국이 중국산 500억 달러 규모에 관세를 매기며 무역전쟁 우려가 커졌습니다."
+   },
+   "source": {
+    "title": "Seoul Shinmun, 2018-03-23",
+    "url": "https://m.seoul.co.kr/news/2018/03/23/20180323800030"
+   },
+   "metrics": {
+    "reference_date": "2018-03-22",
+    "onset_return": -0.033713,
+    "max_drawdown": -0.068972,
+    "trough_date": "2018-06-21",
+    "sessions_to_trough": 60,
+    "recovery_date": "2020-08-13",
+    "sessions_to_recover": 530,
+    "window_sessions": 60,
+    "window_end_date": "2018-06-21",
+    "window_complete": true,
+    "trough_at_window_end": true,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.1852460206,
+    "prior_date": "2018-03-22",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 1.3083553911,
+    "threshold": 1.0046198771,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "trough_at_window_end"
+   ],
+   "overlaps": []
+  },
+  {
+   "id": "H02",
+   "onset": "2018-10-11",
+   "tier": "core",
+   "category": "foreign_markets",
+   "geo": "foreign",
+   "name": {
+    "en": "US yield spike and sell-off",
+    "ko": "미국 금리 급등과 증시 급락"
+   },
+   "cause": {
+    "en": "An overnight US equity sell-off, rising Treasury yields and trade tension.",
+    "ko": "전날 미국 증시 급락, 국채금리 상승, 무역 갈등이 겹쳤습니다."
+   },
+   "source": {
+    "title": "Energy Economic News, 2018-10-11",
+    "url": "https://m.ekn.kr/view.php?key=390950"
+   },
+   "metrics": {
+    "reference_date": "2018-10-10",
+    "onset_return": -0.04412,
+    "max_drawdown": -0.111447,
+    "trough_date": "2019-01-03",
+    "sessions_to_trough": 58,
+    "recovery_date": "2019-02-14",
+    "sessions_to_recover": 27,
+    "window_sessions": 60,
+    "window_end_date": "2019-01-07",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "warned",
+    "prior_risk": 0.7360640764,
+    "prior_date": "2018-10-10",
+    "prior_warning_sessions": 4,
+    "prior_observed_sessions": 10,
+    "msi": 1.4317246721,
+    "threshold": 1.0080699783,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "H03",
+   "onset": "2019-05-09",
+   "tier": "supporting",
+   "category": "trade",
+   "geo": "foreign",
+   "name": {
+    "en": "China tariff hike threat",
+    "ko": "대중 관세 인상 경고"
+   },
+   "cause": {
+    "en": "The US warned it would raise tariffs on USD 200bn of Chinese goods from 10% to 25%.",
+    "ko": "미국이 중국산 2,000억 달러 규모의 관세를 10%에서 25%로 올리겠다고 경고했습니다."
+   },
+   "source": {
+    "title": "eToday, 2019-05-09",
+    "url": "https://www.etoday.co.kr/news/view/1753833"
+   },
+   "metrics": {
+    "reference_date": "2019-05-08",
+    "onset_return": -0.032661,
+    "max_drawdown": -0.067036,
+    "trough_date": "2019-05-29",
+    "sessions_to_trough": 15,
+    "recovery_date": "2019-11-04",
+    "sessions_to_recover": 107,
+    "window_sessions": 60,
+    "window_end_date": "2019-08-01",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.1153512821,
+    "prior_date": "2019-05-08",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 0.0034369283,
+    "threshold": 1.0214366697,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "H04",
+   "onset": "2020-01-28",
+   "tier": "core",
+   "category": "macro",
+   "geo": "foreign",
+   "name": {
+    "en": "COVID-19 outbreak",
+    "ko": "코로나19 확산"
+   },
+   "cause": {
+    "en": "The spread of COVID-19 turned into a global liquidity shock; Korea triggered circuit breakers on 2020-03-13 and 2020-03-19.",
+    "ko": "코로나19 확산이 글로벌 유동성 충격으로 번졌고, 2020-03-13과 03-19에 서킷브레이커가 발동했습니다."
+   },
+   "category_note": {
+    "en": "No pandemic category was confirmed in the taxonomy; coded as macroeconomic outlook.",
+    "ko": "분류 체계에서 팬데믹 범주를 확인하지 못해 거시경제 전망으로 분류했습니다."
+   },
+   "source": null,
+   "metrics": {
+    "reference_date": "2020-01-23",
+    "onset_return": -0.031621,
+    "max_drawdown": -0.340853,
+    "trough_date": "2020-03-19",
+    "sessions_to_trough": 38,
+    "recovery_date": "2020-08-04",
+    "sessions_to_recover": 94,
+    "window_sessions": 60,
+    "window_end_date": "2020-04-21",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.0933030024,
+    "prior_date": "2020-01-23",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 1.1351397866,
+    "threshold": 0.9710863187,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "source_unverified"
+   ],
+   "overlaps": []
+  },
+  {
+   "id": "H05",
+   "onset": "2020-06-15",
+   "tier": "supporting",
+   "category": "macro",
+   "geo": "both",
+   "name": {
+    "en": "COVID second wave and North Korea",
+    "ko": "코로나 재확산과 북한 리스크"
+   },
+   "cause": {
+    "en": "Second-wave fears in the US and China, North Korea risk and weak Chinese data.",
+    "ko": "미국·중국의 재확산 우려, 북한 리스크, 중국 지표 부진이 겹쳤습니다."
+   },
+   "source": {
+    "title": "Kyunghyang Shinmun, 2020-06-15",
+    "url": "https://www.khan.co.kr/article/202006151744001"
+   },
+   "metrics": {
+    "reference_date": "2020-06-12",
+    "onset_return": -0.049081,
+    "max_drawdown": -0.049081,
+    "trough_date": "2020-06-15",
+    "sessions_to_trough": 1,
+    "recovery_date": "2020-06-16",
+    "sessions_to_recover": 1,
+    "window_sessions": 60,
+    "window_end_date": "2020-09-07",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "warned",
+    "prior_risk": 0.5780781507,
+    "prior_date": "2020-06-12",
+    "prior_warning_sessions": 2,
+    "prior_observed_sessions": 10,
+    "msi": 1.0130681467,
+    "threshold": 1.0691887235,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "H06"
+   ]
+  },
+  {
+   "id": "H06",
+   "onset": "2020-08-20",
+   "tier": "supporting",
+   "category": "monetary",
+   "geo": "both",
+   "name": {
+    "en": "FOMC minutes disappointment",
+    "ko": "FOMC 의사록 실망"
+   },
+   "cause": {
+    "en": "Disappointing FOMC minutes and a domestic COVID resurgence.",
+    "ko": "FOMC 의사록 실망과 국내 코로나 재확산이 겹쳤습니다."
+   },
+   "source": {
+    "title": "KPI News, 2020-08-20",
+    "url": "https://kpinews.kr/newsView/179546509718357"
+   },
+   "metrics": {
+    "reference_date": "2020-08-19",
+    "onset_return": -0.038113,
+    "max_drawdown": -0.038113,
+    "trough_date": "2020-08-20",
+    "sessions_to_trough": 1,
+    "recovery_date": "2020-08-25",
+    "sessions_to_recover": 3,
+    "window_sessions": 60,
+    "window_end_date": "2020-11-17",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.0815213472,
+    "prior_date": "2020-08-19",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 0.3078948325,
+    "threshold": 1.0601022462,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "H07",
+   "onset": "2022-01-27",
+   "tier": "core",
+   "category": "monetary",
+   "geo": "foreign",
+   "name": {
+    "en": "Fed tightening signal",
+    "ko": "연준 긴축 시사"
+   },
+   "cause": {
+    "en": "The Fed signalled a March hike while the LG Energy Solution listing drew liquidity.",
+    "ko": "연준이 3월 금리 인상을 시사했고, LG에너지솔루션 상장으로 수급 공백이 생겼습니다."
+   },
+   "source": {
+    "title": "New Daily, 2022-01-27",
+    "url": "https://biz.newdaily.co.kr/site/data/html/2022/01/27/2022012700269.html"
+   },
+   "metrics": {
+    "reference_date": "2022-01-26",
+    "onset_return": -0.03395,
+    "max_drawdown": -0.040518,
+    "trough_date": "2022-04-27",
+    "sessions_to_trough": 60,
+    "recovery_date": "2024-02-19",
+    "sessions_to_recover": 446,
+    "window_sessions": 60,
+    "window_end_date": "2022-04-27",
+    "window_complete": true,
+    "trough_at_window_end": true,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "warned",
+    "prior_risk": 0.8548899889,
+    "prior_date": "2022-01-26",
+    "prior_warning_sessions": 10,
+    "prior_observed_sessions": 10,
+    "msi": 2.2487257846,
+    "threshold": 1.0113224769,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "trough_at_window_end"
+   ],
+   "overlaps": []
+  },
+  {
+   "id": "H08",
+   "onset": "2022-06-13",
+   "tier": "core",
+   "category": "macro",
+   "geo": "foreign",
+   "name": {
+    "en": "US CPI shock",
+    "ko": "미국 CPI 쇼크"
+   },
+   "cause": {
+    "en": "US CPI at 8.6% beat expectations and raised fears of aggressive hikes.",
+    "ko": "미국 CPI가 8.6%로 예상을 웃돌아 공격적 금리 인상 우려가 커졌습니다."
+   },
+   "source": {
+    "title": "Asia Economy, 2022-06-13",
+    "url": "https://www.asiae.co.kr/en/article/2022061316020727873"
+   },
+   "metrics": {
+    "reference_date": "2022-06-10",
+    "onset_return": -0.035128,
+    "max_drawdown": -0.115856,
+    "trough_date": "2022-07-06",
+    "sessions_to_trough": 18,
+    "recovery_date": "2023-06-02",
+    "sessions_to_recover": 225,
+    "window_sessions": 60,
+    "window_end_date": "2022-09-05",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "warned",
+    "prior_risk": 0.6281112432,
+    "prior_date": "2022-06-10",
+    "prior_warning_sessions": 10,
+    "prior_observed_sessions": 10,
+    "msi": 1.2771051902,
+    "threshold": 1.0640703634,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "H09",
+   "onset": "2024-08-02",
+   "tier": "core",
+   "category": "macro",
+   "geo": "foreign",
+   "name": {
+    "en": "US jobs shock and carry unwind",
+    "ko": "미국 고용 쇼크와 엔캐리 청산"
+   },
+   "cause": {
+    "en": "Weak US manufacturing and jobs data and AI scepticism; circuit breaker on 2024-08-05.",
+    "ko": "미국 제조업·고용 부진과 AI 회의론이 겹쳤고, 2024-08-05에 서킷브레이커가 발동했습니다."
+   },
+   "source": {
+    "title": "Asia Economy, 2024-08-05",
+    "url": "https://www.asiae.co.kr/en/article/2024080517051845019"
+   },
+   "metrics": {
+    "reference_date": "2024-08-01",
+    "onset_return": -0.04039,
+    "max_drawdown": -0.127923,
+    "trough_date": "2024-08-05",
+    "sessions_to_trough": 2,
+    "recovery_date": "2025-06-09",
+    "sessions_to_recover": 200,
+    "window_sessions": 60,
+    "window_end_date": "2024-11-04",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.272318244,
+    "prior_date": "2024-08-01",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 1.1489333265,
+    "threshold": 1.0597555708,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "H10"
+   ]
+  },
+  {
+   "id": "H10",
+   "onset": "2024-09-04",
+   "tier": "supporting",
+   "category": "macro",
+   "geo": "foreign",
+   "name": {
+    "en": "Weak ISM and Nvidia drop",
+    "ko": "ISM 부진과 엔비디아 급락"
+   },
+   "cause": {
+    "en": "A weak US ISM manufacturing reading and an overnight Nvidia drop of over 9%.",
+    "ko": "미국 ISM 제조업 지표 부진과 전날 엔비디아의 9%대 급락이 겹쳤습니다."
+   },
+   "source": {
+    "title": "Asia Economy, 2024-09-04",
+    "url": "https://www.asiae.co.kr/en/article/2024090416352270417"
+   },
+   "metrics": {
+    "reference_date": "2024-09-03",
+    "onset_return": -0.033835,
+    "max_drawdown": -0.114548,
+    "trough_date": "2024-11-14",
+    "sessions_to_trough": 46,
+    "recovery_date": "2025-05-29",
+    "sessions_to_recover": 129,
+    "window_sessions": 60,
+    "window_end_date": "2024-12-04",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.1422176659,
+    "prior_date": "2024-09-03",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 0.4376019714,
+    "threshold": 1.0679622793,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "H11",
+   "onset": "2025-02-28",
+   "tier": "core",
+   "category": "earnings",
+   "geo": "foreign",
+   "name": {
+    "en": "Nvidia and tariff shock",
+    "ko": "엔비디아·관세 충격"
+   },
+   "cause": {
+    "en": "A US tech slide led by Nvidia, tariff worries and a KRW sell-off; reciprocal tariffs then drove a 5.57% KOSPI drop on 2025-04-07.",
+    "ko": "엔비디아발 미국 기술주 급락, 관세 우려, 원화 약세가 겹쳤고, 이후 2025-04-07 상호관세로 KOSPI가 5.57% 급락했습니다."
+   },
+   "source": {
+    "title": "Yonhap via Daum, 2025-02-28",
+    "url": "https://v.daum.net/v/20250228164156738"
+   },
+   "metrics": {
+    "reference_date": "2025-02-27",
+    "onset_return": -0.035157,
+    "max_drawdown": -0.120999,
+    "trough_date": "2025-04-09",
+    "sessions_to_trough": 28,
+    "recovery_date": "2025-05-12",
+    "sessions_to_recover": 20,
+    "window_sessions": 60,
+    "window_end_date": "2025-05-28",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.0995615721,
+    "prior_date": "2025-02-27",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 0.474622318,
+    "threshold": 1.0538636775,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "H12",
+   "onset": "2025-08-01",
+   "tier": "supporting",
+   "category": "taxes",
+   "geo": "domestic",
+   "name": {
+    "en": "Tax reform disappointment",
+    "ko": "세제개편안 실망"
+   },
+   "cause": {
+    "en": "Disappointment with the tax-law amendment after a strong rally.",
+    "ko": "강한 상승 뒤 세법 개정안에 대한 실망이 커졌습니다."
+   },
+   "source": {
+    "title": "Yonhap via Daum, 2025-08-01",
+    "url": "https://v.daum.net/v/20250801172127273"
+   },
+   "metrics": {
+    "reference_date": "2025-07-31",
+    "onset_return": -0.040766,
+    "max_drawdown": -0.040766,
+    "trough_date": "2025-08-01",
+    "sessions_to_trough": 1,
+    "recovery_date": "2025-09-09",
+    "sessions_to_recover": 26,
+    "window_sessions": 60,
+    "window_end_date": "2025-10-31",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.0221042018,
+    "prior_date": "2025-07-31",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": -0.1636457186,
+    "threshold": 1.0499749966,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "H13",
+   "onset": "2025-11-14",
+   "tier": "supporting",
+   "category": "monetary",
+   "geo": "foreign",
+   "name": {
+    "en": "Fading rate cuts and AI bubble fears",
+    "ko": "금리인하 기대 후퇴와 AI 거품론"
+   },
+   "cause": {
+    "en": "Fading expectations of a near-term US rate cut, AI bubble concerns and heavy foreign selling.",
+    "ko": "미국 금리인하 기대 후퇴, AI 거품 우려, 외국인 대량 매도가 겹쳤습니다."
+   },
+   "source": {
+    "title": "The Korea Times, 2025-11-14",
+    "url": "https://www.koreatimes.co.kr/economy/20251114/seoul-stocks-plummet-381-on-foreigner-selling-over-dwindling-rate-cut-hopes"
+   },
+   "metrics": {
+    "reference_date": "2025-11-13",
+    "onset_return": -0.042844,
+    "max_drawdown": -0.082035,
+    "trough_date": "2025-11-21",
+    "sessions_to_trough": 6,
+    "recovery_date": "2025-12-08",
+    "sessions_to_recover": 11,
+    "window_sessions": 60,
+    "window_end_date": "2026-02-10",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.1136990637,
+    "prior_date": "2025-11-13",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 0.3656404153,
+    "threshold": 1.0397536122,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "C01",
+   "onset": "2026-03-04",
+   "tier": "core",
+   "category": "military",
+   "geo": "foreign",
+   "name": {
+    "en": "US–Iran war",
+    "ko": "미·이란 전쟁"
+   },
+   "cause": {
+    "en": "The outbreak of war between the US and Iran, followed by an oil price spike.",
+    "ko": "미국과 이란의 전쟁 발발과 이어진 유가 급등입니다."
+   },
+   "source": {
+    "title": "Twig, 2026-03-04",
+    "url": "https://www.twig24.com/news/2026/03/04/20260304800004"
+   },
+   "metrics": {
+    "reference_date": "2026-03-03",
+    "onset_return": -0.119397,
+    "max_drawdown": -0.133616,
+    "trough_date": "2026-03-31",
+    "sessions_to_trough": 20,
+    "recovery_date": "2026-04-08",
+    "sessions_to_recover": 6,
+    "window_sessions": 60,
+    "window_end_date": "2026-05-29",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "warned",
+    "prior_risk": 0.803196609,
+    "prior_date": "2026-03-03",
+    "prior_warning_sessions": 10,
+    "prior_observed_sessions": 10,
+    "msi": 2.9543505005,
+    "threshold": 1.0369154196,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "C02",
+   "onset": "2026-06-08",
+   "tier": "core",
+   "category": "earnings",
+   "geo": "foreign",
+   "name": {
+    "en": "Broadcom guidance and strong jobs",
+    "ko": "브로드컴 가이던스와 고용 호조"
+   },
+   "cause": {
+    "en": "Broadcom kept AI revenue guidance below hopes while strong US jobs raised Fed hike risk.",
+    "ko": "브로드컴의 AI 매출 가이던스가 기대에 못 미쳤고, 미국 고용 호조로 연준 인상 우려가 커졌습니다."
+   },
+   "source": {
+    "title": "The Better Future, 2026-06-08",
+    "url": "https://futurechosun.com/?p=150872"
+   },
+   "metrics": {
+    "reference_date": "2026-06-05",
+    "onset_return": -0.08518,
+    "max_drawdown": -0.327312,
+    "trough_date": "2026-07-30",
+    "sessions_to_trough": 38,
+    "recovery_date": null,
+    "sessions_to_recover": null,
+    "window_sessions": 60,
+    "window_end_date": "2026-09-01",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "borderline",
+    "prior_risk": 0.4782163799,
+    "prior_date": "2026-06-05",
+    "prior_warning_sessions": 3,
+    "prior_observed_sessions": 10,
+    "msi": 1.3665057501,
+    "threshold": 1.0701099135,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "C03",
+    "C04",
+    "C05"
+   ]
+  },
+  {
+   "id": "C03",
+   "onset": "2026-06-23",
+   "tier": "core",
+   "category": "unclassified",
+   "geo": "domestic",
+   "name": {
+    "en": "Profit-taking and pension selling",
+    "ko": "고점 차익실현과 연기금 매도"
+   },
+   "cause": {
+    "en": "Profit-taking in semiconductors after a record high, with heavy foreign and institutional selling around pension rebalancing.",
+    "ko": "사상 최고치 다음 날 반도체 차익실현과 연기금 리밸런싱을 앞둔 외국인·기관 대량 매도가 나왔습니다."
+   },
+   "category_note": {
+    "en": "Profit-taking and supply explanations had no confirmed matching category.",
+    "ko": "차익실현·수급 설명에 맞는 범주를 확인하지 못했습니다."
+   },
+   "source": {
+    "title": "News Tomato, 2026-06-23",
+    "url": "https://www.newstomato.com/ReadNews.aspx?no=1304895"
+   },
+   "metrics": {
+    "reference_date": "2026-06-22",
+    "onset_return": -0.105279,
+    "max_drawdown": -0.40937,
+    "trough_date": "2026-07-30",
+    "sessions_to_trough": 27,
+    "recovery_date": null,
+    "sessions_to_recover": null,
+    "window_sessions": 60,
+    "window_end_date": "2026-09-16",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "warned",
+    "prior_risk": 0.8868758082,
+    "prior_date": "2026-06-22",
+    "prior_warning_sessions": 7,
+    "prior_observed_sessions": 10,
+    "msi": 1.4881476886,
+    "threshold": 1.0746136684,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "C04",
+    "C05"
+   ]
+  },
+  {
+   "id": "C04",
+   "onset": "2026-07-28",
+   "tier": "core",
+   "category": "earnings",
+   "geo": "foreign",
+   "name": {
+    "en": "CXMT listing and circular financing",
+    "ko": "CXMT 상장과 순환금융 우려"
+   },
+   "cause": {
+    "en": "The listing of DRAM rival CXMT and concern over circular AI financing after Nvidia's guarantee to OpenAI.",
+    "ko": "D램 경쟁사 CXMT 상장과, 엔비디아의 오픈AI 지급 보증으로 불거진 AI 순환금융 우려입니다."
+   },
+   "source": {
+    "title": "MTN, 2026-07-28",
+    "url": "https://news.mtn.co.kr/news-detail/2026072815435412762"
+   },
+   "metrics": {
+    "reference_date": "2026-07-27",
+    "onset_return": -0.115533,
+    "max_drawdown": -0.183994,
+    "trough_date": "2026-07-30",
+    "sessions_to_trough": 3,
+    "recovery_date": "2026-08-13",
+    "sessions_to_recover": 10,
+    "window_sessions": 46,
+    "window_end_date": "2026-10-02",
+    "window_complete": false,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "warned",
+    "prior_risk": 0.8894500732,
+    "prior_date": "2026-07-27",
+    "prior_warning_sessions": 10,
+    "prior_observed_sessions": 10,
+    "msi": 2.1474663759,
+    "threshold": 1.1082357827,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "window_incomplete",
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "C05"
+   ]
+  },
+  {
+   "id": "C05",
+   "onset": "2026-08-19",
+   "tier": "supporting",
+   "category": "foreign_markets",
+   "geo": "foreign",
+   "name": {
+    "en": "US AI stock correction",
+    "ko": "미국 AI주 조정"
+   },
+   "cause": {
+    "en": "A renewed correction in US AI stocks and higher oil prices.",
+    "ko": "미국 AI주 조정 재개와 유가 상승입니다."
+   },
+   "source": null,
+   "metrics": {
+    "reference_date": "2026-08-18",
+    "onset_return": -0.064131,
+    "max_drawdown": -0.064131,
+    "trough_date": "2026-08-19",
+    "sessions_to_trough": 1,
+    "recovery_date": "2026-08-21",
+    "sessions_to_recover": 2,
+    "window_sessions": 31,
+    "window_end_date": "2026-10-02",
+    "window_complete": false,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-02"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.1000203192,
+    "prior_date": "2026-08-18",
+    "prior_warning_sessions": 5,
+    "prior_observed_sessions": 10,
+    "msi": 0.8115267606,
+    "threshold": 1.1244063906,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "window_incomplete",
+    "source_unverified"
+   ],
+   "overlaps": []
+  },
+  {
+   "id": "C06",
+   "onset": "2026-10-15",
+   "tier": "core",
+   "category": "macro",
+   "geo": "foreign",
+   "name": {
+    "en": "AI profitability and US inflation",
+    "ko": "AI 수익성 논란과 미국 물가"
+   },
+   "cause": {
+    "en": "Debate over AI investment returns combined with a US inflation surprise and rate-hike concern.",
+    "ko": "AI 투자 수익성 논란에 미국 물가 쇼크와 금리 인상 우려가 겹쳤습니다."
+   },
+   "category_note": {
+    "en": "Borderline between macroeconomic news and corporate outlook.",
+    "ko": "거시경제 뉴스와 기업 전망의 경계 사례입니다."
+   },
+   "source": {
+    "title": "Bloomberg, 2026-10-15",
+    "url": "https://www.bloomberg.com/news/articles/2026-10-15/chip-stocks-deepen-losses-as-concerns-mount-over-rates-ai-debt"
+   },
+   "metrics": null,
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.32324275374412537,
+    "prior_date": "2026-10-14",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 6,
+    "msi": 1.049062895656283,
+    "threshold": 1.1158205260360516,
+    "msi_recognized": false,
+    "origin": "retrospective_inference"
+   },
+   "notes": [
+    "price_missing"
+   ],
+   "overlaps": []
+  },
+  {
+   "id": "C07",
+   "onset": "2026-10-30",
+   "tier": "supporting",
+   "category": "earnings",
+   "geo": "foreign",
+   "name": {
+    "en": "Alphabet earnings shock",
+    "ko": "알파벳 실적 충격"
+   },
+   "cause": {
+    "en": "Alphabet fell sharply after earnings and pulled AI-related stocks lower.",
+    "ko": "알파벳이 실적 발표 후 급락하며 AI 관련주를 끌어내렸습니다."
+   },
+   "source": null,
+   "metrics": null,
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.3682185113430023,
+    "prior_date": "2026-10-29",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 0.7786169904666703,
+    "threshold": 1.115315286653335,
+    "msi_recognized": false,
+    "origin": "operational"
+   },
+   "notes": [
+    "price_missing",
+    "source_unverified"
+   ],
+   "overlaps": []
+  },
+  {
+   "id": "C08",
+   "onset": "2026-11-06",
+   "tier": "core",
+   "category": "elections",
+   "geo": "foreign",
+   "name": {
+    "en": "US midterm results",
+    "ko": "미국 중간선거 결과"
+   },
+   "cause": {
+    "en": "Democratic gains in the US midterms raised concern over AI data-centre regulation.",
+    "ko": "미국 중간선거에서 민주당이 승리하며 AI 데이터센터 규제 우려가 커졌습니다."
+   },
+   "source": {
+    "title": "Financial News, 2026-11-06",
+    "url": "https://www.fnnews.com/news/202611060937294835"
+   },
+   "metrics": null,
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.3796622157096863,
+    "prior_date": "2026-11-05",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 1.16434762277284,
+    "threshold": 1.1143628107223311,
+    "msi_recognized": true,
+    "origin": "operational"
+   },
+   "notes": [
+    "price_missing"
+   ],
+   "overlaps": []
+  }
+ ]
+}

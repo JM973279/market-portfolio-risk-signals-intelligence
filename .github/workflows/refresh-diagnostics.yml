@@ -23,7 +23,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: korea-diagnostics-${{ github.ref }}
+  # Shared with daily-refresh.yml: both write data/input, so never run them at once.
+  group: korea-data-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -50,11 +51,15 @@ jobs:
         run: |
           python3 -m unittest discover -s tests -t .
           python3 -m qsignals.diagnose
+      - name: Rebuild the dashboard exports from the same inputs
+        run: |
+          python3 -m qsignals.export_frontend
+          python3 -m market_engine.scenarios.build_korea_library
       - name: Commit validated data and reports
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data/input reports/event_diagnostics.csv reports/event_diagnostics.md
+          git add data/input reports/event_diagnostics.csv reports/event_diagnostics.md frontend/public/data
           if git diff --cached --quiet; then exit 0; fi
           git commit -m 'data: refresh Korea event diagnostics'
           bash scripts/push_data_commit.sh

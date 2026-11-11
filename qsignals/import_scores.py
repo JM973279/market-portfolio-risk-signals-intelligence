@@ -1,4 +1,10 @@
-"""Import pinned V1 exports and separately verified event-return prices."""
+"""Import pinned V1 exports and separately verified event-return prices.
+
+Korea (event diagnostics input): data/input/korea_scores.csv + provenance.json.
+US (comparison only, no price enrichment): data/input/us_scores.csv +
+us_provenance.json. qsignals.refresh calls import_data/import_us with the
+payloads of its own pipeline run and attaches its run record via `extra`.
+"""
 from __future__ import annotations
 
 import argparse
@@ -16,7 +22,7 @@ from pathlib import Path
 
 from qsignals.calendar import latest_closed_session, load_sessions, require_coverage
 from qsignals.prices import fetch_prices, parse_prices
-from qsignals.scores import build_rows, write_scores
+from qsignals.scores import build_rows, read_scores, write_scores
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_REPO = "tina77302/market-portfolio-risk-intelligence"
@@ -42,6 +48,45 @@ def _download(url):
     if len(raw) > 8_000_000:
         raise ValueError("Source export exceeds size limit")
     return raw
+
+
+def publication_check(rows, existing_csv, market="korea"):
+    """Why `rows` must not replace the published CSV, or None if it may.
+
+    Two batches write the same files (4-hourly pinned GitHub export, daily
+    pipeline refresh). Never let one move the published scores backwards:
+    - older_than_published: the candidate's last score date is earlier.
+    - same_date_different_scores: same last score date but different
+      risk/MSI/threshold/record type on a published date (e.g. the two paths
+      label post-cutoff rows differently). Price-only updates still pass.
+    A newer last score date always passes.
+    """
+    path = Path(existing_csv)
+    if not path.exists():
+        return None
+    published = read_scores(path, market)
+    old = [r for r in published if r.risk_v1 is not None]
+    new = [r for r in rows if r.risk_v1 is not None]
+    if not old:
+        return None
+    if new[-1].date < old[-1].date:
+        return "older_than_published"
+    if new[-1].date == old[-1].date:
+        key = lambda r: (r.risk_v1, r.msi, r.stress_threshold, r.record_type)
+        before = {r.date: key(r) for r in old}
+        if any(before.get(r.date, key(r)) != key(r) for r in new):
+            return "same_date_different_scores"
+    return None
+
+
+def _skipped(output_dir, provenance_name, reason, rows):
+    """Keep the published files; report the refused candidate."""
+    path = Path(output_dir) / provenance_name
+    published = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    scored = [r for r in rows if r.risk_v1 is not None]
+    return {**published, "publication": {"status": "skipped", "reason": reason,
+                                         "candidate_last_risk_date": scored[-1].date if scored else None,
+                                         "published_last_risk_date": published.get("last_risk_date")}}
 
 
 def load_source(source_root=None, source_repo=DEFAULT_REPO, source_ref="main"):
@@ -83,7 +128,7 @@ def load_source(source_root=None, source_repo=DEFAULT_REPO, source_ref="main"):
     }, metadata
 
 
-def import_data(payloads, files, source, output_dir, *, price_replay=None):
+def import_data(payloads, files, source, output_dir, *, price_replay=None, extra=None):
     output_dir = Path(output_dir)
     original = build_rows(payloads["global_markets"], payloads["operational_markets"])
     if not original or not any(r.risk_v1 is not None for r in original):
@@ -104,6 +149,9 @@ def import_data(payloads, files, source, output_dir, *, price_replay=None):
     if len(overlap) < 5:
         raise ValueError("Insufficient price-provider overlap with frozen reference")
     rows = build_rows(payloads["global_markets"], payloads["operational_markets"], prices)
+    reason = publication_check(rows, output_dir / "korea_scores.csv")
+    if reason:
+        return _skipped(output_dir, "provenance.json", reason, rows)
     sessions = load_sessions()
     actual = {r.date for r in rows}
     if actual - set(sessions):
@@ -127,6 +175,7 @@ def import_data(payloads, files, source, output_dir, *, price_replay=None):
         "last_risk_date": scored[-1].date, "last_price_date": priced[-1].date,
         "missing_sessions": missing, "price_source": price_meta,
         "calendar_sha256": hashlib.sha256((PROJECT_ROOT / "data/calendar/xkrx_sessions.csv").read_bytes()).hexdigest(),
+        **(extra or {}),
     }
     output_dir.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=output_dir) as temp:
@@ -141,11 +190,66 @@ def import_data(payloads, files, source, output_dir, *, price_replay=None):
             same_price = {k:v for k,v in old.get("price_source", {}).items() if k != "retrieved_at"} == {k:v for k,v in price_meta.items() if k != "retrieved_at"}
             same_files = all((output_dir / name).exists() and hashlib.sha256((output_dir / name).read_bytes()).hexdigest() == sha
                              for name, sha in [("korea_scores.csv", provenance["scores_sha256"]), ("kospi200_naver.xml", price_meta["sha256"])])
+            same_files = same_files and (output_dir / "operational/korea.json").exists()
             if same_meta and same_price and same_files:
                 return old
         (stage / "kospi200_naver.xml").write_bytes(raw)
         (stage / "provenance.json").write_text(json.dumps(provenance, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        write_status_block(payloads["operational_markets"], "korea", stage / "korea.json")
+        (output_dir / "operational").mkdir(exist_ok=True)
+        os.replace(stage / "korea.json", output_dir / "operational/korea.json")
         for name in ("kospi200_naver.xml", "korea_scores.csv", "provenance.json"):
+            os.replace(stage / name, output_dir / name)
+    return provenance
+
+
+def write_status_block(operational, market, path):
+    """Save the export's price-free block for one market next to its CSV.
+
+    The copied frontend reads these (qsignals.export_frontend), so the status
+    panels always come from the same export as the score CSV.
+    """
+    meta = {k: operational.get(k) for k in ("schema_version", "runId", "generatedAt", "mode", "sourceValuesIncluded")}
+    block = operational["markets"][market]
+    if any(point.get("price") is not None for point in block.get("history", [])):
+        raise ValueError("Operational block must not carry prices")
+    Path(path).write_text(json.dumps({**meta, "market": market, "block": block}, indent=1, ensure_ascii=False) + "\n",
+                          encoding="utf-8")
+
+
+def import_us(payloads, files, source, output_dir, *, extra=None):
+    """Write us_scores.csv (SPY) and us_provenance.json; no price enrichment."""
+    output_dir = Path(output_dir)
+    rows = build_rows(payloads["global_markets"], payloads["operational_markets"], market="us")
+    scored = [r for r in rows if r.risk_v1 is not None]
+    if not scored:
+        raise ValueError("Empty or unscored US export")
+    priced = [r for r in rows if r.kospi200_close is not None]
+    reason = publication_check(rows, output_dir / "us_scores.csv", "us")
+    if reason:
+        return _skipped(output_dir, "us_provenance.json", reason, rows)
+    ops = payloads["operational_markets"]["markets"]["us"]
+    provenance = {
+        "schema_version": 1, **source,
+        "imported_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "files": files, "operational_run_id": payloads["operational_markets"].get("runId"),
+        "operational_model_sha256": ops.get("modelSha256"), "training_cutoff": ops.get("trainingCutoff"),
+        "us_expected_date": ops.get("expectedDate"), "us_source_status": ops.get("status"),
+        "rows": len(rows), "record_type_counts": dict(sorted(Counter(r.record_type for r in rows).items())),
+        "first_date": rows[0].date, "last_date": rows[-1].date,
+        "last_risk_date": scored[-1].date, "last_price_date": priced[-1].date if priced else None,
+        **(extra or {}),
+    }
+    output_dir.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=output_dir) as temp:
+        stage = Path(temp)
+        write_scores(rows, stage / "us_scores.csv", "us")
+        provenance["scores_sha256"] = hashlib.sha256((stage / "us_scores.csv").read_bytes()).hexdigest()
+        (stage / "us_provenance.json").write_text(json.dumps(provenance, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        write_status_block(payloads["operational_markets"], "us", stage / "us.json")
+        (output_dir / "operational").mkdir(exist_ok=True)
+        os.replace(stage / "us.json", output_dir / "operational/us.json")
+        for name in ("us_scores.csv", "us_provenance.json"):
             os.replace(stage / name, output_dir / name)
     return provenance
 
@@ -157,10 +261,14 @@ def main(argv=None):
     parser.add_argument("--source-ref", default="main")
     parser.add_argument("--price-replay", type=Path, help="Replay retained provenance + raw prices without provider access")
     parser.add_argument("--output-dir", type=Path, default=PROJECT_ROOT / "data/input")
+    parser.add_argument("--us", action="store_true", help="also import US scores from the same pinned exports")
     args = parser.parse_args(argv)
     payloads, files, source = load_source(args.source_root, args.source_repo, args.source_ref)
     provenance = import_data(payloads, files, source, args.output_dir, price_replay=args.price_replay)
-    print(json.dumps({k: provenance[k] for k in ("source_git_commit", "last_risk_date", "last_price_date", "rows", "korea_source_status", "missing_sessions")}, ensure_ascii=False))
+    if args.us:
+        import_us(payloads, files, source, args.output_dir)
+    keys = ("source_git_commit", "last_risk_date", "last_price_date", "rows", "korea_source_status", "missing_sessions", "publication")
+    print(json.dumps({k: provenance.get(k) for k in keys}, ensure_ascii=False))
 
 
 if __name__ == "__main__":

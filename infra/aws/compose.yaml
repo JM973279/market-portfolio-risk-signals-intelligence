@@ -1,0 +1,22 @@
+# Local replica of the Lightsail container service. The web container shares the portfolio
+# server's network namespace, so they reach each other over localhost as on Lightsail.
+# Run from the repository root: docker compose -f infra/aws/compose.yaml up --build
+name: mqs-aws-local
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/aws/api.Dockerfile
+    image: mqs-api:local
+    ports:
+      # Published on this service because web joins its network namespace.
+      - "127.0.0.1:3300:3000"
+  web:
+    build:
+      context: ../../frontend
+      dockerfile: ../infra/aws/web.Dockerfile
+    image: mqs-web:local
+    network_mode: "service:api"
+    depends_on:
+      api:
+        condition: service_healthy

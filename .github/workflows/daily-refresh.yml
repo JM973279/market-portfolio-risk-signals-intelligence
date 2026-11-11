@@ -1,0 +1,159 @@
+name: Daily V1 score refresh
+
+# Collect the latest Korea and US V1 scores with the deployed repo's frozen pipeline
+# (python -m qsignals.refresh) and commit data/input/ and reports/.
+# Required repository secrets: KRX_API_KEY, ECOS_API_KEY.
+# The first run rebuilds the Korea raw history from 2010 (~8,800 KRX calls,
+# about 90 minutes); later runs restore it from the Actions cache.
+
+on:
+  schedule:
+    - cron: "0 13 * * 1-5"   # 22:00 KST, after the pipeline's Korea publication deadline
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  # Shared with refresh-diagnostics.yml: both write data/input, so never run them at once.
+  group: korea-data-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    env:
+      KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
+      ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
+      V1_DATA: /home/runner/.cache/qsignals/v1-data
+    steps:
+      - name: Check required API secrets
+        id: config
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=()
+          for key in KRX_API_KEY ECOS_API_KEY; do
+            value="${!key:-}"
+            if [[ -z "${value//[[:space:]]/}" ]]; then
+              missing+=("$key")
+            fi
+          done
+          if (( ${#missing[@]} )); then
+            settings_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/settings/secrets/actions"
+            echo "::error title=Missing Actions secrets::Set the repository secrets: ${missing[*]}. See $settings_url"
+            {
+              echo "### Score refresh blocked: missing API secrets"
+              echo
+              echo "Missing: ${missing[*]}"
+              echo
+              echo "Add or update these as **Repository secrets** in [Actions settings]($settings_url)."
+              echo "Repository variables and secrets in another repository are not supplied to this job."
+              echo "Environment secrets require the job to select that environment; this job uses repository secrets."
+              echo "After saving the secrets, re-run the failed job."
+              echo "No collection or data publication was attempted."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "Required Actions secrets are available."
+
+      - uses: actions/checkout@v7
+
+      - name: Check out the deployed repo (read-only)
+        uses: actions/checkout@v7
+        with:
+          repository: tina77302/market-portfolio-risk-intelligence
+          path: _deployed
+
+      - name: Check out the original V1 repo, all branches (read-only)
+        uses: actions/checkout@v7
+        with:
+          repository: tina77302/market-stress-early-warning
+          path: _v1
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: _deployed/market_engine/operations/requirements.txt
+
+      - name: Create the inference environment
+        run: |
+          python -m venv "$RUNNER_TEMP/mpri-inference"
+          "$RUNNER_TEMP/mpri-inference/bin/pip" install -q -r _deployed/market_engine/operations/requirements.txt
+
+      - name: Restore Korea raw history
+        uses: actions/cache/restore@v6
+        with:
+          path: ${{ env.V1_DATA }}
+          key: korea-raw-${{ github.run_id }}
+          restore-keys: korea-raw-
+
+      - name: Refresh scores
+        id: refresh
+        run: |
+          # 0 all imported, 3 partial (a market's data is late: publish the other),
+          # 2 nothing new (no publish, not an error), 1/other = verification or pipeline failure.
+          set +e
+          python -m qsignals.refresh \
+            --python "$RUNNER_TEMP/mpri-inference/bin/python" \
+            --source-root _deployed \
+            --v1-repo _v1 \
+            --v1-data "$V1_DATA" \
+            --work-root "$RUNNER_TEMP/runs" > "$RUNNER_TEMP/summary.json"
+          code=$?
+          set -e
+          cat "$RUNNER_TEMP/summary.json"
+          case "$code" in
+            0) echo "publish=true" >> "$GITHUB_OUTPUT" ;;
+            3) echo "::warning::Late data for some markets; publishing the verified ones only."
+               echo "publish=true" >> "$GITHUB_OUTPUT" ;;
+            2) echo "::warning::No market has new verified data yet; nothing to publish."
+               echo "publish=false" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::Refresh failed (exit $code); nothing published."
+               exit "$code" ;;
+          esac
+
+      - name: Check Korea raw history
+        id: raw
+        if: always()
+        run: |
+          if [ -n "$(ls -A "$V1_DATA/raw/korea" 2>/dev/null)" ]; then echo "present=true" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Save Korea raw history
+        if: always() && steps.raw.outputs.present == 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ env.V1_DATA }}
+          key: korea-raw-${{ github.run_id }}
+
+      - name: Upload pipeline logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: refresh-logs
+          path: ${{ runner.temp }}/runs/*/refresh.log
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Rebuild diagnostics and view
+        if: steps.refresh.outputs.publish == 'true'
+        run: |
+          python -m qsignals.diagnose
+          python -m qsignals.view
+          python -m qsignals.export_frontend
+          python -m market_engine.scenarios.build_korea_library
+
+      - name: Commit refreshed data
+        if: steps.refresh.outputs.publish == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/input reports frontend/public/data
+          if git diff --cached --quiet; then echo "No changes"; exit 0; fi
+          # Korea: provenance.json, US: us_provenance.json (separate files per market).
+          last=$(python scripts/published_dates.py)
+          git commit -m "data: refresh V1 scores ($last)"
+          bash scripts/push_data_commit.sh

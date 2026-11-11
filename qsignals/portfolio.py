@@ -289,8 +289,14 @@ def analyze(data: Dataset, request):
         risk = risk_analysis(data, w, amount)
     except PortfolioError as exc:
         risk = {'status': 'unavailable', 'reason': str(exc), 'code': exc.code}
+    # Historical replay: actual past windows with today's weights (no betas). Optional.
+    try:
+        from qsignals.portfolio_replay import compute_replay
+        replay = compute_replay(data, w, amount)
+    except (KeyError, TypeError, ValueError) as exc:
+        replay = {'status': 'unavailable', 'reason': str(exc)}
     result.update(holdings=[{'ticker': t, 'weight': weight * 100} for t, weight in w.items()],
-                  initial_value_usd=amount, benchmark=bm, risk=risk,
+                  initial_value_usd=amount, benchmark=bm, risk=risk, historical_replay=replay,
                   requested_period={'start': start, 'end': end},
                   effective_period={'start': days[0], 'end': days[-1], 'observations': len(days)},
                   provenance=data.provenance,

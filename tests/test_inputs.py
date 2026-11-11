@@ -1,4 +1,5 @@
 import csv
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -109,6 +110,40 @@ class ScoreImportTest(unittest.TestCase):
         self.assertEqual(rows[0].risk_v1, 0.2)
         self.assertEqual(rows[1].kospi200_close, 101.0)
         self.assertIsNone(rows[2].kospi200_close)
+
+    def test_us_rows_and_price_column(self):
+        global_markets = {"korea": [], "us": [{"date": "2026-09-21", "price": 660.0, "risk": 0.3, "msi": 0.2, "threshold": 1.3}]}
+        operational = {"markets": {"us": {"history": [
+            {"date": "2026-09-21", "risk": 0.9, "msi": 0.1, "threshold": 1.3, "recordType": "RETROSPECTIVE_INFERENCE"},
+            {"date": "2026-11-06", "risk": 0.945, "msi": 1.14, "threshold": 1.29, "recordType": "OPERATIONAL"},
+        ]}}}
+        rows = build_rows(global_markets, operational, market="us")
+        self.assertEqual([r.record_type for r in rows], ["OOS_WALK_FORWARD", "OPERATIONAL"])
+        self.assertEqual(rows[0].risk_v1, 0.3)
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "us.csv"
+            write_scores(rows, path, "us")
+            self.assertTrue(path.read_text(encoding="utf-8").startswith("date,spy_close,"))
+            self.assertEqual(read_scores(path, "us"), rows)
+            with self.assertRaises(ValueError):
+                read_scores(path)  # a US file is not a Korea file
+
+    def test_import_us_writes_its_own_files_only(self):
+        from qsignals.import_scores import import_us
+        point = {"date": "2026-09-21", "price": 660.0, "risk": 0.3, "msi": 0.2, "threshold": 1.3}
+        payloads = {"global_markets": {"korea": [], "us": [point]},
+                    "operational_markets": {"runId": "r", "markets": {"us": {"history": [], "status": "DELAYED",
+                                                                              "trainingCutoff": "2026-09-16"}}}}
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d)
+            (out / "korea_scores.csv").write_text("kept", encoding="utf-8")
+            prov = import_us(payloads, {}, {"source_git_commit": "abc"}, out, extra={"refresh": {"us": {}}})
+            self.assertEqual(prov["source_git_commit"], "abc")
+            self.assertEqual(prov["us_source_status"], "DELAYED")
+            self.assertEqual(prov["refresh"], {"us": {}})
+            self.assertEqual(read_scores(out / "us_scores.csv", "us")[0].kospi200_close, 660.0)
+            self.assertEqual(json.loads((out / "us_provenance.json").read_text(encoding="utf-8"))["scores_sha256"], prov["scores_sha256"])
+            self.assertEqual((out / "korea_scores.csv").read_text(encoding="utf-8"), "kept")  # Korea untouched
 
     def test_round_trip(self):
         rows = [ScoreRow("2026-01-02", 100.5, 0.25, -0.1, 1.0, "OOS_WALK_FORWARD"), ScoreRow("2026-01-05", None, None, None, None, "NO_SCORE")]
