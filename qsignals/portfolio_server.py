@@ -11,6 +11,7 @@ from urllib.parse import urlsplit
 
 from qsignals.portfolio import analyze, describe
 from qsignals.portfolio_data import DEFAULT_DATA, PortfolioError, load_dataset
+from qsignals.portfolio_i18n import request_lang, translate
 
 WEB = Path(__file__).resolve().parent / 'portfolio_web'
 STATIC = {'/portfolio': ('index.html', 'text/html; charset=utf-8'),
@@ -23,10 +24,13 @@ LOG = logging.getLogger(__name__)
 class Handler(BaseHTTPRequestHandler):
     def __init__(self, *args, data_dir=DEFAULT_DATA, **kwargs):
         self.data_dir = data_dir
+        self.lang = 'ko'
         super().__init__(*args, **kwargs)
 
     def respond(self, code, content, kind='application/json; charset=utf-8'):
         if not isinstance(content, bytes):
+            # ?lang=en: same payload, known Korean messages swapped for English.
+            content = translate(content, self.lang)
             content = json.dumps(content, ensure_ascii=False, allow_nan=False).encode()
         self.send_response(code)
         self.send_header('Content-Type', kind)
@@ -41,7 +45,8 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(content)
 
     def do_GET(self):
-        path = urlsplit(self.path).path
+        url = urlsplit(self.path)
+        path, self.lang = url.path, request_lang(url.query)
         if path in ('/', '/portfolio', '/portfolio/'):
             filename, kind = STATIC['/portfolio']
             self.respond(200, (WEB / filename).read_bytes(), kind)
@@ -60,7 +65,8 @@ class Handler(BaseHTTPRequestHandler):
             self.respond(404, {'error': 'Not found'})
 
     def do_POST(self):
-        path = urlsplit(self.path).path
+        url = urlsplit(self.path)
+        path, self.lang = url.path, request_lang(url.query)
         if path not in ('/api/portfolio/analyze', '/api/portfolio/compare'):
             self.respond(404, {'error': 'Not found'})
             return

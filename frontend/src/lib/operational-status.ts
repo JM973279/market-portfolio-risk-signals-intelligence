@@ -72,3 +72,19 @@ export function operationalMessage(market: OperationalMarketData | null | undefi
  }
  return ko ? "최신 필수 관측을 확인하지 못했습니다. 과거 점수를 현재로 이월하지 않습니다." : "Required current observations are not verified. Historical scores are not carried forward.";
 }
+
+// 운영 파이프라인이 한국어로만 남기는 진단 문구(trainingEvidence, reason)의 영어판. 새 문구가 생기면 여기에 더한다.
+const pipelineEnglish: Record<string, string> = {
+ "scaler 통계와 labeled 3714행 일치; 실행 시각 미기록": "Scaler statistics match the 3,714 labeled rows; run time not recorded",
+ "6317행 prefix scaler 근사 일치; cutoff 추정, 정확한 학습 receipt 미보존": "Scaler approximately matches a 6,317-row prefix; cutoff estimated, exact training receipt not preserved",
+ "일부 원천 수집 실패. 과거 캐시 재현 결과만 별도 표시합니다.": "Some sources failed to collect. Only results replayed from the historical cache are shown separately.",
+ "최신 필수 원천 관측 미확인. 과거 재현 추론을 현재 점수로 이월하지 않습니다.": "Latest required source observations not confirmed. Historical replay inference is not carried over as the current score.",
+};
+export function pipelineText(value: string | null | undefined, language: Language): string | undefined {
+ if (value == null || language === "ko") return value ?? undefined;
+ if (pipelineEnglish[value]) return pipelineEnglish[value];
+ const failed = /^수집 실패 \(([^)]+)\); 인증·네트워크·제공처 응답 확인 필요$/.exec(value);
+ if (failed) return `Collection failed (${failed[1]}); check authentication, network and provider responses`;
+ // 모르는 문구는 한국어 원문 대신 안내만 보여 준다(KR 화면에서 원문 확인).
+ return /[가-힣]/.test(value) ? "Diagnostic recorded by the data pipeline in Korean; switch to KR to read the original." : value;
+}

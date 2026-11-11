@@ -11,6 +11,8 @@ python3 -m qsignals.portfolio_server
 # http://127.0.0.1:3108/portfolio
 ```
 
+영어 화면은 `http://127.0.0.1:3108/portfolio?lang=en`입니다. 사이트(frontend)의 EN 토글은 iframe 주소에 `?lang=en`을 붙이고, API(`/api/portfolio/*?lang=en`)도 같은 계산 결과의 안내·오류 문구를 영어로 돌려줍니다. 새 한국어 문구를 추가하면 `qsignals/portfolio_i18n.py`에 영어판을 함께 넣으세요(`tests/test_portfolio_i18n.py`가 확인).
+
 처음부터 GitHub에서 검증 파일을 다시 받아 재현하려면 다음을 실행합니다. 웹/API 요청에서는 외부 제공처를 호출하지 않습니다.
 
 ```bash
