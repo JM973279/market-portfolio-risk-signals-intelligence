@@ -1,27 +1,27 @@
 {
  "schema_version": 1,
- "runId": "20261110T140419Z-d19f9c34",
- "generatedAt": "2026-11-10T14:04:19.284915+00:00",
+ "runId": "20261111T032938Z-32dcdc4b",
+ "generatedAt": "2026-11-11T03:29:38.172124+00:00",
  "mode": "provider-refresh",
  "sourceValuesIncluded": false,
  "market": "us",
  "block": {
-  "status": "DELAYED",
+  "status": "CURRENT",
   "expectedDate": "2026-11-09",
   "series": [
    {
     "name": "SPY",
     "provider": "Yahoo Finance",
-    "retrievedAt": "2026-11-10T14:04:34.650887+00:00",
+    "retrievedAt": "2026-11-11T03:29:48.495240+00:00",
     "observationDate": "2026-11-09",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "00ed31d7e1bd62ba9424a458582859fb2c8af21cbe00fd91828aa4331f37c0ee"
+    "sha256": "54450375d05e2d8d3bbeaeba335fa29627eeee304845d02774ffeeb012a32d5a"
    },
    {
     "name": "VIX",
     "provider": "Yahoo Finance",
-    "retrievedAt": "2026-11-10T14:04:35.384494+00:00",
+    "retrievedAt": "2026-11-11T03:29:49.228255+00:00",
     "observationDate": "2026-11-09",
     "status": "OBSERVED",
     "reason": null,
@@ -30,20 +30,20 @@
    {
     "name": "DBAA",
     "provider": "FRED",
-    "retrievedAt": "2026-11-10T14:04:35.804443+00:00",
-    "observationDate": "2026-11-06",
+    "retrievedAt": "2026-11-11T03:29:51.181274+00:00",
+    "observationDate": "2026-11-09",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "abee9795e793df7c78c620fe778daa87be4c0673e58e83bb19eca64b0eb2f74d"
+    "sha256": "a1e93f084c4d79a80f202c722b6dbbe7a5f0742801f3fe5142598c99cba260a4"
    },
    {
     "name": "DGS10",
     "provider": "FRED",
-    "retrievedAt": "2026-11-10T14:04:36.581237+00:00",
-    "observationDate": "2026-11-06",
+    "retrievedAt": "2026-11-11T03:29:52.846102+00:00",
+    "observationDate": "2026-11-09",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "7f86ceef57d3ffc385e33f337d4fc1daa67d514a76116fa23f6a010690bb49b5"
+    "sha256": "8ef8ca4b5fc18ea520c65634a444edc53805e30344fb8440a918399f68ebe601"
    }
   ],
   "history": [
@@ -326,18 +326,33 @@
     "threshold": 1.2919269969945288,
     "price": null,
     "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-11-09",
+    "risk": 0.45309978723526,
+    "msi": 0.2484573772356827,
+    "threshold": 1.2918583959460088,
+    "price": null,
+    "recordType": "OPERATIONAL"
    }
   ],
-  "current": null,
-  "lastValid": {
-   "date": "2026-11-06",
-   "risk": 0.9454043507575989,
-   "msi": 1.1402544874012082,
-   "threshold": 1.2919269969945288,
+  "current": {
+   "date": "2026-11-09",
+   "risk": 0.45309978723526,
+   "msi": 0.2484573772356827,
+   "threshold": 1.2918583959460088,
    "price": null,
    "recordType": "OPERATIONAL"
   },
-  "reason": "최신 필수 원천 관측 미확인. 과거 재현 추론을 현재 점수로 이월하지 않습니다.",
+  "lastValid": {
+   "date": "2026-11-09",
+   "risk": 0.45309978723526,
+   "msi": 0.2484573772356827,
+   "threshold": 1.2918583959460088,
+   "price": null,
+   "recordType": "OPERATIONAL"
+  },
+  "reason": null,
   "modelSha256": "90c51c245ebe62b58f804098a7a7045b60fb64ef83da72d4c9a049cf8d5eeb0d",
   "trainingCutoff": "2026-09-16",
   "trainingEvidence": "6317행 prefix scaler 근사 일치; cutoff 추정, 정확한 학습 receipt 미보존",
@@ -368,7 +383,7 @@
     "SPY": {
      "overlapDates": 258,
      "scale": 1.0,
-     "maxRelativeDifference": 1.8106844323780435e-07
+     "maxRelativeDifference": 1.8676930013247548e-07
     },
     "VIX": {
      "overlapDates": 260,
@@ -922,15 +937,14 @@
     "date": "2026-11-09",
     "available": [
      "SPY",
-     "VIX"
-    ],
-    "missing": [
+     "VIX",
      "BAA_Treasury_Spread"
-    ]
+    ],
+    "missing": []
    }
   ],
   "availabilityOrigin": "provider-refresh",
   "historicalParity": true,
-  "inferenceAt": "2026-11-10T14:04:37.012863+00:00"
+  "inferenceAt": "2026-11-11T03:29:53.323736+00:00"
  }
 }

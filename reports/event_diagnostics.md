@@ -4,10 +4,10 @@
 
 ## 입력
 
-- 점수: `market-portfolio-risk-intelligence` `main` @ `93be0ba`, 2016-09-13 ~ 2026-11-09 (2,488행)
+- 점수: `market-portfolio-risk-intelligence` `main` @ `9bedc79`, 2016-09-13 ~ 2026-11-10 (2,489행)
   - `frontend/public/data/global-markets.json` sha256 `21b2b6fab853…`
-  - `frontend/public/data/operational-markets.json` sha256 `d533b95aa45a…`
-  - 기록 유형: walk-forward OOS 2,454행, 동결 모델 사후 추론 34행 (동결 모델 학습 기준일 2026-09-16)
+  - `frontend/public/data/operational-markets.json` sha256 `839877893444…`
+  - 기록 유형: walk-forward OOS 2,454행, 동결 모델 사후 추론 35행 (동결 모델 학습 기준일 2026-09-16)
   - KOSPI200 가격은 2026-10-02까지만 있습니다.
 - 이벤트: `data/events/kospi_2026_events.csv` (보도 기준 KOSPI 등락, 사후 정리)
 
