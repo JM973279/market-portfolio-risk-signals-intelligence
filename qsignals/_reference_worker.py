@@ -29,6 +29,12 @@ import shutil
 import sys
 from pathlib import Path
 
+# Direct execution adds qsignals/ to sys.path, which would shadow the stdlib
+# calendar module with qsignals/calendar.py during pandas imports.
+if __package__ in (None, ""):
+    script_dir = Path(__file__).resolve().parent
+    sys.path[:] = [p for p in sys.path if Path(p).resolve() != script_dir]
+
 import joblib
 import numpy as np
 import pandas as pd
