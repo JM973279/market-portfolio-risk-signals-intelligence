@@ -185,3 +185,4 @@ svg.country-flag {width:44px;height:30px;flex-shrink:0;border:1px solid #e6edf6;
 @media(max-width:760px) { .scenario-controls {flex-direction:column;align-items:stretch}.scenario-sort select {width:100%}.scenario-grid {grid-template-columns:1fr}.scenario-card h3 {font-size:14px} }
 /* Footnote under scores shown while the due-date data has not arrived */
 .stale-note {margin:8px 0 0;padding:8px 10px;border-left:3px solid var(--amber, #c98a12);background:#fff8eb;color:#6b4f12;font-size:12px;line-height:1.5;border-radius:4px}
+.scenario-more {margin:12px 0 0;text-align:center}

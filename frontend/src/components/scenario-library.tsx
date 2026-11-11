@@ -58,13 +58,15 @@ export function ScenarioLibrary() {
  const { t, category, language } = useScenarioLabels();
  const [filter, setFilter] = useState("all");
  const [sort, setSort] = useState<"date" | "drawdown">("date");
+ const [showAll, setShowAll] = useState(false);
  const names = useMemo(() => Object.fromEntries((scenarios?.episodes ?? []).map(e => [e.id, `${e.onset} ${language === "en" ? e.name.en : e.name.ko}`])), [scenarios, language]);
  const visible = useMemo(() => {
-  const rows = (scenarios?.episodes ?? []).filter(e => filter === "all" || e.category === filter);
+  const rows = (scenarios?.episodes ?? []).filter(e => (filter === "all" || e.category === filter) && (showAll || e.tier === "core"));
   return [...rows].sort((a, b) => sort === "date"
    ? b.onset.localeCompare(a.onset)
    : (a.metrics?.max_drawdown ?? 0) - (b.metrics?.max_drawdown ?? 0));
- }, [scenarios, filter, sort]);
+ }, [scenarios, filter, sort, showAll]);
+ const hidden = showAll ? 0 : (scenarios?.episodes ?? []).filter(e => (filter === "all" || e.category === filter) && e.tier !== "core").length;
  if (!scenarios) return <section className="panel empty-state"><h2>{t("scenarioTitle")}</h2><p>{t("scenarioUnavailable")}</p></section>;
  return <section className="panel scenario-library" aria-labelledby="scenario-library-title">
   <div className="panel-header"><h2 id="scenario-library-title">{t("scenarioTitle")}</h2><span className="tag">{t("scenarioTag")}</span></div>
@@ -84,7 +86,8 @@ export function ScenarioLibrary() {
    </div>
    <label className="field-label scenario-sort">{t("scenarioSort")}<select value={sort} onChange={e => setSort(e.target.value as "date" | "drawdown")}><option value="date">{t("scenarioSortDate")}</option><option value="drawdown">{t("scenarioSortDd")}</option></select></label>
   </div>
-  {visible.length === 0 ? <p className="panel-note">{t("scenarioEmpty")}</p> : <div className="scenario-grid">{visible.map(e => <EpisodeCard key={e.id} episode={e} names={names}/>)}</div>}
+  {visible.length === 0 ? (hidden === 0 && <p className="panel-note">{t("scenarioEmpty")}</p>) : <div className="scenario-grid">{visible.map(e => <EpisodeCard key={e.id} episode={e} names={names}/>)}</div>}
+  {(hidden > 0 || showAll) && <p className="scenario-more"><button type="button" className="link-button" aria-expanded={showAll} onClick={() => setShowAll(!showAll)}>{showAll ? t("scenarioShowCore") : `${t("scenarioShowAll")} (+${hidden})`}</button></p>}
   <p className="panel-note">{t("scenarioMethod")}</p>
   <p className="panel-note">{t("scenarioTaxonomy")} <a className="text-link" href={scenarios.taxonomy.url} target="_blank" rel="noopener noreferrer">NBER w28687 ↗</a></p>
  </section>;
