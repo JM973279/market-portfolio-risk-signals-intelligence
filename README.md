@@ -5,17 +5,38 @@ AWS에 배포하는 `market-portfolio-risk-intelligence`와 분리되어 있고,
 
 ## 전체 웹사이트 배포 (AWS·Docker) — 이 저장소가 기준입니다
 
-M/PRI 웹사이트(대시보드·백테스팅 테스트·시나리오 분석·포트폴리오 분석)의 최신 화면은 이 저장소의 `frontend/`에 있습니다. AWS나 Docker에 올릴 때는 **이 저장소의 main**을 쓰세요. `tina77302/market-portfolio-risk-intelligence`나 PC에 남아 있는 예전 복사본은 구버전입니다.
+M/PRI 웹사이트(대시보드·백테스팅 테스트·시나리오 분석·포트폴리오 분석)의 최신 화면은 이 저장소의 `frontend/`에 있습니다. `tina77302/market-portfolio-risk-intelligence`나 PC에 남아 있는 예전 복사본은 구버전입니다.
+
+| 브랜치 | 들어 있는 것 | 용도 |
+|---|---|---|
+| `release/latest-site-docker` | 전체 사이트(`frontend/`), `infra/aws/`, 포트폴리오 서버, 진단, KR/EN 화면 | **AWS·Docker 전체 사이트 배포는 이 브랜치를 씁니다** |
+| `main` (기본 브랜치) | 포트폴리오 서버, 한국 이벤트 진단, 데이터 갱신 workflow | `frontend/`·`infra/`가 아직 없습니다. GHCR 이미지(포트폴리오 서버만) 발행과 예약 workflow는 이 브랜치에서 실행됩니다 |
+
+`release/latest-site-docker`가 `main`에 병합되기 전까지는 `main`만 받아서는 전체 사이트를 띄울 수 없습니다.
 
 ```bash
+git switch release/latest-site-docker
 # 웹(Next.js)과 포트폴리오 서버를 함께 실행
 docker compose -f infra/aws/compose.yaml up --build
 # http://localhost:3300
 ```
 
-AWS Lightsail 배포는 `infra/aws/deploy_lightsail.sh`를 사용합니다(서비스를 처음 만들 때는 `CREATE_SERVICE=yes`, 월 과금 시작). 배포 후 메뉴에 `백테스팅 테스트`와 `시나리오 분석`이 보이면 최신 버전입니다.
+AWS Lightsail 배포는 `infra/aws/deploy_lightsail.sh`를 사용합니다(서비스를 처음 만들 때는 `CREATE_SERVICE=yes`, 월 과금 시작). 배포 후 다음이 보이면 최신 버전입니다.
+
+- 메뉴에 `백테스팅 테스트`와 `시나리오 분석`이 있습니다.
+- 왼쪽 아래 `EN`을 누르면 포트폴리오 분석 화면까지 모든 글과 표시가 영어로 바뀝니다.
 
 아래의 루트 `Dockerfile`·`docker-compose.yml`은 포트폴리오 서버(`/portfolio`)만 실행합니다.
+
+## 화면 언어 (KR / EN)
+
+사이트 왼쪽 아래 `KR`/`EN` 토글로 언어를 바꿉니다. 선택은 브라우저 탭(sessionStorage)에 기억됩니다.
+
+- **사이트 문구**는 `frontend/src/lib/dashboard-copy.ts`, `monitor-copy.ts`에 `[영어, 한국어]` 쌍으로 있습니다.
+- **포트폴리오 분석**(iframe)은 EN일 때 `/portfolio-lab?lang=en`으로 열립니다. 단독 실행 화면은 `http://127.0.0.1:3108/portfolio?lang=en`이며, 오른쪽 위 링크로도 바꿀 수 있습니다.
+- **포트폴리오 API**는 `/api/portfolio/*?lang=en`으로 부르면 같은 계산 결과에 안내·오류 문구만 영어로 돌려줍니다. 영어판은 `qsignals/portfolio_i18n.py`에 있습니다.
+- **운영 파이프라인 진단 문구**(`trainingEvidence`, `reason`)는 원천이 한국어로만 남깁니다. 영어판은 `frontend/src/lib/operational-status.ts`의 `pipelineText`에 있고, 모르는 문구는 EN 화면에서 "KR에서 원문 확인" 안내로 대신 보여 줍니다.
+- 포트폴리오 코드에 한국어 문구를 새로 넣으면 `qsignals/portfolio_i18n.py`에 영어판도 넣으세요. 빠지면 `tests/test_portfolio_i18n.py`가 실패합니다.
 
 ## 포트폴리오 성과·벤치마크 요인분해
 
@@ -80,7 +101,7 @@ docker run -p 3108:3108 ghcr.io/jm973279/market-portfolio-risk-signals-intellige
 
 ## 자동 갱신
 
-[Refresh Korea event diagnostics](https://github.com/JM973279/market-qualitative-signals/actions/workflows/refresh-diagnostics.yml)는 **4시간마다** 공개 원본 점수와 공개 가격을 확인하며 수동 실행도 가능합니다. GitHub 예약 실행은 지연될 수 있습니다.
+[Refresh Korea event diagnostics](https://github.com/JM973279/market-portfolio-risk-signals-intelligence/actions/workflows/refresh-diagnostics.yml)는 **4시간마다** 공개 원본 점수와 공개 가격을 확인하며 수동 실행도 가능합니다. GitHub 예약 실행은 지연될 수 있습니다.
 
 추가 API 키 없이 실행하고, main에서 수집·검사·보고서 생성이 성공하면 입력과 보고서를 커밋합니다. 조회나 일치 검증이 실패하면 마지막 검증 파일을 덮어쓰지 않습니다. 같은 입력으로 불필요한 타임스탬프 변경 커밋을 만들지 않습니다. 보고서는 원천의 과거 `CURRENT` 문자열을 그대로 믿지 않고 실행 시점의 기대 거래일과 실제 관측일을 비교합니다.
 
@@ -101,6 +122,8 @@ python3 -m unittest discover -s tests -t .
 달력은 `data/calendar/`에 해시와 출처를 기록했습니다. exchange_calendars 4.13.2의 XKRX에 2026-06-03·07-17 추가 휴장을 반영했고 2016~2026년을 지원합니다. 지원 기간 밖 자료를 처리하려면 달력을 명시적으로 갱신해야 합니다. 핵심 코드와 검사는 Python 표준 라이브러리만 사용합니다.
 
 배포 저장소 경로가 다르면 `--source-root PATH`를 넘깁니다.
+
+**Windows에서 직접 실행할 때:** 저장소를 긴 경로에 두면 Windows 경로 길이 제한(260자)에 걸려 `data/portfolio/snapshots/...` 파일을 못 읽습니다. 또 기본 인코딩(cp949) 때문에 JSON 읽기가 실패할 수 있습니다. 짧은 경로에 clone하고 `git config core.longpaths true`, `git config core.autocrlf false`(해시 검증용 LF 유지), `PYTHONUTF8=1`을 쓰거나 WSL·Docker에서 실행하세요.
 
 ## 선택: 동결 파이프라인 직접 실행 (`qsignals.refresh`)
 
@@ -137,11 +160,11 @@ python3 -m qsignals.diagnose
 
 ## GitHub Actions 갱신 오류 해결
 
-`Daily V1 score refresh`는 `feat/live-score-refresh` 브랜치의 `.github/workflows/daily-refresh.yml`에 있습니다. 현재 `main`의 `Refresh Korea event diagnostics`와 별도 작업이며, 이 브랜치의 예약 실행은 기본 브랜치에 병합되기 전에는 동작하지 않습니다.
+`Daily V1 score refresh`(`.github/workflows/daily-refresh.yml`)는 `feat/live-score-refresh`와 `release/latest-site-docker` 브랜치에 있고 `main`에는 아직 없습니다. `main`의 `Refresh Korea event diagnostics`와 별도 작업이며, GitHub 예약 실행은 기본 브랜치(`main`)의 workflow만 돌기 때문에 `main`에 병합되기 전에는 예약 실행이 동작하지 않습니다. 그 전에는 수동 실행만 됩니다.
 
 `KRX_API_KEY is not set (V1 .env or environment)` 오류는 실행에 필요한 Secret이 전달되지 않았다는 뜻입니다. 실패 실행에서는 `KRX_API_KEY`와 `ECOS_API_KEY`가 모두 빈 값이었습니다.
 
-1. 이 저장소의 [Settings → Secrets and variables → Actions](https://github.com/JM973279/market-qualitative-signals/settings/secrets/actions)에서 **Repository secrets**로 `KRX_API_KEY`와 `ECOS_API_KEY`를 추가하거나 값을 갱신합니다.
+1. 이 저장소의 [Settings → Secrets and variables → Actions](https://github.com/JM973279/market-portfolio-risk-signals-intelligence/settings/secrets/actions)에서 **Repository secrets**로 `KRX_API_KEY`와 `ECOS_API_KEY`를 추가하거나 값을 갱신합니다.
 2. 두 값은 **Variables**가 아니라 **Secrets**에 저장해야 합니다. 다른 저장소의 Secrets와 로컬 `.env`는 GitHub runner로 자동 전달되지 않습니다. 이 작업에는 `environment:` 지정이 없으므로 Environment secrets만 등록해도 전달되지 않습니다.
 3. 설정 후 실패 실행에서 **Re-run failed jobs**를 선택합니다. 재실행은 원래 실행의 커밋을 사용합니다. 수정된 workflow 자체를 확인하려면 `feat/live-score-refresh`를 선택해 새 수동 실행을 시작해야 합니다.
 4. 키 누락 검사는 수집 전에 실행되어 누락된 **이름만** 오류와 작업 요약에 표시합니다. Secret 값은 출력하지 않습니다. 키가 존재해도 만료·권한·제공처 공개 지연은 별도 확인이 필요하며, 점수가 최신성 검사를 통과해야 발행됩니다.
@@ -163,6 +186,7 @@ cd frontend && npm ci && npm run build && npm run start   # http://localhost:300
 - **이 저장소 데이터로 바뀌는 것:** `operational-markets.json`(시장 카드, 미국·한국 시장 페이지의 운영 추론, 헤더 날짜)과 그것을 읽는 `korea-scenarios.json`. `export_frontend`는 `data/input/operational/<시장>.json`(점수 CSV와 같은 export에서 import가 저장한 시장별 상태 블록, 가격 없음)을 합치고, 모든 점수가 `<시장>_scores.csv`와 같은지 확인한 뒤 씁니다. 두 시장은 서로 다른 수집 실행에서 올 수 있고 `runId`에 둘 다 적힙니다.
 - **복사본 그대로인 것:** `global-markets.json`(walk-forward OOS 연구 export), `korea-monitor.json`(시장 확산도·과거 검증). 동결 연구 자료라 갱신하지 않습니다.
 - **배포 화면과 다른 점(refresh로 갱신한 경우):** refresh가 한국 원천 이력을 매번 최신으로 채우므로 학습 기준일 이후 한국 행은 모두 `RETROSPECTIVE_INFERENCE`(과거 캐시 재현 추론)로 표시됩니다. 배포 사이트는 V1 캐시 끝(10/15) 이후를 `OPERATIONAL`로 표시합니다. 점수 값은 같습니다.
+- **KR/EN:** EN 토글이면 포트폴리오 iframe을 `/portfolio-lab?lang=en`으로 열고 API도 영어 문구로 받습니다. 자세한 규칙은 위의 [화면 언어](#화면-언어-kr--en) 절을 보세요.
 - **포트폴리오 분석 메뉴**는 이 저장소의 포트폴리오 분석(`python3 -m qsignals.portfolio_server`, 기본 3108)을 사이트 안에 iframe으로 보여 줍니다. 사이트가 `/portfolio-lab`, `/portfolio/{app.js,style.css}`, `/api/portfolio/*`를 그 서버로 넘깁니다. 주소가 다르면 빌드할 때 `PORTFOLIO_API_INTERNAL_URL`로 지정합니다. 서버는 같은 출처만 iframe을 허용하고(`frame-ancestors 'self'`), 같은 PC의 프록시가 보낸 `X-Forwarded-Host`만 출처로 인정합니다.
 
 ## 구조
@@ -179,7 +203,12 @@ qsignals/refresh.py                 동결 파이프라인을 임시 사본에�
 qsignals/view.py                    reports/dashboard.html 생성 (data/input·reports만 읽음)
 qsignals/export_frontend.py         frontend/public/data/operational-markets.json 생성·검증
 data/input/operational/             시장별 상태 블록 (CSV와 같은 export에서 import가 저장)
-frontend/                           배포 저장소 화면 복사본 + 이 저장소 수정
+frontend/                           배포 저장소 화면 복사본 + 이 저장소 수정 (release/latest-site-docker)
+infra/aws/                          전체 사이트 Docker compose·Lightsail 배포 스크립트 (release/latest-site-docker)
+qsignals/portfolio*.py              포트폴리오 성과·요인분해·위험·역사적 재현 계산과 웹/API 서버
+qsignals/portfolio_i18n.py          포트폴리오 API의 영어 문구 (?lang=en)
+qsignals/portfolio_web/             포트폴리오 분석 화면 (사이트 iframe·단독 실행 공용)
+data/portfolio/                     GitHub Actions가 검증해 저장한 포트폴리오 가격·팩터 스냅샷
 market_engine/scenarios/            한국 급락 시나리오 큐레이션·빌더 (사례 분석 화면)
 scripts/setup_inference_env.sh      refresh용 별도 Python 환경
 qsignals/scores.py                  점수 시계열 병합·검증
