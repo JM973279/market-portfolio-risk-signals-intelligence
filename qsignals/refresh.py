@@ -21,8 +21,12 @@ throwaway snapshots, and then imports the Korea and US series:
    1 = verification failure (BLOCKED, nothing written).
 
 API keys are read from the V1 .env into the child environment only; they are
-never printed or written. Run logs and provider receipts stay in --work-root
-(outside this repo).
+never printed or written (only a length + SHA-256 prefix fingerprint, so a
+runner secret can be compared with a local .env). Before any download the KRX
+key is checked with one request per KRX endpoint: a rejected key makes the V1
+KRX downloaders retry every session since 2010 for hours, so the refresh stops
+at once instead. `--check-keys` runs only the checks (KRX and ECOS). Run logs
+and provider receipts stay in --work-root (outside this repo).
 """
 
 from __future__ import annotations
@@ -36,6 +40,9 @@ import shutil
 import subprocess
 import sys
 import tarfile
+import time
+import urllib.error
+import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -56,6 +63,15 @@ CONTRACT = "market_engine/operations/contract.json"
 RUNNER = "market_engine/operations/run.py"
 KOREA_RAW = ("krx_indices.csv", "vkospi.csv", "ecos_credit.csv")
 DOWNLOADERS = ("download_krx_indices", "download_vkospi", "download_ecos_credit")
+# Endpoints the V1 KRX downloaders call (same AUTH_KEY header). Service access is
+# granted per endpoint in KRX Open API, so both are checked.
+KRX_ENDPOINTS = {
+    "download_krx_indices": "http://data-dbg.krx.co.kr/svc/apis/idx/kospi_dd_trd",
+    "download_vkospi": "http://data-dbg.krx.co.kr/svc/apis/idx/drvprod_dd_trd",
+}
+KRX_CHECK_DATE = "20100104"  # first session the V1 downloaders request
+# One ECOS row of the V1 credit series (817Y002 / Treasury 3Y).
+ECOS_CHECK_URL = "https://ecos.bok.or.kr/api/StatisticSearch/{key}/json/kr/1/1/817Y002/D/20100104/20100108/010200000"
 
 
 class RefreshError(RuntimeError):
@@ -118,7 +134,97 @@ def load_env(path):
     return env
 
 
+def key_fingerprint(value):
+    """Length and SHA-256 prefix, to compare a runner secret with a local .env without revealing it."""
+    return f"len {len(value)}, sha256 {hashlib.sha256(value.encode()).hexdigest()[:8]}"
+
+
+def _http_get(url, headers=None, timeout=30):
+    """(status, body); HTTP errors are returned, network errors raised."""
+    request = urllib.request.Request(url, headers=headers or {})
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return response.status, response.read()
+    except urllib.error.HTTPError as exc:
+        return exc.code, exc.read()
+
+
+def _fetch(url, headers=None, attempts=3, wait=2.0):
+    """_http_get with a short retry for network errors (never reports the URL: ECOS keys sit in its path)."""
+    for attempt in range(1, attempts + 1):
+        try:
+            return _http_get(url, headers)
+        except OSError as exc:  # URLError, timeouts, connection resets
+            reason = getattr(exc, "reason", None) or type(exc).__name__
+            if attempt == attempts:
+                return None, f"unreachable after {attempts} attempts ({reason})".encode()
+            time.sleep(wait * attempt)
+
+
+def _json(body):
+    try:
+        return json.loads(body)
+    except ValueError:
+        return None
+
+
+def check_krx_key(key):
+    """One KRX request per downloader endpoint; returns problems ([] = accepted)."""
+    problems = []
+    for module, url in KRX_ENDPOINTS.items():
+        status, body = _fetch(f"{url}?basDd={KRX_CHECK_DATE}", {"AUTH_KEY": key})
+        data = _json(body)
+        if status == 200 and isinstance(data, dict) and isinstance(data.get("OutBlock_1"), list):
+            continue
+        if isinstance(data, dict):
+            message = data.get("respMsg") or "response without OutBlock_1"
+        else:
+            message = body[:120].decode(errors="replace").strip()
+        problems.append(f"{url.rsplit('/', 1)[-1]} ({module}): {'HTTP ' + str(status) if status else 'no response'} {message}")
+    return problems
+
+
+def check_ecos_key(key):
+    status, body = _fetch(ECOS_CHECK_URL.format(key=key))
+    data = _json(body)
+    if status == 200 and isinstance(data, dict) and "StatisticSearch" in data:
+        return []
+    if isinstance(data, dict) and "RESULT" in data:
+        result = data["RESULT"]
+        return [f"StatisticSearch: {result.get('CODE')} {result.get('MESSAGE')}"]
+    return [f"StatisticSearch: {'HTTP ' + str(status) if status else 'no response'} {body[:120].decode(errors='replace').strip()}"]
+
+
+def check_provider_keys(env, ecos):
+    """Stop before collection when a provider rejects a key; print fingerprints either way."""
+    checks = [("KRX_API_KEY", check_krx_key)] + ([("ECOS_API_KEY", check_ecos_key)] if ecos else [])
+    failed = []
+    for name, check in checks:
+        problems = check(env[name])
+        print(f"{name} ({key_fingerprint(env[name])}): {'rejected' if problems else 'accepted'}", file=sys.stderr)
+        failed += [(name, problem) for problem in problems]
+    if not failed:
+        return
+    lines = [f"- {name} {key_fingerprint(env[name])}: {problem}" for name, problem in failed]
+    names = sorted({name for name, _ in failed})
+    message = "\n".join([
+        f"Provider rejected {', '.join(names)}; nothing was collected or published.",
+        *lines,
+        "Update the value (repository secret on GitHub Actions, V1 .env locally) and run again.",
+        "Compare fingerprints with `python3 -m qsignals.refresh --check-keys` on a machine where the keys work.",
+    ])
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        print(f"::error title=API key rejected::{message.splitlines()[0]} {' '.join(lines)}", file=sys.stderr)
+        summary = os.environ.get("GITHUB_STEP_SUMMARY")
+        if summary:
+            with open(summary, "a", encoding="utf-8") as fh:
+                fh.write(f"### Score refresh stopped: API key rejected\n\n{message}\n")
+    raise SystemExit(message)
+
+
 def run_logged(cmd, cwd, env, log_path):
+    # Unbuffered children: a cancelled or timed-out run keeps its full log.
+    env = {**env, "PYTHONUNBUFFERED": "1"}
     with log_path.open("ab") as log:
         log.write(f"\n$ {' '.join(map(str, cmd))}\n".encode())
         log.flush()
@@ -246,7 +352,21 @@ def main(argv=None):
                         help="raw end date the original reference was built with")
     parser.add_argument("--rebuild-reference", action="store_true", help="rebuild and re-verify it even if present")
     parser.add_argument("--output-dir", type=Path, default=PROJECT_ROOT / "data" / "input")
+    parser.add_argument("--check-keys", action="store_true",
+                        help="only check KRX_API_KEY and ECOS_API_KEY with the providers and print fingerprints")
     args = parser.parse_args(argv)
+
+    env = dict(os.environ)
+    env.update(load_env(args.env_file or args.v1_repo / ".env"))
+    for key in ("KRX_API_KEY", "ECOS_API_KEY"):
+        if not env.get(key):
+            raise SystemExit(f"{key} is not set (V1 .env or environment)")
+    # KRX only on a refresh: its downloaders retry each session for hours on a
+    # rejected key, while ECOS fails within seconds by itself, and an extra ECOS
+    # call shortly before the real fetch can get that fetch rejected.
+    check_provider_keys(env, ecos=args.check_keys)
+    if args.check_keys:
+        return 0
 
     if not args.python.exists():
         raise SystemExit(f"Inference Python not found: {args.python} (see scripts/setup_inference_env.sh)")
@@ -261,12 +381,7 @@ def main(argv=None):
     v1_commit = find_v1_commit(args.v1_repo, contract["original_sources"])
     archive(args.v1_repo, v1_commit, work / "v1")
 
-    env = dict(os.environ)
-    env.update(load_env(args.env_file or args.v1_repo / ".env"))
     env["PYTHONPATH"] = str(work / "v1")
-    for key in ("KRX_API_KEY", "ECOS_API_KEY"):
-        if not env.get(key):
-            raise SystemExit(f"{key} is not set (V1 .env or environment)")
 
     args.v1_data.mkdir(parents=True, exist_ok=True)
     top_up_korea_raw(args.python, work / "v1", args.v1_data, env, log)

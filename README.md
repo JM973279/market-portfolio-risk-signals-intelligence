@@ -189,6 +189,13 @@ python3 -m qsignals.diagnose
 3. 설정 후 실패 실행에서 **Re-run failed jobs**를 선택합니다. 재실행은 원래 실행의 커밋을 사용합니다. 수정된 workflow 자체를 확인하려면 `feat/live-score-refresh`를 선택해 새 수동 실행을 시작해야 합니다.
 4. 키 누락 검사는 수집 전에 실행되어 누락된 **이름만** 오류와 작업 요약에 표시합니다. Secret 값은 출력하지 않습니다. 키가 존재해도 만료·권한·제공처 공개 지연은 별도 확인이 필요하며, 점수가 최신성 검사를 통과해야 발행됩니다.
 
+`Provider rejected KRX_API_KEY` 오류는 Secret은 전달됐지만 KRX가 그 값을 거부했다는 뜻입니다(`HTTP 401 Unauthorized Key`). 이전에는 V1 다운로더가 2010년부터 거래일마다 5회씩 재시도하다 300분 제한에 걸려 **취소**로 끝났고, 그동안 같은 concurrency group의 진단 갱신도 기다려야 했습니다. 지금은 `qsignals.refresh`가 다운로드 전에 KRX 엔드포인트 두 곳(`kospi_dd_trd`, `drvprod_dd_trd`)에 하루치 요청을 1건씩 보내 확인하고, 거부되면 즉시 실패합니다.
+
+1. 키가 정상 동작하는 PC에서 `python3 -m qsignals.refresh --check-keys`를 실행해 `len`·`sha256` 지문을 확인합니다(키 값 자체는 출력하지 않습니다).
+2. 실패한 Actions 로그의 지문과 비교합니다. 다르면 Secret에 다른 값이 저장된 것이므로 위 Settings → Secrets 화면에서 `KRX_API_KEY`를 다시 저장합니다. 앞뒤 공백·따옴표·줄바꿈 없이 키만 붙여 넣습니다.
+3. 지문이 같은데도 거부되면 KRX Open API에서 해당 서비스(KOSPI 시리즈 일별시세정보, 파생상품지수 시세정보) 이용 승인과 키 유효기간을 확인합니다.
+4. Secret을 고친 뒤 `main`에서 **Run workflow**로 새로 실행합니다. 데이터 저장은 `main` 실행에서만 하며, 다른 브랜치 실행은 검증까지만 합니다.
+
 Secrets 공식 안내: https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets
 재실행 공식 안내: https://docs.github.com/en/actions/how-tos/manage-workflow-runs/re-run-workflows-and-jobs
 
