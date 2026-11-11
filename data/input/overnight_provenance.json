@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "provider": "Yahoo Finance adjusted close (yfinance auto_adjust=True)",
+  "yfinance_version": "1.7.0",
+  "exchange_calendars_version": "4.13.2",
+  "tickers": [
+    "EWY",
+    "^SOX"
+  ],
+  "first_date": "2016-01-04",
+  "last_date": "2026-11-10",
+  "rows": 2730,
+  "next_us_session": "2026-11-11",
+  "coverage": {
+    "EWY": 1.0,
+    "^SOX": 1.0
+  },
+  "missing_sessions": {
+    "EWY": [],
+    "^SOX": []
+  },
+  "ignored_non_session_dates": {
+    "EWY": [],
+    "^SOX": []
+  },
+  "sha256": "5ee20b9ef6b747f9c540949c849d24a4afb698937824ee36d70e657c74bb2d88",
+  "use": "overnight overlay experiment and pre-open display only; frozen Risk Score/MSI unchanged",
+  "retrieved_at": "2026-11-11T10:22:03+00:00"
+}
