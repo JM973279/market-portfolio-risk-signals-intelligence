@@ -1,0 +1,64 @@
+{
+  "as_of": "2026-10-23",
+  "lookback_start": "2018-01-02",
+  "horizon_days": 10,
+  "note": "사전에 정한 충격 가정에 따른 추정치이며 미래 손실 예측이 아닙니다.",
+  "methodology": {
+    "regression": "separate_univariate",
+    "beta_frequency": "daily",
+    "significance_t": 2,
+    "shock_horizon_days": 10,
+    "approximation": "linear_beta_times_shock",
+    "scenarios_additive": false,
+    "is_forecast": false,
+    "limitations": [
+      "각 베타는 팩터를 하나씩 따로 회귀한 민감도이며, 다른 팩터의 영향을 통제한 순수 효과가 아닙니다.",
+      "팩터 간 상관으로 같은 시장 움직임이 중복 반영될 수 있으므로 시나리오별 손실은 합산하지 않습니다.",
+      "일별 베타에 10거래일 충격을 곱한 선형 근사이며, 미래 손실이나 발생 확률의 예측이 아닙니다."
+    ]
+  },
+  "scenarios": [
+    {
+      "id": "equity_selloff",
+      "name": "Equity Sell-off",
+      "definition": "주식시장 급락",
+      "factor": "market",
+      "unit": "return",
+      "rule": "스냅샷 기간 중 SPY 10거래일 수익률의 최저값",
+      "pnl_method": "손실률(%) = -포트폴리오 Market 베타 × 충격 × 100 (양수=손실, 음수=이익)",
+      "shock": -0.2329,
+      "reference": {
+        "start": "2020-03-04",
+        "end": "2020-03-18"
+      }
+    },
+    {
+      "id": "rate_shock",
+      "name": "Interest Rate Shock",
+      "definition": "10년 국채금리 급등",
+      "factor": "rate",
+      "unit": "bp",
+      "rule": "스냅샷 기간 중 DGS10 10거래일 변화(bp)의 최고값",
+      "pnl_method": "손실률(%) = -포트폴리오 Rate 베타(bp당) × 충격 × 100 (양수=손실, 음수=이익)",
+      "shock": 69.0,
+      "reference": {
+        "start": "2022-05-27",
+        "end": "2022-06-13"
+      }
+    },
+    {
+      "id": "volatility_shock",
+      "name": "Volatility Shock",
+      "definition": "시장 변동성 급등",
+      "factor": "volatility",
+      "unit": "pt",
+      "rule": "스냅샷 기간 중 VIX 10거래일 변화(pt)의 최고값",
+      "pnl_method": "손실률(%) = -포트폴리오 Volatility 베타(pt당) × 충격 × 100 (양수=손실, 음수=이익)",
+      "shock": 49.27,
+      "reference": {
+        "start": "2020-03-02",
+        "end": "2020-03-16"
+      }
+    }
+  ]
+}
