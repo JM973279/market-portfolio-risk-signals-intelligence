@@ -15,7 +15,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: daily-refresh
+  # Shared with refresh-diagnostics.yml: both write data/input, so never run them at once.
+  group: korea-data-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -93,13 +94,27 @@ jobs:
       - name: Refresh scores
         id: refresh
         run: |
-          set -o pipefail
+          # 0 all imported, 3 partial (a market's data is late: publish the other),
+          # 2 nothing new (no publish, not an error), 1/other = verification or pipeline failure.
+          set +e
           python -m qsignals.refresh \
             --python "$RUNNER_TEMP/mpri-inference/bin/python" \
             --source-root _deployed \
             --v1-repo _v1 \
             --v1-data "$V1_DATA" \
-            --work-root "$RUNNER_TEMP/runs" | tee "$RUNNER_TEMP/summary.json"
+            --work-root "$RUNNER_TEMP/runs" > "$RUNNER_TEMP/summary.json"
+          code=$?
+          set -e
+          cat "$RUNNER_TEMP/summary.json"
+          case "$code" in
+            0) echo "publish=true" >> "$GITHUB_OUTPUT" ;;
+            3) echo "::warning::Late data for some markets; publishing the verified ones only."
+               echo "publish=true" >> "$GITHUB_OUTPUT" ;;
+            2) echo "::warning::No market has new verified data yet; nothing to publish."
+               echo "publish=false" >> "$GITHUB_OUTPUT" ;;
+            *) echo "::error::Refresh failed (exit $code); nothing published."
+               exit "$code" ;;
+          esac
 
       - name: Check Korea raw history
         id: raw
@@ -124,6 +139,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Rebuild diagnostics and view
+        if: steps.refresh.outputs.publish == 'true'
         run: |
           python -m qsignals.diagnose
           python -m qsignals.view
@@ -131,11 +147,13 @@ jobs:
           python -m market_engine.scenarios.build_korea_library
 
       - name: Commit refreshed data
+        if: steps.refresh.outputs.publish == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/input reports frontend/public/data
           if git diff --cached --quiet; then echo "No changes"; exit 0; fi
-          last=$(python -c "import json;m=json.load(open('data/input/provenance.json'))['markets'];print(', '.join(f\"{k} {v['last_risk_date']}\" for k,v in m.items()))")
+          # Korea: provenance.json, US: us_provenance.json (separate files per market).
+          last=$(python scripts/published_dates.py)
           git commit -m "data: refresh V1 scores ($last)"
-          git push
+          bash scripts/push_data_commit.sh

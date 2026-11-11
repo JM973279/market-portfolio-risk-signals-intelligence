@@ -88,6 +88,16 @@ python3 -m qsignals.diagnose
 - **미국 점수는 배포 저장소 `main` 9bedc79 이후 코드에서만 나옵니다.** 그 이전 파이프라인은 Yahoo의 SPY 조정가격 재계산(과거 `SPY_1D_Return` 최대 1.6e-6 차이) 때문에 1e-9 재현 대조에서 미국을 `BLOCKED`로 보류합니다. 9bedc79의 `anchor_us_history`는 V1 캐시 행을 그대로 두고 이후 관측만 붙이므로 통과합니다. 이 저장소는 그 기준을 바꾸지 않고, 고른 `--source-ref`의 파이프라인 결과를 그대로 씁니다. 미국이 `BLOCKED`인 ref로 돌리면 `us_scores.csv`는 바뀌지 않습니다.
 - 미국은 FRED 신용 금리(DBAA/DGS10)가 SPY·VIX보다 며칠 늦게 공개되는 일이 많아 `DELAYED`가 흔합니다. 이때 점수는 마지막으로 모든 원천이 관측된 날까지만 있습니다.
 
+### 두 배치의 게시 규칙
+
+`refresh-diagnostics.yml`(4시간, GitHub 고정 export)과 `daily-refresh.yml`(일일, 파이프라인 직접 실행)은 같은 `data/input`을 씁니다.
+
+- **과거로 되돌리지 않습니다.** `import_data`/`import_us`는 기존 CSV보다 마지막 점수일이 오래된 입력을 게시하지 않습니다(`older_than_published`). 마지막 점수일이 같은데 점수·기록 유형이 다르면 기존 것을 유지합니다(`same_date_different_scores`). 가격만 바뀐 갱신과 더 새로운 날짜는 그대로 게시됩니다. 건너뛰면 결과의 `publication`에 이유가 남습니다.
+- **두 배치는 동시에 돌지 않습니다.** 같은 concurrency group(`korea-data-<ref>`)을 쓰고, 저장은 둘 다 `scripts/push_data_commit.sh`로 합니다.
+- **4시간 배치도 화면 export를 같이 갱신합니다.** import 뒤 `export_frontend`와 시나리오 빌더를 실행해 CSV와 화면 자료가 어긋나지 않습니다.
+- **시장별로 게시합니다.** `qsignals.refresh` 종료 코드: 0 모두 갱신, 3 일부 시장 지연(검증된 다른 시장은 게시), 2 새 자료 없음(게시 없음, 오류 아님), 1 검증 실패(BLOCKED, 아무것도 쓰지 않음). 일일 workflow는 0·3일 때만 저장하고, 1과 파이프라인 오류는 실패로 끝납니다.
+- 커밋 메시지의 시장별 날짜는 `scripts/published_dates.py`가 `provenance.json`(한국)과 `us_provenance.json`(미국)에서 읽습니다.
+
 ## GitHub Actions 갱신 오류 해결
 
 `Daily V1 score refresh`는 `feat/live-score-refresh` 브랜치의 `.github/workflows/daily-refresh.yml`에 있습니다. 현재 `main`의 `Refresh Korea event diagnostics`와 별도 작업이며, 이 브랜치의 예약 실행은 기본 브랜치에 병합되기 전에는 동작하지 않습니다.

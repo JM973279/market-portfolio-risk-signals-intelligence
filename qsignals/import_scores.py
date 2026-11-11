@@ -22,7 +22,7 @@ from pathlib import Path
 
 from qsignals.calendar import latest_closed_session, load_sessions, require_coverage
 from qsignals.prices import fetch_prices, parse_prices
-from qsignals.scores import build_rows, write_scores
+from qsignals.scores import build_rows, read_scores, write_scores
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_REPO = "tina77302/market-portfolio-risk-intelligence"
@@ -48,6 +48,45 @@ def _download(url):
     if len(raw) > 8_000_000:
         raise ValueError("Source export exceeds size limit")
     return raw
+
+
+def publication_check(rows, existing_csv, market="korea"):
+    """Why `rows` must not replace the published CSV, or None if it may.
+
+    Two batches write the same files (4-hourly pinned GitHub export, daily
+    pipeline refresh). Never let one move the published scores backwards:
+    - older_than_published: the candidate's last score date is earlier.
+    - same_date_different_scores: same last score date but different
+      risk/MSI/threshold/record type on a published date (e.g. the two paths
+      label post-cutoff rows differently). Price-only updates still pass.
+    A newer last score date always passes.
+    """
+    path = Path(existing_csv)
+    if not path.exists():
+        return None
+    published = read_scores(path, market)
+    old = [r for r in published if r.risk_v1 is not None]
+    new = [r for r in rows if r.risk_v1 is not None]
+    if not old:
+        return None
+    if new[-1].date < old[-1].date:
+        return "older_than_published"
+    if new[-1].date == old[-1].date:
+        key = lambda r: (r.risk_v1, r.msi, r.stress_threshold, r.record_type)
+        before = {r.date: key(r) for r in old}
+        if any(before.get(r.date, key(r)) != key(r) for r in new):
+            return "same_date_different_scores"
+    return None
+
+
+def _skipped(output_dir, provenance_name, reason, rows):
+    """Keep the published files; report the refused candidate."""
+    path = Path(output_dir) / provenance_name
+    published = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    scored = [r for r in rows if r.risk_v1 is not None]
+    return {**published, "publication": {"status": "skipped", "reason": reason,
+                                         "candidate_last_risk_date": scored[-1].date if scored else None,
+                                         "published_last_risk_date": published.get("last_risk_date")}}
 
 
 def load_source(source_root=None, source_repo=DEFAULT_REPO, source_ref="main"):
@@ -110,6 +149,9 @@ def import_data(payloads, files, source, output_dir, *, price_replay=None, extra
     if len(overlap) < 5:
         raise ValueError("Insufficient price-provider overlap with frozen reference")
     rows = build_rows(payloads["global_markets"], payloads["operational_markets"], prices)
+    reason = publication_check(rows, output_dir / "korea_scores.csv")
+    if reason:
+        return _skipped(output_dir, "provenance.json", reason, rows)
     sessions = load_sessions()
     actual = {r.date for r in rows}
     if actual - set(sessions):
@@ -183,6 +225,9 @@ def import_us(payloads, files, source, output_dir, *, extra=None):
     if not scored:
         raise ValueError("Empty or unscored US export")
     priced = [r for r in rows if r.kospi200_close is not None]
+    reason = publication_check(rows, output_dir / "us_scores.csv", "us")
+    if reason:
+        return _skipped(output_dir, "us_provenance.json", reason, rows)
     ops = payloads["operational_markets"]["markets"]["us"]
     provenance = {
         "schema_version": 1, **source,
@@ -222,7 +267,8 @@ def main(argv=None):
     provenance = import_data(payloads, files, source, args.output_dir, price_replay=args.price_replay)
     if args.us:
         import_us(payloads, files, source, args.output_dir)
-    print(json.dumps({k: provenance[k] for k in ("source_git_commit", "last_risk_date", "last_price_date", "rows", "korea_source_status", "missing_sessions")}, ensure_ascii=False))
+    keys = ("source_git_commit", "last_risk_date", "last_price_date", "rows", "korea_source_status", "missing_sessions", "publication")
+    print(json.dumps({k: provenance.get(k) for k in keys}, ensure_ascii=False))
 
 
 if __name__ == "__main__":

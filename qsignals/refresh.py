@@ -15,8 +15,10 @@ throwaway snapshots, and then imports the Korea and US series:
 3. Run run.py --collect inside the snapshot.
 4. Write korea_scores.csv only if Korea is CURRENT for its expected session,
    and us_scores.csv when US history was reproduced (CURRENT or DELAYED).
-   A market that does not qualify keeps its previous file; a stale Korea run
-   exits 2 even when US was updated.
+   A market that does not qualify keeps its previous file. Scores older than
+   (or relabeled against) the published CSV are never written. Exit 0 = all
+   imported, 3 = partial (a market's data is late), 2 = nothing new,
+   1 = verification failure (BLOCKED, nothing written).
 
 API keys are read from the V1 .env into the child environment only; they are
 never printed or written. Run logs and provider receipts stay in --work-root
@@ -291,13 +293,26 @@ def main(argv=None):
         branch = git(args.source_root, "rev-parse", "--abbrev-ref", args.source_ref)
     except RefreshError:
         branch = None
+    # Exit codes (the daily workflow publishes on 0 and 3 only):
+    #   0  every market imported or already up to date
+    #   3  partial: a market's data is late (Korea not CURRENT / US DELAYED without
+    #      new verified rows) but the other market was imported -> publish it
+    #   2  nothing new: every market late, nothing written
+    #   1  verification failure (BLOCKED: historical reproduction failed) -> nothing
+    #      written, nothing published. Pipeline errors exit non-zero via SystemExit.
+    blocked = sorted(m for m, v in operational["markets"].items() if v.get("status") == "BLOCKED")
+    if blocked:
+        summary["blocked"] = blocked
+        print(json.dumps(summary, indent=2, ensure_ascii=False))
+        print(f"Verification failed (BLOCKED: {', '.join(blocked)}); data/input/ left unchanged.", file=sys.stderr)
+        return 1
     # Korea is written only when CURRENT; US whenever its history was verified.
-    # A stale Korea run still updates US but exits 2 so schedulers notice.
     markets = tuple(m for m, ok in (("korea", status["korea"]["fresh"]),
                                     ("us", us_importable(operational["markets"]["us"]))) if ok)
+    summary["delayed"] = [m for m in ("korea", "us") if m not in markets]
     if not markets:
         print(json.dumps(summary, indent=2, ensure_ascii=False))
-        print("Neither market is importable; data/input/ left unchanged.", file=sys.stderr)
+        print("No market has new verified data yet; data/input/ left unchanged.", file=sys.stderr)
         return 2
     # Same import as qsignals.import_scores (calendar coverage, KOSPI200 price
     # check), fed with this run's exports instead of the committed ones.
@@ -322,20 +337,21 @@ def main(argv=None):
         "us": {**status["us"], "imported": "us" in markets,
                "provider_revision": operational["markets"]["us"].get("providerRevision")},
     }
-    summary["imported"] = list(markets)
-    summary["last_risk_date"] = {}
-    if "korea" in markets:
-        summary["last_risk_date"]["korea"] = import_data(payloads, files, source, args.output_dir,
-                                                         extra={"refresh": refresh})["last_risk_date"]
-    if "us" in markets:
-        summary["last_risk_date"]["us"] = import_us(payloads, files, source, args.output_dir,
-                                                    extra={"refresh": refresh})["last_risk_date"]
+    summary["imported"], summary["skipped"], summary["last_risk_date"] = [], {}, {}
+    for market in markets:
+        importer = import_data if market == "korea" else import_us
+        result = importer(payloads, files, source, args.output_dir, extra={"refresh": refresh})
+        summary["last_risk_date"][market] = result.get("last_risk_date")
+        if result.get("publication", {}).get("status") == "skipped":
+            # Older or relabeled scores never replace what is already published.
+            summary["skipped"][market] = result["publication"]
+        else:
+            summary["imported"].append(market)
     print(json.dumps(summary, indent=2, ensure_ascii=False))
-    if "korea" not in markets:
-        print("Korea is not CURRENT; korea_scores.csv left unchanged (US updated).", file=sys.stderr)
-        return 2
+    if summary["delayed"]:
+        print(f"Late data for {', '.join(summary['delayed'])}; kept the published files for it.", file=sys.stderr)
+        return 3
     return 0
-
 
 if __name__ == "__main__":
     sys.exit(main())

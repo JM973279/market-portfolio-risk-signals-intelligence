@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "source_repo": "market-portfolio-risk-intelligence",
+  "source_repo_url": null,
+  "source_git_branch": "main",
+  "source_git_ref": "main",
+  "source_git_commit": "9bedc79f3dd9b553d3cbb88502e84cae817b9d1d",
+  "source_files_modified_locally": false,
+  "imported_at": "2026-11-11T04:13:52+00:00",
+  "files": {
+    "global_markets": {
+      "path": "frontend/public/data/global-markets.json",
+      "bytes": 1611404,
+      "sha256": "21b2b6fab853da7e078c3194887d2b665717e867b8491ab3ad9e410bcd2d857b"
+    },
+    "operational_markets": {
+      "path": "frontend/public/data/operational-markets.json",
+      "bytes": 49269,
+      "sha256": "839877893444a6218ec79ea36d1e402ec076666a61a9a8f2f9283291300ab321"
+    }
+  },
+  "operational_run_id": "20261111T032938Z-32dcdc4b",
+  "operational_model_sha256": "90c51c245ebe62b58f804098a7a7045b60fb64ef83da72d4c9a049cf8d5eeb0d",
+  "training_cutoff": "2026-09-16",
+  "us_expected_date": "2026-11-09",
+  "us_source_status": "CURRENT",
+  "rows": 5094,
+  "record_type_counts": {
+    "NO_SCORE": 1,
+    "OOS_WALK_FORWARD": 5060,
+    "OPERATIONAL": 24,
+    "RETROSPECTIVE_INFERENCE": 9
+  },
+  "first_date": "2006-08-09",
+  "last_date": "2026-11-09",
+  "last_risk_date": "2026-11-09",
+  "last_price_date": "2026-10-05",
+  "refresh": {
+    "mode": "provider-refresh",
+    "v1_commit": "e939dc358c3bca92fee4c318d4bb297fd80debd3",
+    "generated_at": "2026-11-11T03:29:38.172124+00:00",
+    "us": {
+      "status": "CURRENT",
+      "expected_date": "2026-11-09",
+      "current_date": "2026-11-09",
+      "last_valid_date": "2026-11-09",
+      "fresh": true,
+      "reason": null,
+      "series": {
+        "SPY": "2026-11-09",
+        "VIX": "2026-11-09",
+        "DBAA": "2026-11-09",
+        "DGS10": "2026-11-09"
+      },
+      "imported": true,
+      "provider_revision": {
+        "cacheEnd": "2026-10-05",
+        "channels": {
+          "SPY": {
+            "overlapDates": 258,
+            "scale": 1.0,
+            "maxRelativeDifference": 1.8676930013247548e-07
+          },
+          "VIX": {
+            "overlapDates": 260,
+            "scale": 1.0,
+            "maxRelativeDifference": 1.9350291724922078e-16
+          },
+          "BAA_Treasury_Spread": {
+            "overlapDates": 255,
+            "scale": 1.0,
+            "maxRelativeDifference": 2.453531546132943e-16
+          }
+        },
+        "appendedDates": 25
+      }
+    },
+    "note": "us_provenance.json rebuilt on 2026-11-11 from the same run's retained export (merge moved US provenance to its own file)"
+  },
+  "scores_sha256": "930d0d5369b54221bb139420c80a1f3c2183af8f99786ded9810ec79286f53dd"
+}
