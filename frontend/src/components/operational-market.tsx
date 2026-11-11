@@ -1,0 +1,40 @@
+"use client";
+import { useState } from "react";
+import { useDashboard } from "./dashboard-shell";
+import { currentOperationalPoint, lastValidOperationalPoint, operationalMessage, pipelineText, staleScoreNote } from "@/lib/operational-status";
+
+export default function OperationalMarket({ country }: { country: "us" | "korea" }) {
+ const { operational, language } = useDashboard();
+ const market = operational?.markets[country];
+ const ko = language === "ko";
+ const current = currentOperationalPoint(market);
+ // 최신 자료가 안 들어왔으면 N/A 대신 마지막 유효 점수를 보여 주고, 제목을 "마지막 유효"로 바꾼 뒤 아래에 주석을 단다.
+ const fallback = lastValidOperationalPoint(market);
+ const shown = current ?? fallback;
+ const note = staleScoreNote(market, language);
+ const label = (koText: string, enText: string) => fallback ? (ko ? `마지막 유효 ${koText}` : `Last valid ${enText}`) : (ko ? `현재 ${koText}` : `Current ${enText}`);
+ const [selected, setSelected] = useState("");
+ const row = market?.history.find(point => point.date === (selected || market.lastValid?.date));
+ const availability = market?.availability?.find(point => point.date === (selected || market.lastValid?.date));
+ const metric = (value: number | null | undefined, risk = false) => typeof value === "number" ? risk ? `${(value * 100).toFixed(1)}%` : value.toFixed(3) : "N/A";
+ const status = current ? (ko ? "필수 관측 확인" : "Required observations verified") : market?.status === "BLOCKED" ? (ko ? "검증 보류" : "Validation blocked") : (ko ? "최신 자료 대기" : "Awaiting current data");
+ return <section className="panel operational-market" aria-label={ko ? "운영 데이터 품질 및 신규 추론" : "Operational data quality and inference"}>
+  <div className="panel-header"><h2>{ko ? "운영 데이터 · Frozen V1 추론" : "Operational data · Frozen V1 inference"}</h2><span className="tag">{status}</span></div>
+  <p>{ko ? "과거 OOS 검증과 별도로 실행한 고정 모델 추론입니다. 시장 스트레스의 보정된 확률이나 포트폴리오 손실 확률을 뜻하지 않습니다." : "Frozen model inference is separate from historical OOS validation. It is not a calibrated stress or portfolio-loss probability."}</p>
+  <div className="country-meta"><span>{ko ? "현재 수집 기준 관측일" : "Due observation date"}: <b>{market?.expectedDate ?? "N/A"}</b></span><span>{ko ? "내보내기 생성 시각 (UTC)" : "Export generated (UTC)"}: <b>{operational?.generatedAt ?? "N/A"}</b></span></div>
+  <div className="selected-metrics"><div><span>{label("Risk Score", "Risk Score")}</span><strong>{metric(shown?.risk, true)}</strong></div><div><span>{label("MSI", "MSI")}</span><strong>{metric(shown?.msi)}</strong></div><div><span>{label("공식 임계값", "official threshold")}</span><strong>{metric(shown?.threshold)}</strong></div><div><span>{ko ? "실제 점수 관측일" : "Score observation date"}</span><strong className="selected-date">{shown?.date ?? "N/A"}</strong></div></div>
+  {note && <p className="stale-note">{note}</p>}
+  <p className="panel-note">{ko ? "추론 실행 시각 (UTC)" : "Inference time (UTC)"}: {market?.inferenceAt ?? "N/A"}</p>
+  <p role="status">{operationalMessage(market, language)}</p>
+  <div className="table-scroll"><table><caption>{ko ? "원천별 실제 관측일과 수집 시각" : "Source observation and retrieval times"}</caption><thead><tr><th>{ko ? "자료 / 출처" : "Series / provider"}</th><th>{ko ? "실제 관측일" : "Observation date"}</th><th>{ko ? "수집 시각 (UTC)" : "Retrieved (UTC)"}</th><th>{ko ? "품질 상태" : "Quality"}</th></tr></thead><tbody>{market?.series.map(source => <tr key={source.name}><th scope="row">{source.name}<small className="operational-provider">{source.provider}</small></th><td>{source.observationDate ?? "N/A"}</td><td>{source.retrievedAt ?? (ko ? "기존 캐시 · 시각 미확인" : "Legacy cache · time unknown")}</td><td>{source.reason ? (ko ? source.reason : source.status === "ERROR" ? "Source retrieval failed; see original diagnostics." : "Legacy source or delayed observation; see dates.") : (ko ? "원천 응답 확인 · 날짜별 가용성 참조" : "Response verified · see date availability")}</td></tr>)}</tbody></table></div>
+  {market?.lastValid && <details open><summary>{ko ? "관측일별 추론 기록" : "Inference observation history"} · {market.lastValid.date} · {ko ? "OOS 검증과 별도" : "separate from OOS validation"}</summary>
+   <label className="field-label">{ko ? "관측일 선택 (운영/재현 추론 전용)" : "Choose date (operational/reproduced inference only)"}<select value={selected || market.lastValid.date} onChange={event => setSelected(event.target.value)}>{market.history.map(point => <option key={point.date}>{point.date}</option>)}</select></label>
+   <div className="selected-metrics"><div><span>Risk Score · {row?.date}</span><strong>{metric(row?.risk, true)}</strong></div><div><span>MSI</span><strong>{metric(row?.msi)}</strong></div><div><span>{ko ? "공식 임계값" : "Official threshold"}</span><strong>{metric(row?.threshold)}</strong></div><div><span>{ko ? "기록 유형" : "Record type"}</span><b>{row?.recordType === "OPERATIONAL" ? (ko ? "신규 수집 후 추론" : "Provider-refreshed inference") : (ko ? "과거 캐시 재현 추론" : "Retrospective cache inference")}</b></div></div>
+   <p className="panel-note">{ko ? "관측 누락일에는 점수를 만들거나 이월하지 않습니다. 아래 기존 연구 차트와 성능 지표는 OOS 기록만 사용합니다." : "No scores are created or carried over for missing dates. Existing research charts and performance metrics use OOS records only."}</p>
+   {availability && <p>{ko ? "선택일 실제 원천 관측" : "Real observations on selected date"}: {availability.available.join(" · ") || "N/A"}</p>}
+  </details>}
+  <p className="panel-note">{ko ? "가용성 표의 원천" : "Availability table provenance"}: {market?.availabilityOrigin === "provider-refresh" ? (ko ? "이번 제공처 수집" : "This provider refresh") : (ko ? "기존 캐시" : "Legacy cache")}</p>
+  <details><summary>{ko ? "날짜별 원천 가용성 · 최근 60개 원천 날짜" : "Daily source availability · last 60 source dates"}</summary><div className="table-scroll"><table><thead><tr><th>{ko ? "관측일" : "Date"}</th><th>{ko ? "관측 확인" : "Observed"}</th><th>{ko ? "결측" : "Missing"}</th></tr></thead><tbody>{market?.availability?.slice().reverse().map(point => <tr key={point.date}><th scope="row">{point.date}</th><td>{point.values ? Object.entries(point.values).map(([name, value]) => `${name}: ${value === null ? "N/A" : value.toFixed(4)}`).join(" · ") : point.available.join(" · ") || "—"}</td><td>{point.missing.join(" · ") || "—"}</td></tr>)}</tbody></table></div></details>
+  <details><summary>{ko ? "모델 검증 및 출처 이용 조건" : "Model verification and source terms"}</summary><p>{pipelineText(market?.trainingEvidence, language)}</p>{market?.reason && <p lang={ko ? "ko" : "en"}>{ko ? "원본 진단" : "Original diagnostic"}: {pipelineText(market.reason, language)}</p>}<p>SHA-256: <code className="operational-hash">{market?.modelSha256 ?? "N/A"}</code></p><p>{ko ? "공식 거래소 달력과 시장별 마감 후 공개 여유 시간(한국 6시간, 미국 12시간)을 적용한 기준일입니다. 실제 공개 지연은 원천 관측일과 구분합니다. 정적 export이므로 갱신 후 rebuild/restart가 필요합니다." : "Due dates use exchange calendars with a 6-hour Korea / 12-hour US publication allowance. Actual release delays remain visible in source dates. Static exports require rebuild/restart after refresh."}</p><p>{ko ? "공개 접근이 재배포 허가를 뜻하지 않습니다. DBAA는 Moody’s 저작권 데이터이며, KRX 지수와 Yahoo 데이터도 이용 제한이 있습니다." : "Public access does not grant redistribution rights. DBAA is copyrighted by Moody’s; KRX and Yahoo also impose usage restrictions."} <a href="https://fred.stlouisfed.org/series/DBAA">Moody’s via FRED</a> · <a href="https://fred.stlouisfed.org/series/DGS10">Treasury via FRED</a> · <a href="https://openapi.krx.co.kr/contents/OPP/INFO/OPPINFO002.jsp">KRX</a> · <a href="https://ecos.bok.or.kr/api/">BOK ECOS</a> · <a href="https://github.com/ranaroussi/yfinance">Yahoo / yfinance</a></p></details>
+ </section>;
+}

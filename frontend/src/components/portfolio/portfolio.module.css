@@ -1,0 +1,77 @@
+.section {margin-top:16px}
+.sectionTitle {display:flex;align-items:baseline;gap:12px;margin:26px 2px 10px}
+.sectionTitle h2 {font-size:20px}
+.sectionTitle p {margin:0;font-size:12px}
+.step {align-self:center;font-size:10px;font-weight:700;letter-spacing:.6px;color:#2563a6;background:#e8f1fb;border-radius:4px;padding:2px 7px;white-space:nowrap}
+.panelTitle {display:flex;align-items:center;gap:10px}
+
+.alert {border-color:#f1c9ce;background:#fff8f8}
+.alert h2 {color:#a8414c}
+.alert code {display:inline-block;background:#f6eef0;border-radius:4px;padding:3px 7px;margin-top:4px;font-size:12px}
+
+.editor td,.editor th {padding:7px 8px}
+.editor select {width:100%;min-width:200px;font-size:12px}
+.editor input {width:100%;max-width:110px;border:1px solid #dce6f1;border-radius:6px;padding:7px 9px;text-align:right;color:var(--navy);font-variant-numeric:tabular-nums}
+.editor td:last-child {width:70px;text-align:center}
+.removeButton {font-size:11px;padding:5px 8px}
+.editorFooter {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
+.total {font-size:12px;color:#37587d;font-variant-numeric:tabular-nums}
+.total b {margin-left:6px}
+.totalBad b {color:#c0404e}
+.valueField {display:flex;align-items:center;gap:10px;font-size:12px;color:#657e9b}
+.valueField input {width:140px;border:1px solid #dce6f1;border-radius:6px;padding:7px 9px;text-align:right;color:var(--navy);font-variant-numeric:tabular-nums}
+.actions {display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.primary {background:var(--navy);color:white;border-color:var(--navy);font-weight:600}
+.primary:hover {background:#1d3d66}
+.problem {font-size:12px;color:#b03a48;margin:10px 0 0}
+
+.legend {display:flex;flex-wrap:wrap;gap:6px 16px;font-size:10px;color:#6580a0;margin-bottom:10px}
+.legend span {display:flex;align-items:center;gap:6px}
+.swatch {display:inline-block;width:12px;height:8px;border-radius:2px}
+.weightFill {background:#9db8d6}
+.riskFill {background:#173f70}
+.lossFill {background:#e86371}
+.gainFill {background:#2563a6}
+
+.barRows {display:flex;flex-direction:column;gap:11px}
+.barRow {display:grid;grid-template-columns:62px minmax(0,1fr) 128px;gap:10px;align-items:center;font-size:12px}
+.barRow>span:first-child {font-weight:600;color:#23446d}
+.tracks {display:flex;flex-direction:column;gap:3px}
+.track {height:8px;background:#eef3f8;border-radius:2px;overflow:hidden}
+.track>span {display:block;height:100%;border-radius:2px}
+.barValue {text-align:right;font-size:11px;color:#5d718a;font-variant-numeric:tabular-nums;white-space:nowrap}
+.barValue b {font-weight:600;margin-left:6px}
+.up {color:#c0404e}
+.down {color:#2563a6}
+
+.sectorRow {display:grid;grid-template-columns:minmax(120px,1.2fr) minmax(0,2fr) 52px;gap:10px;align-items:center;font-size:12px}
+.sectorRow b {text-align:right;font-weight:500;color:#3d5b7d;font-variant-numeric:tabular-nums}
+
+.heatCell {font-variant-numeric:tabular-nums;border-radius:3px}
+
+.stressGrid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.stressCard {display:flex;flex-direction:column;gap:10px}
+.stressCard h3 {font-size:15px;color:var(--navy)}
+.shock {font-size:12px;color:#37587d}
+.reference {font-size:10px;color:#7d90a8}
+.headline {display:flex;flex-direction:column;border-top:1px solid #edf1f7;border-bottom:1px solid #edf1f7;padding:10px 0}
+.headline span {font-size:11px;color:#657e9b}
+.headline strong {font-size:28px;font-weight:600;letter-spacing:-.6px;line-height:1.25;font-variant-numeric:tabular-nums}
+.headline small {font-size:12px;color:#5d718a;font-variant-numeric:tabular-nums}
+.lossText {color:#c0404e}
+.gainText {color:#2563a6}
+.neutralText {color:#8195af}
+.uncertain {font-size:11px;font-style:normal;color:#7d90a8;margin-top:4px}
+.faded {opacity:.4}
+.assetRow {display:grid;grid-template-columns:48px minmax(0,1fr) 86px;gap:8px;align-items:center;font-size:11px}
+.assetRow>span:first-child {font-weight:600;color:#23446d}
+.assetRow>b {text-align:right;font-weight:500;color:#3d5b7d;font-variant-numeric:tabular-nums}
+.limitations {margin:8px 0 0;padding-left:18px;font-size:12px;color:#5d718a;line-height:1.8}
+
+.whatifGrid {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px;align-items:start}
+.detail {display:block;font-size:10px;color:#8195af;font-weight:400}
+.worse {color:#c0404e;font-weight:600}
+.better {color:#2563a6;font-weight:600}
+
+@media(max-width:1150px) {.stressGrid,.whatifGrid {grid-template-columns:1fr}}
+@media(max-width:760px) {.barRow {grid-template-columns:52px minmax(0,1fr) 112px}.editor select {min-width:150px}.sectionTitle {flex-direction:column;gap:2px}}

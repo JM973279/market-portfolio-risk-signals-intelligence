@@ -11,6 +11,8 @@ python3 -m qsignals.portfolio_server
 # http://127.0.0.1:3108/portfolio
 ```
 
+영어 화면은 `http://127.0.0.1:3108/portfolio?lang=en`입니다. 사이트(frontend)의 EN 토글은 iframe 주소에 `?lang=en`을 붙이고, API(`/api/portfolio/*?lang=en`)도 같은 계산 결과의 안내·오류 문구를 영어로 돌려줍니다. 새 한국어 문구를 추가하면 `qsignals/portfolio_i18n.py`에 영어판을 함께 넣으세요(`tests/test_portfolio_i18n.py`가 확인).
+
 처음부터 GitHub에서 검증 파일을 다시 받아 재현하려면 다음을 실행합니다. 웹/API 요청에서는 외부 제공처를 호출하지 않습니다.
 
 ```bash
@@ -155,3 +157,12 @@ PLAYWRIGHT_MODULE=/path/to/playwright node scripts/check_portfolio_browser.cjs
 ```
 
 이 옵션은 기록된 GitHub 원본 SHA를 다시 읽고, 가격·금리 제공처 호출 대신 보존된 응답을 해시 검증해 재사용합니다. 제공처 재현이며 GitHub 원본 조회는 남아 있습니다. 원본의 역사적 충격 정의는 다시 추정하지 않고 `scenario_as_of`를 별도로 표시합니다. 위험 베타·변동성 추정 기간은 새로 확보한 자료로 이동합니다. 새 수집본이 기존 가격 기준일보다 과거이면 게시하지 않습니다.
+
+## 역사적 재현 (`qsignals/portfolio_replay.py`)
+
+위험 분석 아래 "역사적 재현"은 지금 비중을 과거 구간 시작일부터 그대로 보유했을 때의 실제 가격 변화입니다. 베타·추정 없이 검증된 스냅샷 수정종가만 씁니다. 손익 부호는 다른 표와 같이 이익 +, 손실 −입니다.
+
+- **가상 충격과 같은 구간:** `scenarios.json`의 각 시나리오 `reference` 구간. 위험 분석의 선형 근사(베타 × 충격)와 나란히 보여 줍니다.
+- **한국 급락 전후 (해외발):** 시나리오 분석 화면의 `frontend/public/data/korea-scenarios.json`에서 국내발이 아닌 사례만 씁니다. 한국 충격 기준일 직전 미국 종가부터 `horizon_days`(10) 미국 거래일입니다. 이 포트폴리오의 구간 중 최악 손익이 큰 순서로 상위 5건을 먼저 보여 줍니다.
+- 국내발 사례, KOSPI200 가격이 아직 없는 사례, 스냅샷 밖 구간, 보유 자산 가격이 빠진 구간은 재현하지 않고 이유를 표시합니다. 시나리오 파일이 없으면 가상 충격 구간만 재현합니다.
+- 구간이 겹칠 수 있어 손익을 합산하지 않으며, 미래 예측이 아닙니다.

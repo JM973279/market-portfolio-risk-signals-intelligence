@@ -1,0 +1,20 @@
+// Test calendar alignment and null gaps without installing a test framework.
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+import ts from 'typescript';
+const source = fs.readFileSync('src/lib/chart-data.ts', 'utf8');
+const code = ts.transpileModule(source, {compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText;
+const moduleValue = {exports:{}};
+vm.runInNewContext(code, {module:moduleValue,exports:moduleValue.exports});
+const {rangeStart, timestamp, linePath} = moduleValue.exports;
+assert.equal(rangeStart('2026-03-31','1M','2006-01-01'), timestamp('2026-02-28'));
+assert.equal(rangeStart('2024-03-31','1M','2006-01-01'), timestamp('2024-02-29'));
+assert.equal(rangeStart('2026-10-27','6M','2006-01-01'), timestamp('2026-04-27'));
+assert.equal(rangeStart('2026-10-27','ALL','2006-08-09'), timestamp('2006-08-09'));
+const points = [{date:'2026-01-01',price:100,risk:.1},{date:'2026-01-02',price:101,risk:null},{date:'2026-01-05',price:102,risk:.4}];
+const x = day => (timestamp(day)-timestamp('2026-01-01'))/86400000;
+assert.equal(linePath(points,'risk',x,n=>n*100),'M0.00,10.00  M4.00,40.00');
+assert.equal(linePath(points,'price',x,n=>n),'M0.00,100.00 L1.00,101.00 L4.00,102.00');
+assert.equal(linePath([{date:'2026-01-01',price:null,risk:null}],'risk',x,n=>n),'');
+console.log('PASS: calendar month ranges, leap-year alignment, null path breaks, calendar-day spacing, all-missing data');

@@ -4,15 +4,15 @@
 
 ## 입력
 
-- 점수: `tina77302/market-portfolio-risk-intelligence` `main` @ `9bedc79`, 2016-09-13 ~ 2026-11-10 (2,489행)
+- 점수: `tina77302/market-portfolio-risk-intelligence` `main` @ `9bedc79`, 2016-09-13 ~ 2026-11-11 (2,490행)
   - `frontend/public/data/global-markets.json` sha256 `21b2b6fab853…`
   - `frontend/public/data/operational-markets.json` sha256 `0ca354224acb…`
-  - 기록 유형: 점수 없음 1행, walk-forward OOS 2,454행, 동결 모델 운영 추론 17행, 동결 모델 사후 추론 17행 (동결 모델 학습 기준일 2026-09-16)
-  - KOSPI200 가격은 2026-11-10까지만 있습니다.
+  - 기록 유형: 점수 없음 2행, walk-forward OOS 2,454행, 동결 모델 운영 추론 17행, 동결 모델 사후 추론 17행 (동결 모델 학습 기준일 2026-09-16)
+  - KOSPI200 가격은 2026-11-11까지만 있습니다.
   - V1 점수 마지막 관측일: 2026-11-09; 한국 원천 생성: 2026-11-10T12:29:59.077890+00:00
-  - 가격 보충: [Naver Finance KPI200](https://fchart.stock.naver.com/sise.nhn?symbol=KPI200&timeframe=day&count=500&requestType=0), 원응답 sha256 `0b7a471088c36d87af674a11da94e46282dfbbb2313ce1e0cf7a2ede39caefc1`
+  - 가격 보충: [Naver Finance KPI200](https://fchart.stock.naver.com/sise.nhn?symbol=KPI200&timeframe=day&count=500&requestType=0), 원응답 sha256 `5254528c2f9628a80a6ec0e1fea71d8fa83d48e04d52a877b65f809dc4cf3369`
   - 동결 가격과 겹치는 474일 대조, 최대 절대 차이 0.000000. 가격은 사건 수익률에만 사용하며 점수·MSI는 바꾸지 않았습니다.
-  - 생성 CSV sha256 `509dcd298a7d52473ef31921b21d5fab6fc3ced2bb33be721df6f333505673a6`
+  - 생성 CSV sha256 `872793ad8c0b3566f937cd6f91ca1d9f9a1f107133ec70b373d2e5f0991e2362`
   - 최신성 점검일: 2026-11-11 KST; 6시간 게시 여유를 적용한 기대 거래일 2026-11-10
   - **갱신 지연**: 기대 거래일까지의 점수 또는 가격이 없습니다. 데이터 마지막 관측일 이후를 정상·무경보로 판정하지 않습니다.
   - KRX 거래일 누락: 0일
@@ -59,7 +59,7 @@
 
 ## 뉴스 목록에 없는 급락일 (KOSPI200 -5% 이하)
 
-2026-01-01 이후 가격 데이터(2026-11-10까지)에서 종가 기준 -5% 이하 하락일은 26일이고, 그중 16일은 뉴스 목록에 없습니다. 급락 사례를 뉴스로 고르면 기사화된 날만 남으므로, 진단 대상은 가격 데이터로 고르는 편이 안전합니다.
+2026-01-01 이후 가격 데이터(2026-11-11까지)에서 종가 기준 -5% 이하 하락일은 26일이고, 그중 16일은 뉴스 목록에 없습니다. 급락 사례를 뉴스로 고르면 기사화된 날만 남으므로, 진단 대상은 가격 데이터로 고르는 편이 안전합니다.
 
 | 날짜 | 데이터 KOSPI200 | 전일 위험도 | 직전 10일 최고 | 경보일 | 당일 MSI / 기준 | 판정 |
 |---|---:|---:|---:|---:|---:|---|

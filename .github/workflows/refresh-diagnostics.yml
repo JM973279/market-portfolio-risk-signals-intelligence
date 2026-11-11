@@ -23,7 +23,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: korea-diagnostics-${{ github.ref }}
+  # Shared with daily-refresh.yml: both write data/input, so never run them at once.
+  group: korea-data-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
