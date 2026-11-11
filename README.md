@@ -60,6 +60,20 @@ python3 -m qsignals.diagnose
 - **미국 점수는 배포 저장소 `main` 9bedc79 이후 코드에서만 나옵니다.** 그 이전 파이프라인은 Yahoo의 SPY 조정가격 재계산(과거 `SPY_1D_Return` 최대 1.6e-6 차이) 때문에 1e-9 재현 대조에서 미국을 `BLOCKED`로 보류합니다. 9bedc79의 `anchor_us_history`는 V1 캐시 행을 그대로 두고 이후 관측만 붙이므로 통과합니다. 이 저장소는 그 기준을 바꾸지 않고, 고른 `--source-ref`의 파이프라인 결과를 그대로 씁니다. 미국이 `BLOCKED`인 ref로 돌리면 `us_scores.csv`는 바뀌지 않습니다.
 - 미국은 FRED 신용 금리(DBAA/DGS10)가 SPY·VIX보다 며칠 늦게 공개되는 일이 많아 `DELAYED`가 흔합니다. 이때 점수는 마지막으로 모든 원천이 관측된 날까지만 있습니다.
 
+## GitHub Actions 갱신 오류 해결
+
+`Daily V1 score refresh`는 `feat/live-score-refresh` 브랜치의 `.github/workflows/daily-refresh.yml`에 있습니다. 현재 `main`의 `Refresh Korea event diagnostics`와 별도 작업이며, 이 브랜치의 예약 실행은 기본 브랜치에 병합되기 전에는 동작하지 않습니다.
+
+`KRX_API_KEY is not set (V1 .env or environment)` 오류는 실행에 필요한 Secret이 전달되지 않았다는 뜻입니다. 실패 실행에서는 `KRX_API_KEY`와 `ECOS_API_KEY`가 모두 빈 값이었습니다.
+
+1. 이 저장소의 [Settings → Secrets and variables → Actions](https://github.com/JM973279/market-qualitative-signals/settings/secrets/actions)에서 **Repository secrets**로 `KRX_API_KEY`와 `ECOS_API_KEY`를 추가하거나 값을 갱신합니다.
+2. 두 값은 **Variables**가 아니라 **Secrets**에 저장해야 합니다. 다른 저장소의 Secrets와 로컬 `.env`는 GitHub runner로 자동 전달되지 않습니다. 이 작업에는 `environment:` 지정이 없으므로 Environment secrets만 등록해도 전달되지 않습니다.
+3. 설정 후 실패 실행에서 **Re-run failed jobs**를 선택합니다. 재실행은 원래 실행의 커밋을 사용합니다. 수정된 workflow 자체를 확인하려면 `feat/live-score-refresh`를 선택해 새 수동 실행을 시작해야 합니다.
+4. 키 누락 검사는 수집 전에 실행되어 누락된 **이름만** 오류와 작업 요약에 표시합니다. Secret 값은 출력하지 않습니다. 키가 존재해도 만료·권한·제공처 공개 지연은 별도 확인이 필요하며, 점수가 최신성 검사를 통과해야 발행됩니다.
+
+Secrets 공식 안내: https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets
+재실행 공식 안내: https://docs.github.com/en/actions/how-tos/manage-workflow-runs/re-run-workflows-and-jobs
+
 ## 웹 화면 (`frontend/`)
 
 배포 저장소의 `frontend/`를 9bedc79에서 그대로 복사했습니다(커밋 216198a, 트리 해시 동일). 그 위에 이 저장소 작업만 얹었습니다: 사례 분석 시나리오 라이브러리(`korea-scenario-library.patch`), 현재 점수가 없을 때 시장 카드에 마지막 유효 점수 표시, 데이터 점검 스크립트를 특정 실행 수치 대신 규칙으로 검사. 배포 저장소는 바꾸지 않습니다.

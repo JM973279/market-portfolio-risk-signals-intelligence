@@ -27,6 +27,36 @@ jobs:
       ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
       V1_DATA: /home/runner/.cache/qsignals/v1-data
     steps:
+      - name: Check required API secrets
+        id: config
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=()
+          for key in KRX_API_KEY ECOS_API_KEY; do
+            value="${!key:-}"
+            if [[ -z "${value//[[:space:]]/}" ]]; then
+              missing+=("$key")
+            fi
+          done
+          if (( ${#missing[@]} )); then
+            settings_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/settings/secrets/actions"
+            echo "::error title=Missing Actions secrets::Set the repository secrets: ${missing[*]}. See $settings_url"
+            {
+              echo "### Score refresh blocked: missing API secrets"
+              echo
+              echo "Missing: ${missing[*]}"
+              echo
+              echo "Add or update these as **Repository secrets** in [Actions settings]($settings_url)."
+              echo "Repository variables and secrets in another repository are not supplied to this job."
+              echo "Environment secrets require the job to select that environment; this job uses repository secrets."
+              echo "After saving the secrets, re-run the failed job."
+              echo "No collection or data publication was attempted."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "Required Actions secrets are available."
+
       - uses: actions/checkout@v7
 
       - name: Check out the deployed repo (read-only)
