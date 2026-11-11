@@ -5,7 +5,7 @@
   "source_git_branch": "main",
   "source_git_commit": "9bedc79f3dd9b553d3cbb88502e84cae817b9d1d",
   "source_files_modified_locally": false,
-  "imported_at": "2026-11-11T03:02:30+00:00",
+  "imported_at": "2026-11-11T03:06:11+00:00",
   "files": {
     "global_markets": {
       "path": "frontend/public/data/global-markets.json",
@@ -41,8 +41,8 @@
     "symbol": "KPI200",
     "index_name": "KOSPI200",
     "url": "https://fchart.stock.naver.com/sise.nhn?symbol=KPI200&timeframe=day&count=500&requestType=0",
-    "retrieved_at": "2026-11-11T03:02:30+00:00",
-    "sha256": "a659799330dd1d5aee921840007818696b9d367b2693c5e71b9fb2ddb0e9ef35",
+    "retrieved_at": "2026-11-11T03:06:11+00:00",
+    "sha256": "0b7a471088c36d87af674a11da94e46282dfbbb2313ce1e0cf7a2ede39caefc1",
     "first_date": "2024-10-23",
     "last_date": "2026-11-10",
     "rows": 499,
