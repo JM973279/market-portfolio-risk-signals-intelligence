@@ -3,6 +3,20 @@
 뉴스 원인 해석 같은 비정형·정성 정보를 Korea Market Stress 모델에 **어디까지, 어떤 방식으로** 반영할 수 있는지 실험하는 별도 저장소입니다.
 AWS에 배포하는 `market-portfolio-risk-intelligence`와 분리되어 있고, 그 저장소는 **읽기만** 합니다.
 
+## 전체 웹사이트 배포 (AWS·Docker) — 이 저장소가 기준입니다
+
+M/PRI 웹사이트(대시보드·백테스팅 테스트·시나리오 분석·포트폴리오 분석)의 최신 화면은 이 저장소의 `frontend/`에 있습니다. AWS나 Docker에 올릴 때는 **이 저장소의 main**을 쓰세요. `tina77302/market-portfolio-risk-intelligence`나 PC에 남아 있는 예전 복사본은 구버전입니다.
+
+```bash
+# 웹(Next.js)과 포트폴리오 서버를 함께 실행
+docker compose -f infra/aws/compose.yaml up --build
+# http://localhost:3300
+```
+
+AWS Lightsail 배포는 `infra/aws/deploy_lightsail.sh`를 사용합니다(서비스를 처음 만들 때는 `CREATE_SERVICE=yes`, 월 과금 시작). 배포 후 메뉴에 `백테스팅 테스트`와 `시나리오 분석`이 보이면 최신 버전입니다.
+
+아래의 루트 `Dockerfile`·`docker-compose.yml`은 포트폴리오 서버(`/portfolio`)만 실행합니다.
+
 ## 포트폴리오 성과·벤치마크 요인분해
 
 이 저장소에서 실행하는 독립 웹/API를 추가했습니다. 기존 한국 이벤트 진단과 함께 사용할 수 있습니다.
@@ -11,6 +25,29 @@ AWS에 배포하는 `market-portfolio-risk-intelligence`와 분리되어 있고,
 python3 -m qsignals.portfolio_server
 # http://127.0.0.1:3108/portfolio
 ```
+
+### Docker로 실행 (다른 사람과 공유하기 쉬움)
+
+Dockerfile과 docker-compose가 포함되어 있습니다. 서버는 표준 라이브러리만 사용하며 데이터는 이미지에 포함됩니다.
+
+```bash
+# 로컬 빌드·실행
+docker compose up --build
+# 또는
+docker build -t market-portfolio-risk .
+docker run -p 3108:3108 market-portfolio-risk
+```
+
+브라우저에서 **http://localhost:3108/portfolio** 로 접속하세요.
+
+GitHub Actions가 main 브랜치 푸시 시 자동으로 [GitHub Container Registry](https://ghcr.io)에 이미지를 퍼블리시합니다.
+
+```bash
+docker pull ghcr.io/jm973279/market-portfolio-risk-signals-intelligence:latest
+docker run -p 3108:3108 ghcr.io/jm973279/market-portfolio-risk-signals-intelligence:latest
+```
+
+공개적으로 다른 사람이 바로 볼 수 있게 하려면 [Render](https://render.com), [Railway](https://railway.app), [Fly.io](https://fly.io) 등에서 이 저장소를 연결하고 Docker로 배포하세요. (무료 티어 이용 가능)
 
 종목·비중을 입력하면 과거 가상성과, 종목별 수익 기여도, 벤치마크 대비 자산배분·선택·상호작용 효과, 별도 위험 추정, 비중 변경 비교를 제공합니다. SPY·주식/국채 60:40·사용자 지정 기준을 지원합니다. 실제 섹터별 종목선택 분석은 과거 구성·분류·수익률 자료가 연결된 기간에만 제공하며 현재 기본 자료는 미연결 상태입니다.
 
@@ -160,7 +197,7 @@ reports/                            진단 결과
 - 스트레스 진행 중 추가 급락: 직전 5거래일 중 MSI ≥ 공식 Stress 기준인 날이 있음
 - 사전 경보 있음: 위가 아니고, 직전 10거래일(Target_10D 기간) 중 경보가 하루 이상
 - 사전 경보 없음: 둘 다 아님
-- 급락 당일 점수는 당일 종가까지 반영하므로 '사전' 판정에서 뺍니다. 직전 구간에 행 전체가 빠진 경우까지 결측으로 처리합니다. 직전 거래일 가격이 없으면 여러 거래일 누적 등락을 일간 등락으로 계산하지 않습니다.
+- 급락 당일 점수는 당일 종가까지 반영하므로 '사전' 판정에서 빡니다. 직전 구간에 행 전체가 빠진 경우까지 결측으로 처리합니다. 직전 거래일 가격이 없으면 여러 거래일 누적 등락을 일간 등락으로 계산하지 않습니다.
 
 ## 이벤트 CSV 작성 규칙
 
