@@ -37,7 +37,7 @@ import tarfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-from qsignals.import_scores import import_scores
+from qsignals.import_scores import SOURCE_FILES, import_data, import_us
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 HOME = Path.home()
@@ -228,28 +228,6 @@ def us_importable(market):
             and bool(market.get("history")))
 
 
-def save_status_blocks(operational, output_dir):
-    """Keep each market's latest verified pipeline block in data/input/operational/.
-
-    These are the public (price-free) per-market blocks of the pipeline's
-    export: status, expected date, source observation dates, history. The
-    frontend export reads them for the status panels; the score CSVs stay the
-    source of the numbers (qsignals.export_frontend checks they agree). A
-    market whose history did not reproduce keeps its previous block.
-    """
-    saved = []
-    for market, block in operational["markets"].items():
-        if block.get("historicalParity") is not True:
-            continue
-        path = Path(output_dir) / "operational" / f"{market}.json"
-        path.parent.mkdir(parents=True, exist_ok=True)
-        meta = {k: operational.get(k) for k in ("schema_version", "runId", "generatedAt", "mode", "sourceValuesIncluded")}
-        path.write_text(json.dumps({**meta, "market": market, "block": block}, indent=1, ensure_ascii=False) + "\n",
-                        encoding="utf-8")
-        saved.append(market)
-    return saved
-
-
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--python", type=Path, default=DEFAULT_PYTHON, help="interpreter with market_engine/operations/requirements.txt")
@@ -303,7 +281,6 @@ def main(argv=None):
     operational = json.loads((work / "mpri/frontend/public/data/operational-markets.json").read_text(encoding="utf-8"))
     status = {m: freshness(v) for m, v in operational["markets"].items()}
     summary = {"run_id": operational.get("runId"), "work_dir": str(work), "korea_reference": reference or {"rebuilt": False}, "markets": status}
-    summary["status_blocks_saved"] = save_status_blocks(operational, args.output_dir)
 
     try:
         remote = git(args.source_root, "remote", "get-url", "origin")
@@ -322,24 +299,37 @@ def main(argv=None):
         print(json.dumps(summary, indent=2, ensure_ascii=False))
         print("Neither market is importable; data/input/ left unchanged.", file=sys.stderr)
         return 2
-    provenance = import_scores(work / "mpri", args.output_dir, {
+    # Same import as qsignals.import_scores (calendar coverage, KOSPI200 price
+    # check), fed with this run's exports instead of the committed ones.
+    raw = {key: (work / "mpri" / rel).read_bytes() for key, rel in SOURCE_FILES.items()}
+    payloads = {key: json.loads(data) for key, data in raw.items()}
+    files = {key: {"path": SOURCE_FILES[key], "bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
+             for key, data in raw.items()}
+    source = {
         "source_repo": source_repo,
+        "source_repo_url": None,
         "source_git_branch": branch if branch and branch != "HEAD" else None,
         "source_git_ref": args.source_ref,
         "source_git_commit": source_commit,
         "source_files_modified_locally": False,
-        "refresh": {
-            "mode": operational.get("mode"),
-            "v1_commit": v1_commit,
-            "generated_at": operational.get("generatedAt"),
-            "korea_reference": reference or {"rebuilt": False},
-            "korea": {**status["korea"], "imported": "korea" in markets},
-            "us": {**status["us"], "imported": "us" in markets,
-                   "provider_revision": operational["markets"]["us"].get("providerRevision")},
-        },
-    }, markets)
+    }
+    refresh = {
+        "mode": operational.get("mode"),
+        "v1_commit": v1_commit,
+        "generated_at": operational.get("generatedAt"),
+        "korea_reference": reference or {"rebuilt": False},
+        "korea": {**status["korea"], "imported": "korea" in markets},
+        "us": {**status["us"], "imported": "us" in markets,
+               "provider_revision": operational["markets"]["us"].get("providerRevision")},
+    }
     summary["imported"] = list(markets)
-    summary["last_risk_date"] = {m: v["last_risk_date"] for m, v in provenance["markets"].items()}
+    summary["last_risk_date"] = {}
+    if "korea" in markets:
+        summary["last_risk_date"]["korea"] = import_data(payloads, files, source, args.output_dir,
+                                                         extra={"refresh": refresh})["last_risk_date"]
+    if "us" in markets:
+        summary["last_risk_date"]["us"] = import_us(payloads, files, source, args.output_dir,
+                                                    extra={"refresh": refresh})["last_risk_date"]
     print(json.dumps(summary, indent=2, ensure_ascii=False))
     if "korea" not in markets:
         print("Korea is not CURRENT; korea_scores.csv left unchanged (US updated).", file=sys.stderr)

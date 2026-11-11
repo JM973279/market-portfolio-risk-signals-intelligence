@@ -1,49 +1,49 @@
 {
  "schema_version": 1,
- "runId": "20261111T032938Z-32dcdc4b",
- "generatedAt": "2026-11-11T03:29:38.172124+00:00",
+ "runId": "20261110T122959Z-8e0b0cfe",
+ "generatedAt": "2026-11-10T12:29:59.077890+00:00",
  "mode": "provider-refresh",
  "sourceValuesIncluded": false,
  "market": "korea",
  "block": {
   "status": "CURRENT",
-  "expectedDate": "2026-11-10",
+  "expectedDate": "2026-11-09",
   "series": [
    {
     "name": "KOSPI200",
     "provider": "KRX",
-    "retrievedAt": "2026-11-11T03:29:41.510387+00:00",
-    "observationDate": "2026-11-10",
+    "retrievedAt": "2026-11-10T12:30:05.514181+00:00",
+    "observationDate": "2026-11-09",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "23048cb71365a8131700dadcd8d655420616e8cb8ecedf5f660e52aaa8cd1d66"
+    "sha256": "5f7f7d03598a740d6a53e22350e14d2cf2762bc8a2c6a825e98a887d0146a7ee"
    },
    {
     "name": "VKOSPI",
     "provider": "KRX",
-    "retrievedAt": "2026-11-11T03:29:44.251111+00:00",
-    "observationDate": "2026-11-10",
+    "retrievedAt": "2026-11-10T12:30:10.956268+00:00",
+    "observationDate": "2026-11-09",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "6cc24c097ba654a81715298e0fbcabc4ee5134729224d24dc31131e0a5f974b4"
+    "sha256": "83541196aa15e4356dc8bbbf09d5e5a2afb953d4716bd6fbba1fd554ccaabdfa"
    },
    {
     "name": "Korea_Treasury_3Y",
     "provider": "BOK ECOS",
-    "retrievedAt": "2026-11-11T03:29:45.010106+00:00",
-    "observationDate": "2026-11-10",
+    "retrievedAt": "2026-11-10T12:30:11.881838+00:00",
+    "observationDate": "2026-11-09",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "a643a803a0cb63877b3998ce32da3c6da14fd9ccfccdfd2ad15054b39781db16"
+    "sha256": "c9d3c6a72eea39250297047f9b611273352e5f253bc2f1268032af4e7ffcb9dc"
    },
    {
     "name": "Korea_Corporate_AAminus_3Y",
     "provider": "BOK ECOS",
-    "retrievedAt": "2026-11-11T03:29:45.806065+00:00",
-    "observationDate": "2026-11-10",
+    "retrievedAt": "2026-11-10T12:30:12.792211+00:00",
+    "observationDate": "2026-11-09",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "34b0b05b68b678b3f92c3b8e3c285164c179cae413ea1077824a5542c271a1cb"
+    "sha256": "da9b67cf3cffb93f8d10f39b0613801456b77cfaecfb1928ba9a646e46f1861a"
    }
   ],
   "history": [
@@ -189,7 +189,7 @@
     "msi": 0.7878436927929781,
     "threshold": 1.1158067205904612,
     "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
+    "recordType": "OPERATIONAL"
    },
    {
     "date": "2026-10-19",
@@ -197,7 +197,7 @@
     "msi": 0.7430033932278036,
     "threshold": 1.1157929151448704,
     "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
+    "recordType": "OPERATIONAL"
    },
    {
     "date": "2026-10-20",
@@ -205,7 +205,7 @@
     "msi": 0.7862013418963044,
     "threshold": 1.1157791096992795,
     "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
+    "recordType": "OPERATIONAL"
    },
    {
     "date": "2026-10-21",
@@ -213,7 +213,7 @@
     "msi": 0.7141836094519057,
     "threshold": 1.115765304253689,
     "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
+    "recordType": "OPERATIONAL"
    },
    {
     "date": "2026-10-22",
@@ -221,7 +221,7 @@
     "msi": 0.8118316877682467,
     "threshold": 1.1157514988080983,
     "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
+    "recordType": "OPERATIONAL"
    },
    {
     "date": "2026-10-23",
@@ -229,7 +229,7 @@
     "msi": 0.9192871843960424,
     "threshold": 1.1157376933625078,
     "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
+    "recordType": "OPERATIONAL"
    },
    {
     "date": "2026-10-26",
@@ -237,7 +237,7 @@
     "msi": 0.9445743007400532,
     "threshold": 1.1157238879169171,
     "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
+    "recordType": "OPERATIONAL"
    },
    {
     "date": "2026-10-27",
@@ -245,7 +245,7 @@
     "msi": 0.8885722773577992,
     "threshold": 1.1157100824713264,
     "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
+    "recordType": "OPERATIONAL"
    },
    {
     "date": "2026-10-28",
@@ -253,7 +253,7 @@
     "msi": 0.779264836250432,
     "threshold": 1.1156962770257357,
     "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
+    "recordType": "OPERATIONAL"
    },
    {
     "date": "2026-10-29",
@@ -261,7 +261,7 @@
     "msi": 0.6859652468250362,
     "threshold": 1.1155057818395353,
     "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
+    "recordType": "OPERATIONAL"
    },
    {
     "date": "2026-10-30",
@@ -269,7 +269,7 @@
     "msi": 0.7786169904666703,
     "threshold": 1.115315286653335,
     "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
+    "recordType": "OPERATIONAL"
    },
    {
     "date": "2026-11-02",
@@ -277,7 +277,7 @@
     "msi": 0.7534051710453241,
     "threshold": 1.1151247914671345,
     "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
+    "recordType": "OPERATIONAL"
    },
    {
     "date": "2026-11-03",
@@ -285,7 +285,7 @@
     "msi": 0.8476606594131907,
     "threshold": 1.1149342962809328,
     "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
+    "recordType": "OPERATIONAL"
    },
    {
     "date": "2026-11-04",
@@ -293,7 +293,7 @@
     "msi": 0.8442272439480659,
     "threshold": 1.1147438010947324,
     "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
+    "recordType": "OPERATIONAL"
    },
    {
     "date": "2026-11-05",
@@ -301,7 +301,7 @@
     "msi": 0.9485536765999506,
     "threshold": 1.114553305908532,
     "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
+    "recordType": "OPERATIONAL"
    },
    {
     "date": "2026-11-06",
@@ -309,7 +309,7 @@
     "msi": 1.16434762277284,
     "threshold": 1.1143628107223311,
     "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
+    "recordType": "OPERATIONAL"
    },
    {
     "date": "2026-11-09",
@@ -317,32 +317,24 @@
     "msi": 1.0659580402042406,
     "threshold": 1.1157238879169171,
     "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
-   },
-   {
-    "date": "2026-11-10",
-    "risk": 0.3863885998725891,
-    "msi": 0.8285566350257739,
-    "threshold": 1.1157100824713264,
-    "price": null,
-    "recordType": "RETROSPECTIVE_INFERENCE"
+    "recordType": "OPERATIONAL"
    }
   ],
   "current": {
-   "date": "2026-11-10",
-   "risk": 0.3863885998725891,
-   "msi": 0.8285566350257739,
-   "threshold": 1.1157100824713264,
+   "date": "2026-11-09",
+   "risk": 0.4716390371322632,
+   "msi": 1.0659580402042406,
+   "threshold": 1.1157238879169171,
    "price": null,
-   "recordType": "RETROSPECTIVE_INFERENCE"
+   "recordType": "OPERATIONAL"
   },
   "lastValid": {
-   "date": "2026-11-10",
-   "risk": 0.3863885998725891,
-   "msi": 0.8285566350257739,
-   "threshold": 1.1157100824713264,
+   "date": "2026-11-09",
+   "risk": 0.4716390371322632,
+   "msi": 1.0659580402042406,
+   "threshold": 1.1157238879169171,
    "price": null,
-   "recordType": "RETROSPECTIVE_INFERENCE"
+   "recordType": "OPERATIONAL"
   },
   "reason": null,
   "modelSha256": "b8524d9dab692434e051011987bc6a86ffbd18c20a0c30ff00b4b30856318247",
@@ -368,8 +360,18 @@
    "Credit_252D_ZScore"
   ],
   "inferenceSucceeded": true,
-  "publicationDeadline": "2026-11-10T12:30:00+00:00",
+  "publicationDeadline": "2026-11-09T12:30:00+00:00",
   "availability": [
+   {
+    "date": "2026-08-11",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
+   },
    {
     "date": "2026-08-12",
     "available": [
@@ -959,20 +961,10 @@
      "Korea_Corporate_AAminus_3Y"
     ],
     "missing": []
-   },
-   {
-    "date": "2026-11-10",
-    "available": [
-     "KOSPI200",
-     "VKOSPI",
-     "Korea_Treasury_3Y",
-     "Korea_Corporate_AAminus_3Y"
-    ],
-    "missing": []
    }
   ],
   "availabilityOrigin": "provider-refresh",
   "historicalParity": true,
-  "inferenceAt": "2026-11-11T03:29:47.054746+00:00"
+  "inferenceAt": "2026-11-10T12:30:13.492455+00:00"
  }
 }

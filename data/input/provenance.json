@@ -1,10 +1,11 @@
 {
-  "imported_at": "2026-11-11T03:29:53+00:00",
-  "source_repo": "market-portfolio-risk-intelligence",
+  "schema_version": 2,
+  "source_repo": "tina77302/market-portfolio-risk-intelligence",
+  "source_repo_url": "https://github.com/tina77302/market-portfolio-risk-intelligence",
   "source_git_branch": "main",
-  "source_git_ref": "main",
   "source_git_commit": "9bedc79f3dd9b553d3cbb88502e84cae817b9d1d",
   "source_files_modified_locally": false,
+  "imported_at": "2026-11-11T03:46:24+00:00",
   "files": {
     "global_markets": {
       "path": "frontend/public/data/global-markets.json",
@@ -13,171 +14,42 @@
     },
     "operational_markets": {
       "path": "frontend/public/data/operational-markets.json",
-      "bytes": 49269,
-      "sha256": "839877893444a6218ec79ea36d1e402ec076666a61a9a8f2f9283291300ab321"
+      "bytes": 48475,
+      "sha256": "0ca354224acb558cdf816f420447217cd9bbd4484c1e8ea5795588949763c0e4"
     }
   },
-  "operational_run_id": "20261111T032938Z-32dcdc4b",
+  "operational_run_id": "20261110T122959Z-8e0b0cfe",
   "operational_model_sha256": "b8524d9dab692434e051011987bc6a86ffbd18c20a0c30ff00b4b30856318247",
   "training_cutoff": "2026-09-16",
+  "korea_generated_at": "2026-11-10T12:29:59.077890+00:00",
+  "korea_expected_date": "2026-11-09",
+  "korea_source_status": "CURRENT",
   "rows": 2489,
   "record_type_counts": {
+    "NO_SCORE": 1,
     "OOS_WALK_FORWARD": 2454,
-    "RETROSPECTIVE_INFERENCE": 35
+    "OPERATIONAL": 17,
+    "RETROSPECTIVE_INFERENCE": 17
   },
   "first_date": "2016-09-13",
   "last_date": "2026-11-10",
-  "last_risk_date": "2026-11-10",
-  "last_price_date": "2026-10-02",
-  "markets": {
-    "korea": {
-      "file": "korea_scores.csv",
-      "imported_at": "2026-11-11T03:29:53+00:00",
-      "source_repo": "market-portfolio-risk-intelligence",
-      "source_git_branch": "main",
-      "source_git_ref": "main",
-      "source_git_commit": "9bedc79f3dd9b553d3cbb88502e84cae817b9d1d",
-      "source_files_modified_locally": false,
-      "files": {
-        "global_markets": {
-          "path": "frontend/public/data/global-markets.json",
-          "bytes": 1611404,
-          "sha256": "21b2b6fab853da7e078c3194887d2b665717e867b8491ab3ad9e410bcd2d857b"
-        },
-        "operational_markets": {
-          "path": "frontend/public/data/operational-markets.json",
-          "bytes": 49269,
-          "sha256": "839877893444a6218ec79ea36d1e402ec076666a61a9a8f2f9283291300ab321"
-        }
-      },
-      "operational_run_id": "20261111T032938Z-32dcdc4b",
-      "operational_model_sha256": "b8524d9dab692434e051011987bc6a86ffbd18c20a0c30ff00b4b30856318247",
-      "training_cutoff": "2026-09-16",
-      "rows": 2489,
-      "record_type_counts": {
-        "OOS_WALK_FORWARD": 2454,
-        "RETROSPECTIVE_INFERENCE": 35
-      },
-      "first_date": "2016-09-13",
-      "last_date": "2026-11-10",
-      "last_risk_date": "2026-11-10",
-      "last_price_date": "2026-10-02"
-    },
-    "us": {
-      "file": "us_scores.csv",
-      "imported_at": "2026-11-11T03:29:53+00:00",
-      "source_repo": "market-portfolio-risk-intelligence",
-      "source_git_branch": "main",
-      "source_git_ref": "main",
-      "source_git_commit": "9bedc79f3dd9b553d3cbb88502e84cae817b9d1d",
-      "source_files_modified_locally": false,
-      "files": {
-        "global_markets": {
-          "path": "frontend/public/data/global-markets.json",
-          "bytes": 1611404,
-          "sha256": "21b2b6fab853da7e078c3194887d2b665717e867b8491ab3ad9e410bcd2d857b"
-        },
-        "operational_markets": {
-          "path": "frontend/public/data/operational-markets.json",
-          "bytes": 49269,
-          "sha256": "839877893444a6218ec79ea36d1e402ec076666a61a9a8f2f9283291300ab321"
-        }
-      },
-      "operational_run_id": "20261111T032938Z-32dcdc4b",
-      "operational_model_sha256": "90c51c245ebe62b58f804098a7a7045b60fb64ef83da72d4c9a049cf8d5eeb0d",
-      "training_cutoff": "2026-09-16",
-      "rows": 5094,
-      "record_type_counts": {
-        "NO_SCORE": 1,
-        "OOS_WALK_FORWARD": 5060,
-        "OPERATIONAL": 24,
-        "RETROSPECTIVE_INFERENCE": 9
-      },
-      "first_date": "2006-08-09",
-      "last_date": "2026-11-09",
-      "last_risk_date": "2026-11-09",
-      "last_price_date": "2026-10-05"
-    }
+  "last_risk_date": "2026-11-09",
+  "last_price_date": "2026-11-10",
+  "missing_sessions": [],
+  "price_source": {
+    "provider": "Naver Finance",
+    "symbol": "KPI200",
+    "index_name": "KOSPI200",
+    "url": "https://fchart.stock.naver.com/sise.nhn?symbol=KPI200&timeframe=day&count=500&requestType=0",
+    "retrieved_at": "2026-11-11T03:46:24+00:00",
+    "sha256": "9fec1868073ac0237d6d441cc1b7c003b05f311f01f142ad7b9e121f83fa211b",
+    "first_date": "2024-10-23",
+    "last_date": "2026-11-10",
+    "rows": 499,
+    "use": "event-return diagnostics only; frozen Risk Score/MSI inputs unchanged",
+    "frozen_overlap_rows": 474,
+    "frozen_max_abs_difference": 0.0
   },
-  "refresh": {
-    "mode": "provider-refresh",
-    "v1_commit": "e939dc358c3bca92fee4c318d4bb297fd80debd3",
-    "generated_at": "2026-11-11T03:29:38.172124+00:00",
-    "korea_reference": {
-      "rebuilt": true,
-      "original_sha256": "9fad15f4d0c2d78f890aa479a2b77d0f83cff637c014061de72e4c1c21b61588",
-      "rebuilt_sha256": "de2a5e6f85e0cc868377b6a84ac269e3c58d9315c74834e8eddb61ce56d9eff7",
-      "end": "2026-10-02",
-      "checks": {
-        "Korea_MSI_vs_global_markets": {
-          "dates": 2464,
-          "max_abs_diff": 4.997180447219307e-11,
-          "passed": true
-        },
-        "Stress_Threshold_vs_global_markets": {
-          "dates": 2464,
-          "max_abs_diff": 4.99871255499329e-11,
-          "passed": true
-        },
-        "frozen_model_vs_committed_history": {
-          "dates": 29,
-          "first": "2026-09-17",
-          "last": "2026-11-02",
-          "max_abs_diff": 0.0,
-          "passed": true
-        }
-      }
-    },
-    "korea": {
-      "status": "CURRENT",
-      "expected_date": "2026-11-10",
-      "current_date": "2026-11-10",
-      "last_valid_date": "2026-11-10",
-      "fresh": true,
-      "reason": null,
-      "series": {
-        "KOSPI200": "2026-11-10",
-        "VKOSPI": "2026-11-10",
-        "Korea_Treasury_3Y": "2026-11-10",
-        "Korea_Corporate_AAminus_3Y": "2026-11-10"
-      },
-      "imported": true
-    },
-    "us": {
-      "status": "CURRENT",
-      "expected_date": "2026-11-09",
-      "current_date": "2026-11-09",
-      "last_valid_date": "2026-11-09",
-      "fresh": true,
-      "reason": null,
-      "series": {
-        "SPY": "2026-11-09",
-        "VIX": "2026-11-09",
-        "DBAA": "2026-11-09",
-        "DGS10": "2026-11-09"
-      },
-      "imported": true,
-      "provider_revision": {
-        "cacheEnd": "2026-10-05",
-        "channels": {
-          "SPY": {
-            "overlapDates": 258,
-            "scale": 1.0,
-            "maxRelativeDifference": 1.8676930013247548e-07
-          },
-          "VIX": {
-            "overlapDates": 260,
-            "scale": 1.0,
-            "maxRelativeDifference": 1.9350291724922078e-16
-          },
-          "BAA_Treasury_Spread": {
-            "overlapDates": 255,
-            "scale": 1.0,
-            "maxRelativeDifference": 2.453531546132943e-16
-          }
-        },
-        "appendedDates": 25
-      }
-    }
-  }
+  "calendar_sha256": "7fc152faf5d28e8d2c7fc474bd9f3681acd7c3523f12f76d95750eff1cf63990",
+  "scores_sha256": "509dcd298a7d52473ef31921b21d5fab6fc3ced2bb33be721df6f333505673a6"
 }

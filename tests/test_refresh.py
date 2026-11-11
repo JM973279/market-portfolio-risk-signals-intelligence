@@ -1,150 +1,130 @@
 import hashlib
 import json
-import subprocess
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
+from unittest.mock import patch
 
-from qsignals.refresh import RefreshError, archive, find_v1_commit, freshness, install_reference, load_env, prune_runs, us_importable
+from qsignals.calendar import latest_closed_session, load_sessions
+from qsignals.import_scores import SOURCE_FILES, import_data, load_source
+from qsignals.prices import parse_prices
+from qsignals.scores import build_rows, read_scores
 
-
-def sha(text):
-    return hashlib.sha256(text.encode()).hexdigest()
-
-
-def git(repo, *args):
-    subprocess.run(["git", "-C", str(repo), *args], check=True, capture_output=True)
+ROOT = Path(__file__).resolve().parent.parent
 
 
-class V1CommitTest(unittest.TestCase):
-    def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory()
-        self.repo = Path(self.tmp.name) / "v1"
-        self.repo.mkdir()
-        git(self.repo, "init", "-q", "-b", "main")
-        git(self.repo, "config", "user.email", "test@example.org")
-        git(self.repo, "config", "user.name", "test")
-        git(self.repo, "config", "core.autocrlf", "false")
-
-    def tearDown(self):
-        self.tmp.cleanup()
-
-    def commit(self, files, message):
-        for rel, text in files.items():
-            path = self.repo / rel
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(text, encoding="utf-8", newline="")
-        git(self.repo, "add", "-A")
-        git(self.repo, "commit", "-q", "-m", message)
-        return subprocess.run(["git", "-C", str(self.repo), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
-
-    def test_finds_matching_commit_on_another_branch(self):
-        good = self.commit({"src/a.py": "a1\n", "src/b.py": "b1\n"}, "contract version")
-        git(self.repo, "switch", "-q", "-c", "feature")
-        self.commit({"src/a.py": "a2\n"}, "later change on the checked-out branch")
-        found = find_v1_commit(self.repo, {"src/a.py": sha("a1\n"), "src/b.py": sha("b1\n")})
-        self.assertEqual(found, good)
-
-    def test_rejects_partial_match(self):
-        self.commit({"src/a.py": "a1\n", "src/b.py": "b1\n"}, "c")
-        with self.assertRaises(RefreshError):
-            find_v1_commit(self.repo, {"src/a.py": sha("a1\n"), "src/b.py": sha("other\n")})
-
-    def test_archive_leaves_worktree_alone(self):
-        rev = self.commit({"src/a.py": "a1\n"}, "c")
-        (self.repo / "src/a.py").write_text("local edit\n", encoding="utf-8")
-        dest = Path(self.tmp.name) / "snap"
-        self.assertEqual(archive(self.repo, rev, dest), rev)
-        self.assertEqual((dest / "src/a.py").read_text(encoding="utf-8"), "a1\n")
-        self.assertEqual((self.repo / "src/a.py").read_text(encoding="utf-8"), "local edit\n")
+def payloads():
+    days = [d for d in load_sessions() if d >= "2026-01-02"][:7]
+    points = [{"date": day, "price": 100.0, "risk": .2, "msi": 0., "threshold": 1.} for day in days[:6]]
+    ops = {"date": days[-1], "risk": .3, "msi": .1, "threshold": 1., "recordType": "OPERATIONAL"}
+    return days, {"global_markets": {"korea": points}, "operational_markets": {"markets": {"korea": {"history": [ops]}}}}
 
 
-class PruneTest(unittest.TestCase):
-    def test_keeps_newest_runs(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            for name in ["20261101T000000Z", "20261102T000000Z", "20261103T000000Z", "notes"]:
-                (Path(tmp) / name).mkdir()
-            prune_runs(tmp, 2)
-            self.assertEqual(sorted(p.name for p in Path(tmp).iterdir()), ["20261102T000000Z", "20261103T000000Z", "notes"])
+def xml_prices(days, close="100"):
+    return ('<protocol><chartdata symbol="KPI200" timeframe="day">' + ''.join(
+        f'<item data="{day.replace("-", "")}|100|110|90|{close}|1000"/>' for day in days
+    ) + '</chartdata></protocol>').encode()
 
 
-class ReferenceInstallTest(unittest.TestCase):
-    REF = "data/processed/early_warning_v2/korea_feature_matrix_v1_reproduction.csv"
+class PriceAndImportTest(unittest.TestCase):
+    def test_prices_enrich_without_changing_scores(self):
+        days, data = payloads()
+        prices = {day: 100. for day in days}
+        old = build_rows(data["global_markets"], data["operational_markets"])
+        new = build_rows(data["global_markets"], data["operational_markets"], prices)
+        for a, b in zip(old, new):
+            self.assertEqual((a.risk_v1,a.msi,a.stress_threshold,a.record_type), (b.risk_v1,b.msi,b.stress_threshold,b.record_type))
+        self.assertEqual(new[-1].kospi200_close, 100.)
 
-    def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory()
-        root = Path(self.tmp.name)
-        self.work, self.refdir = root / "work", root / "reference"
-        (self.work / "mpri/market_engine/operations").mkdir(parents=True)
-        self.refdir.mkdir()
-        self.contract = {"markets": {"korea": {"reference": self.REF, "reference_sha256": "orig"}}}
-        (self.refdir / "korea_feature_matrix_v1_reproduction.csv").write_bytes(b"rebuilt\n")
+    def test_duplicate_source_dates_rejected_before_merging(self):
+        _, data = payloads()
+        data["global_markets"]["korea"].append(data["global_markets"]["korea"][-1])
+        with self.assertRaises(ValueError):
+            build_rows(data["global_markets"],data["operational_markets"])
+        _, data = payloads()
+        data["operational_markets"]["markets"]["korea"]["history"] *= 2
+        with self.assertRaises(ValueError):
+            build_rows(data["global_markets"],data["operational_markets"])
 
-    def tearDown(self):
-        self.tmp.cleanup()
+    def test_wrong_index_missing_session_and_invalid_close_rejected(self):
+        days, _ = payloads()
+        good = xml_prices(days)
+        self.assertEqual(len(parse_prices(good, days[-1])), 7)
+        for raw in [good.replace(b'KPI200',b'KOSPI'), xml_prices(days[:2]+days[3:]),
+                    xml_prices(days, 'NaN'), xml_prices(days, '-1'), xml_prices(days+days[-1:])]:
+            with self.subTest(raw=raw[:80]), self.assertRaises(ValueError):
+                parse_prices(raw,days[-1])
 
-    def verify(self, **changes):
-        report = {"passed": True, "contract_reference_sha256": "orig", "rebuilt_sha256": sha("rebuilt\n"), "end": "2026-10-02", "checks": {}}
-        report.update(changes)
-        (self.refdir / "verification.json").write_text(json.dumps(report), encoding="utf-8")
+    def test_price_reference_disagreement_is_rejected(self):
+        days,data=payloads()
+        with self.assertRaisesRegex(ValueError,'disagrees'):
+            build_rows(data['global_markets'],data['operational_markets'],{days[0]:101.})
 
-    def test_original_wins(self):
-        target = self.work / "mpri" / self.REF
-        target.parent.mkdir(parents=True)
-        target.write_text("original\n", encoding="utf-8")
-        self.assertIsNone(install_reference(self.work, self.contract, self.refdir))
-        self.assertEqual(target.read_text(encoding="utf-8"), "original\n")
+    def test_failed_refresh_preserves_prior_files(self):
+        days,data=payloads()
+        with tempfile.TemporaryDirectory() as temp:
+            p=Path(temp)/'korea_scores.csv';p.write_text('prior good data')
+            with patch('qsignals.import_scores.fetch_prices',side_effect=ValueError('missing session')):
+                with self.assertRaises(ValueError):import_data(data,{}, {},temp)
+            self.assertEqual(p.read_text(),'prior good data')
 
-    def test_installs_verified_rebuild_into_snapshot_only(self):
-        self.verify()
-        info = install_reference(self.work, self.contract, self.refdir)
-        self.assertTrue(info["rebuilt"])
-        self.assertEqual((self.work / "mpri" / self.REF).read_text(encoding="utf-8"), "rebuilt\n")
-        written = json.loads((self.work / "mpri/market_engine/operations/contract.json").read_text(encoding="utf-8"))
-        self.assertEqual(written["markets"]["korea"]["reference_sha256"], sha("rebuilt\n"))
+    def test_remote_files_are_read_at_one_pinned_commit(self):
+        _, data=payloads();sha='a'*40;seen=[]
+        def download(url):
+            seen.append(url)
+            if '/commits/main' in url:return json.dumps({'sha':sha}).encode()
+            for key,path in SOURCE_FILES.items():
+                if url.endswith(path):return json.dumps(data[key]).encode()
+            raise AssertionError(url)
+        with patch('qsignals.import_scores._download',side_effect=download):
+            _,_,source=load_source()
+        self.assertEqual(source['source_git_commit'],sha)
+        self.assertTrue(all('/'+sha+'/' in url for url in seen[1:]))
 
-    def test_rejections(self):
-        for changes in ({"passed": False}, {"contract_reference_sha256": "other"}, {"rebuilt_sha256": "tampered"}):
-            self.verify(**changes)
-            with self.assertRaises(RefreshError):
-                install_reference(self.work, json.loads(json.dumps(self.contract)), self.refdir)
-        (self.refdir / "verification.json").unlink()
-        with self.assertRaises(RefreshError):
-            install_reference(self.work, self.contract, self.refdir)
+    def test_calendar_includes_official_additional_closures(self):
+        sessions=load_sessions()
+        self.assertNotIn('2026-06-03',sessions)
+        self.assertNotIn('2026-07-17',sessions)
+        self.assertIn('2026-07-16',sessions)
+
+    def test_publication_deadline_and_holiday_are_distinct_from_missing_data(self):
+        # 12:29 UTC = 21:29 KST; the six-hour source deadline has not passed.
+        self.assertEqual(latest_closed_session(datetime(2026,11,10,12,29,tzinfo=timezone.utc),6),'2026-11-09')
+        self.assertEqual(latest_closed_session(datetime(2026,11,10,12,30,tzinfo=timezone.utc),6),'2026-11-10')
+        self.assertEqual(latest_closed_session(datetime(2026,7,17,14,tzinfo=timezone.utc),6),'2026-07-16')
+
+    def test_identical_refresh_keeps_original_provenance(self):
+        days,data=payloads();raw=xml_prices(days)
+        price_meta={'provider':'test','sha256':hashlib.sha256(raw).hexdigest(),'last_date':days[-1],'retrieved_at':'first'}
+        prices={day:100. for day in days}
+        with tempfile.TemporaryDirectory() as temp, patch('qsignals.import_scores.latest_closed_session',return_value=days[-1]):
+            with patch('qsignals.import_scores.fetch_prices',return_value=(prices,raw,price_meta)):
+                first=import_data(data,{}, {},temp)
+            with patch('qsignals.import_scores.fetch_prices',return_value=(prices,raw,{**price_meta,'retrieved_at':'second'})):
+                second=import_data(data,{}, {},temp)
+            self.assertEqual(first,second)
+
+    def test_event_report_has_separate_source_quality_column(self):
+        from qsignals.events import read_events
+        from qsignals.diagnostics import diagnose_all
+        from qsignals.report import render_markdown
+        rows=read_scores(ROOT/'data/input/korea_scores.csv')
+        events=read_events(ROOT/'data/events/kospi_2026_events.csv')
+        provenance=json.loads((ROOT/'data/input/provenance.json').read_text())
+        md=render_markdown(events,diagnose_all(events,rows),rows,provenance,'2026-01-01')
+        block=md.split('## 이벤트별 결과')[1].split('## 트리거')[0]
+        table=[line for line in block.splitlines() if line.startswith('|')]
+        self.assertTrue(all(line.count('|')==11 for line in table))
+
+    def test_bundled_inputs_match_declared_coverage(self):
+        rows=read_scores(ROOT/'data/input/korea_scores.csv')
+        p=json.loads((ROOT/'data/input/provenance.json').read_text())
+        self.assertEqual(hashlib.sha256((ROOT/'data/input/korea_scores.csv').read_bytes()).hexdigest(),p['scores_sha256'])
+        expected={day for day in load_sessions() if rows[0].date<=day<=rows[-1].date}
+        self.assertEqual(sorted(expected-{r.date for r in rows}),p['missing_sessions'])
+        self.assertEqual(max(r.date for r in rows if r.risk_v1 is not None),p['last_risk_date'])
+        self.assertEqual(max(r.date for r in rows if r.kospi200_close is not None),p['last_price_date'])
 
 
-class EnvTest(unittest.TestCase):
-    def test_parses_dotenv(self):
-        with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / ".env"
-            path.write_text("# c\nKRX_API_KEY=abc\nexport ECOS_API_KEY='x=y'\nBAD\n", encoding="utf-8")
-            self.assertEqual(load_env(path), {"KRX_API_KEY": "abc", "ECOS_API_KEY": "x=y"})
-            self.assertEqual(load_env(Path(tmp) / "missing"), {})
-
-
-class FreshnessTest(unittest.TestCase):
-    def market(self, **changes):
-        m = {"status": "CURRENT", "expectedDate": "2026-11-09", "current": {"date": "2026-11-09"},
-             "lastValid": {"date": "2026-11-09"}, "reason": None, "series": [{"name": "KOSPI200", "observationDate": "2026-11-09"}]}
-        m.update(changes)
-        return m
-
-    def test_us_import_gate(self):
-        history = [{"date": "2026-11-06", "risk": 0.9}]
-        self.assertTrue(us_importable({"status": "DELAYED", "historicalParity": True, "history": history}))
-        self.assertTrue(us_importable({"status": "CURRENT", "historicalParity": True, "history": history}))
-        self.assertFalse(us_importable({"status": "BLOCKED", "historicalParity": False, "history": history}))
-        self.assertFalse(us_importable({"status": "DELAYED", "historicalParity": True, "history": []}))
-        self.assertFalse(us_importable({"status": "DELAYED", "history": history}))
-
-    def test_current_only_for_expected_session(self):
-        self.assertTrue(freshness(self.market())["fresh"])
-        self.assertFalse(freshness(self.market(current={"date": "2026-11-06"}))["fresh"])
-        self.assertFalse(freshness(self.market(status="DELAYED", current=None))["fresh"])
-        blocked = freshness(self.market(status="BLOCKED", current=None, reason="mismatch"))
-        self.assertFalse(blocked["fresh"])
-        self.assertEqual(blocked["reason"], "mismatch")
-
-
-if __name__ == "__main__":
-    unittest.main()
+if __name__=='__main__':unittest.main()

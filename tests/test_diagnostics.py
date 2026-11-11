@@ -9,13 +9,14 @@ from qsignals.diagnostics import (
 )
 from qsignals.report import _Probe
 from qsignals.scores import ScoreRow
+from qsignals.calendar import load_sessions
 
 
 def make_rows(n=30, risk=0.1, msi=0.0, threshold=1.0):
-    start = date(2026, 1, 1)
+    days = [d for d in load_sessions() if d >= "2026-01-02"][:n]
     return [
         ScoreRow(
-            date=(start + timedelta(days=i)).isoformat(),
+            date=days[i],
             kospi200_close=100.0,
             risk_v1=risk,
             msi=msi,
@@ -36,6 +37,25 @@ def probe(rows, i):
 
 
 class DiagnoseEventTest(unittest.TestCase):
+    def test_entire_missing_session_is_incomplete(self):
+        rows = make_rows()
+        event = probe(rows, 20)
+        missing = rows[17].date
+        del rows[17]
+        d = diagnose_event(event, rows)
+        self.assertEqual(d.verdict, "INCOMPLETE")
+        self.assertEqual(d.missing_pre_sessions, missing)
+
+    def test_missing_previous_session_is_not_a_daily_return(self):
+        rows = make_rows()
+        event = probe(rows, 20)
+        replace(rows, 20, kospi200_close=80.0)
+        del rows[19]
+        d = diagnose_event(event, rows)
+        self.assertIsNone(d.kospi200_return_pct)
+        self.assertIsNone(d.risk_prev)
+        self.assertEqual(d.verdict, "INCOMPLETE")
+
     def test_no_warning_and_no_stress_is_missed(self):
         rows = make_rows()
         d = diagnose_event(probe(rows, 20), rows)

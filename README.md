@@ -3,6 +3,19 @@
 뉴스 원인 해석 같은 비정형·정성 정보를 Korea Market Stress 모델에 **어디까지, 어떤 방식으로** 반영할 수 있는지 실험하는 별도 저장소입니다.
 AWS에 배포하는 `market-portfolio-risk-intelligence`와 분리되어 있고, 그 저장소는 **읽기만** 합니다.
 
+## 포트폴리오 성과·벤치마크 요인분해
+
+이 저장소에서 실행하는 독립 웹/API를 추가했습니다. 기존 한국 이벤트 진단과 함께 사용할 수 있습니다.
+
+```bash
+python3 -m qsignals.portfolio_server
+# http://127.0.0.1:3108/portfolio
+```
+
+종목·비중을 입력하면 과거 가상성과, 종목별 수익 기여도, 벤치마크 대비 자산배분·선택·상호작용 효과, 별도 위험 추정, 비중 변경 비교를 제공합니다. SPY·주식/국채 60:40·사용자 지정 기준을 지원합니다. 실제 섹터별 종목선택 분석은 과거 구성·분류·수익률 자료가 연결된 기간에만 제공하며 현재 기본 자료는 미연결 상태입니다.
+
+데이터는 GitHub Actions가 전체 수정종가·금리를 수집·검증해 저장한 스냅샷을 읽습니다. 원본 저장소·ref는 유지하고, 가격 최신일과 금리가 필요한 위험 추정일을 구분합니다. 수집 시각을 최신 가격일로 표시하지 않으며 실제 가격 종료일은 화면과 `data/portfolio/current.json`에서 확인합니다. [실행·데이터 연결·계산 규칙](docs/portfolio.md), [검증 및 자동 갱신 workflow](.github/workflows/refresh-portfolio.yml).
+
 ## 원칙
 
 1. **사후 뉴스 라벨은 모델 학습·튜닝에 쓰지 않습니다.** 해석·진단용 이벤트 레이어로만 씁니다.
@@ -17,29 +30,44 @@ AWS에 배포하는 `market-portfolio-risk-intelligence`와 분리되어 있고,
 | ① 정량 프록시 | 신용융자·예탁금, 외국인 순매수, 2종목 시총 비중, SOX, WTI → ablation | 예정 |
 | ② 텍스트 지수 | 한국은행 뉴스심리지수(NSI), 일별 지정학 위험지수(GPR) → ablation | 예정 |
 
-## 첫 결과 (2026-11-10 import 기준)
+## 진단 결과와 데이터 갱신
 
 전체 표: [reports/event_diagnostics.md](reports/event_diagnostics.md)
 
-- 뉴스 목록 10건 중 진단 가능한 9건: **스트레스 진행 중 추가 급락 6**, 사전 경보 있음 1(6/8), **사전 경보 없음 2(10/13, 10/15)**. 나머지 1건(11/6)은 점수 데이터가 11/2까지라 진단하지 못했습니다.
-- 3/4 전쟁 급락 전날인 3/3(-7.92%, 뉴스 목록에 없음)에 V1은 직전 10거래일 내내 경보 상태였습니다. 트리거(전쟁)는 예측할 수 없어도 취약한 상태는 점수에 이미 나타나 있었던 사례입니다. 한 사례라 일반화하지는 않습니다.
-- 경보가 빈 곳은 10월 AI·반도체 급락입니다. 급락 전 10거래일 최고 점수가 15.6%(10/13), 37.8%(10/15)로 경보 기준 50%에 못 미쳤고(동결 모델 사후 추론), 급락 당일 MSI도 Stress 기준 미만이었습니다.
-- 2026년 KOSPI200 -5% 이하 하락일 22일 중 15일은 뉴스 목록에 없었습니다. 진단 대상은 뉴스가 아니라 가격 데이터로 골라야 합니다.
+- 수치와 실제 관측 종료일은 보고서에서 확인하세요. 점수와 가격의 마지막 날짜를 각각 표시하며 README에 결과 수치를 중복 고정하지 않습니다.
+- 기본 입력은 공개 원본 `tina77302/market-portfolio-risk-intelligence`의 main을 조회한 뒤 **한 커밋으로 고정**한 두 JSON입니다. 오래된 로컬 worktree를 자동 선택하지 않습니다. `--source-repo`로 출처를 변경할 수 있습니다.
+- 원본에 없는 가격은 Naver Finance `KPI200` 일봉으로 보충합니다. 동결 KOSPI200 종가와 5거래일 이상 겹쳐 확인하고, 차이가 0.005포인트를 넘으면 발행을 중단합니다. 2026-11-10 복구 시 겹친 475거래일 종가는 모두 일치했습니다.
+- 보충 가격은 사건 수익률·누락 급락일 조사에만 사용하며 Risk Score·MSI·공식 기준값·모델은 바꾸지 않습니다.
+- 11/6 사건은 최신 점수 연결 후 ‘데이터 없음’에서 ‘사전 경보 없음’으로 진단되었습니다. 동결 모델의 사후·운영 추론에 대한 진단이며 새 OOS 검증이 아닙니다.
+- 가격만 있는 날짜는 `NO_SCORE`로 유지합니다. 과거 점수를 복사해 현재 점수로 표시하지 않습니다.
+
+## 자동 갱신
+
+[Refresh Korea event diagnostics](https://github.com/JM973279/market-qualitative-signals/actions/workflows/refresh-diagnostics.yml)는 **4시간마다** 공개 원본 점수와 공개 가격을 확인하며 수동 실행도 가능합니다. GitHub 예약 실행은 지연될 수 있습니다.
+
+추가 API 키 없이 실행하고, main에서 수집·검사·보고서 생성이 성공하면 입력과 보고서를 커밋합니다. 조회나 일치 검증이 실패하면 마지막 검증 파일을 덮어쓰지 않습니다. 같은 입력으로 불필요한 타임스탬프 변경 커밋을 만들지 않습니다. 보고서는 원천의 과거 `CURRENT` 문자열을 그대로 믿지 않고 실행 시점의 기대 거래일과 실제 관측일을 비교합니다.
 
 ## 실행
 
 표준 라이브러리만 씁니다(Python 3.10+). 호스트 `python3`로 바로 실행됩니다.
 
 ```bash
-python3 -m qsignals.import_scores   # 배포 저장소 JSON → data/input/ (읽기 전용 복사, sha256 기록)
+python3 -m qsignals.import_scores   # 공개 원본 main을 한 커밋으로 고정 + KOSPI200 일봉 검증
+python3 -m qsignals.import_scores --source-root /path/to/checkout  # 명시적 로컬 입력
 python3 -m qsignals.diagnose        # → reports/event_diagnostics.{csv,md}
 python3 -m qsignals.view            # → reports/dashboard.html (이 저장소 파일만 읽는 정적 화면)
 python3 -m unittest discover -s tests -t .
 ```
 
+재현 시 `--source-ref COMMIT_SHA`로 원본을 고정합니다. `--price-replay data/input/provenance.json`은 보존한 가격 원응답을 해시 검증해 재사용합니다. 완전한 오프라인 재현은 해당 커밋의 로컬 체크아웃을 `--source-root`로 함께 넘깁니다.
+
+달력은 `data/calendar/`에 해시와 출처를 기록했습니다. exchange_calendars 4.13.2의 XKRX에 2026-06-03·07-17 추가 휴장을 반영했고 2016~2026년을 지원합니다. 지원 기간 밖 자료를 처리하려면 달력을 명시적으로 갱신해야 합니다. 핵심 코드와 검사는 Python 표준 라이브러리만 사용합니다.
+
 배포 저장소 경로가 다르면 `--source-root PATH`를 넘깁니다.
 
-## 최신 점수 갱신
+## 선택: 동결 파이프라인 직접 실행 (`qsignals.refresh`)
+
+기본 운영 경로는 위의 GitHub 고정 export import입니다(`AGENTS.md`). 아래는 명시적으로 실행할 때만 쓰는 추가 경로이며, 같은 `import_data`(달력·KOSPI200 가격 대조)를 거쳐 저장합니다.
 
 `import_scores`는 배포 저장소에 이미 있는 JSON만 복사합니다. 배포 저장소의 운영 export는 사람이 수집을 돌릴 때만 갱신되므로(자동 예약 없음), 그 JSON만 보면 점수가 멈춘 날짜에서 더 나아가지 않습니다. `qsignals.refresh`는 배포 저장소의 동결 파이프라인(`market_engine/operations/run.py --collect`)을 **수정 없이** 임시 사본에서 돌려 최신 한국·미국 점수를 직접 받아옵니다.
 
@@ -56,7 +84,7 @@ python3 -m qsignals.diagnose
 - **기록 유형:** 배포 파이프라인은 원천 캐시 마지막 날 이후를 `OPERATIONAL`, 그 이전을 `RETROSPECTIVE_INFERENCE`로 표시합니다. refresh는 캐시를 매번 최신으로 채우므로 학습 기준일 이후 행이 모두 `RETROSPECTIVE_INFERENCE`로 나옵니다. 둘 다 동결 모델의 학습 기준일 이후 추론이며 진단 보고서는 함께 묶어 다룹니다.
 - **API 키**는 V1 `.env`(`KRX_API_KEY`, `ECOS_API_KEY`)에서 자식 프로세스 환경으로만 넘깁니다. 출력·파일에 남기지 않습니다.
 - **시장별로 따로 씁니다.** `korea_scores.csv`는 한국이 기대 거래일 기준 `CURRENT`일 때만, `us_scores.csv`는 미국 과거 재현이 통과하고(`CURRENT` 또는 `DELAYED`) 점수가 있을 때만 바꿉니다. 조건에 안 맞는 시장은 이전 파일을 그대로 둡니다. 한국이 `CURRENT`가 아니면 미국만 갱신해도 종료 코드 2로 끝납니다(한국 기대 거래일 21:30 KST 이후 KRX 공개 전이 흔한 경우).
-- `provenance.json`의 `markets.<시장>`에 그 CSV를 만든 배포 저장소 커밋·export SHA-256·수집 실행 ID가 시장별로 남습니다. 한 시장만 갱신되면 다른 시장은 이전 출처를 유지합니다(`kept_from_previous_import`). 최상위 필드는 진단 입력인 한국 파일을 기술합니다. `refresh`에는 V1 커밋, 시장별 상태·관측일, 미국 `provider_revision` 검토 수치가 남습니다.
+- 한국은 `provenance.json`(기존 형식 + `refresh` 실행 기록), 미국은 `us_provenance.json`에 출처 커밋·export SHA-256·수집 실행 ID가 남습니다. 각 import는 같은 export의 시장별 상태 블록을 `data/input/operational/<시장>.json`에 함께 저장합니다.
 - **미국 점수는 배포 저장소 `main` 9bedc79 이후 코드에서만 나옵니다.** 그 이전 파이프라인은 Yahoo의 SPY 조정가격 재계산(과거 `SPY_1D_Return` 최대 1.6e-6 차이) 때문에 1e-9 재현 대조에서 미국을 `BLOCKED`로 보류합니다. 9bedc79의 `anchor_us_history`는 V1 캐시 행을 그대로 두고 이후 관측만 붙이므로 통과합니다. 이 저장소는 그 기준을 바꾸지 않고, 고른 `--source-ref`의 파이프라인 결과를 그대로 씁니다. 미국이 `BLOCKED`인 ref로 돌리면 `us_scores.csv`는 바뀌지 않습니다.
 - 미국은 FRED 신용 금리(DBAA/DGS10)가 SPY·VIX보다 며칠 늦게 공개되는 일이 많아 `DELAYED`가 흔합니다. 이때 점수는 마지막으로 모든 원천이 관측된 날까지만 있습니다.
 
@@ -85,9 +113,9 @@ python3 -m market_engine.scenarios.build_korea_library   # → frontend/public/d
 cd frontend && npm ci && npm run build && npm run start   # http://localhost:3000
 ```
 
-- **이 저장소 데이터로 바뀌는 것:** `operational-markets.json`(시장 카드, 미국·한국 시장 페이지의 운영 추론, 헤더 날짜)과 그것을 읽는 `korea-scenarios.json`. `export_frontend`는 `data/input/operational/<시장>.json`(refresh가 저장한 시장별 최신 검증 블록, 가격 없음)을 합치고, 모든 점수가 `<시장>_scores.csv`와 같은지 확인한 뒤 씁니다. 두 시장은 서로 다른 수집 실행에서 올 수 있고 `runId`에 둘 다 적힙니다.
+- **이 저장소 데이터로 바뀌는 것:** `operational-markets.json`(시장 카드, 미국·한국 시장 페이지의 운영 추론, 헤더 날짜)과 그것을 읽는 `korea-scenarios.json`. `export_frontend`는 `data/input/operational/<시장>.json`(점수 CSV와 같은 export에서 import가 저장한 시장별 상태 블록, 가격 없음)을 합치고, 모든 점수가 `<시장>_scores.csv`와 같은지 확인한 뒤 씁니다. 두 시장은 서로 다른 수집 실행에서 올 수 있고 `runId`에 둘 다 적힙니다.
 - **복사본 그대로인 것:** `global-markets.json`(walk-forward OOS 연구 export), `korea-monitor.json`(시장 확산도·과거 검증). 동결 연구 자료라 갱신하지 않습니다.
-- **배포 화면과 다른 점:** refresh가 한국 원천 이력을 매번 최신으로 채우므로 학습 기준일 이후 한국 행은 모두 `RETROSPECTIVE_INFERENCE`(과거 캐시 재현 추론)로 표시됩니다. 배포 사이트는 V1 캐시 끝(10/15) 이후를 `OPERATIONAL`로 표시합니다. 점수 값은 같습니다.
+- **배포 화면과 다른 점(refresh로 갱신한 경우):** refresh가 한국 원천 이력을 매번 최신으로 채우므로 학습 기준일 이후 한국 행은 모두 `RETROSPECTIVE_INFERENCE`(과거 캐시 재현 추론)로 표시됩니다. 배포 사이트는 V1 캐시 끝(10/15) 이후를 `OPERATIONAL`로 표시합니다. 점수 값은 같습니다.
 - 포트폴리오 화면은 별도 API 서버가 필요해 이 저장소에서는 데이터 없이 뜹니다.
 
 ## 구조
@@ -95,12 +123,15 @@ cd frontend && npm ci && npm run build && npm run start   # http://localhost:300
 ```text
 data/events/kospi_2026_events.csv   급락일 주석 (사람이 작성)
 data/input/korea_scores.csv         V1 점수·MSI·KOSPI200 (import_scores가 생성)
+data/input/provenance.json          출처 커밋·sha256·가격/점수 종료일·누락 거래일
+data/input/kospi200_naver.xml        가격 제공처 원응답 (재현용)
+data/calendar/                     KRX 거래일 달력·추가 휴장 출처
 data/input/us_scores.csv            미국 V1 점수·MSI·SPY (비교용, 진단에는 쓰지 않음)
-data/input/provenance.json          시장별 출처 커밋·sha256·행 수, 수집 상태
+data/input/us_provenance.json       미국 출처 커밋·sha256·행 수, 수집 상태
 qsignals/refresh.py                 동결 파이프라인을 임시 사본에서 실행해 최신 점수 수집
 qsignals/view.py                    reports/dashboard.html 생성 (data/input·reports만 읽음)
 qsignals/export_frontend.py         frontend/public/data/operational-markets.json 생성·검증
-data/input/operational/             시장별 최신 검증 파이프라인 블록 (refresh가 저장)
+data/input/operational/             시장별 상태 블록 (CSV와 같은 export에서 import가 저장)
 frontend/                           배포 저장소 화면 복사본 + 이 저장소 수정
 market_engine/scenarios/            한국 급락 시나리오 큐레이션·빌더 (사례 분석 화면)
 scripts/setup_inference_env.sh      refresh용 별도 Python 환경
@@ -119,7 +150,7 @@ reports/                            진단 결과
 - 스트레스 진행 중 추가 급락: 직전 5거래일 중 MSI ≥ 공식 Stress 기준인 날이 있음
 - 사전 경보 있음: 위가 아니고, 직전 10거래일(Target_10D 기간) 중 경보가 하루 이상
 - 사전 경보 없음: 둘 다 아님
-- 급락 당일 점수는 당일 종가까지 반영하므로 '사전' 판정에서 뺍니다. 직전 구간에 결측이 있으면 판정하지 않습니다.
+- 급락 당일 점수는 당일 종가까지 반영하므로 '사전' 판정에서 뺍니다. 직전 구간에 행 전체가 빠진 경우까지 결측으로 처리합니다. 직전 거래일 가격이 없으면 여러 거래일 누적 등락을 일간 등락으로 계산하지 않습니다.
 
 ## 이벤트 CSV 작성 규칙
 
@@ -151,3 +182,10 @@ reports/                            진단 결과
 - 보도 등락은 KOSPI, 데이터 수익률은 KOSPI200 기준입니다.
 - 10월 점수는 walk-forward OOS가 아니라 동결 모델의 사후 추론입니다.
 - 이 저장소는 모델을 바꾸지 않습니다. 모델 변경은 팀(A 트랙) 합의 후 배포 저장소에서 별도로 진행합니다.
+
+## 복구 검증 (2026-11-10)
+
+- 원본 커밋과 두 JSON의 SHA-256, 보충 가격 원응답의 SHA-256, 생성 CSV의 SHA-256을 기록합니다.
+- 같은 날짜의 기존 2,483개 Risk Score·MSI·공식 기준값·기록 유형은 복구 전후 일치합니다.
+- 불가능한 날짜, 중복 날짜, NaN/무한값, 잘못된 종목 응답, 빠진 거래일, 가격 기준 불일치, 갱신 실패 시 파일 보존을 회귀 검사합니다.
+- 출처가 없는 뉴스 주석 두 건은 보고서에서도 ‘출처 미확인’으로 표시합니다. 기존 뉴스의 인과 해석을 새로 검증했다는 의미는 아닙니다.

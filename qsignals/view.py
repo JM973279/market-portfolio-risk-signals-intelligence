@@ -178,18 +178,22 @@ dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px
 def render(days=120):
     data = PROJECT_ROOT / "data/input"
     provenance = json.loads((data / "provenance.json").read_text(encoding="utf-8"))
-    refresh = provenance.get("refresh", {})
+    us_path = data / "us_provenance.json"
+    sources = {"korea": provenance, "us": json.loads(us_path.read_text(encoding="utf-8")) if us_path.exists() else {}}
     sections = []
     for market in ("korea", "us"):
         path = data / f"{market}_scores.csv"
         if path.exists():
-            source = provenance.get("markets", {}).get(market) or (provenance if market == "korea" else {})
-            sections.append(market_section(market, read_scores(path, market), refresh.get(market), source, days))
-    imported = max((v.get("imported_at") or "" for v in provenance.get("markets", {}).values()),
-                   default=provenance.get("imported_at") or "")
+            source = sources[market]
+            # Korea status: the pinned export's own status, or the live refresh record when present.
+            info = source.get("refresh", {}).get(market) or {
+                "status": source.get(f"{market}_source_status"), "expected_date": source.get(f"{market}_expected_date")}
+            sections.append(market_section(market, read_scores(path, market), info, source, days))
+    imported = max((v.get("imported_at") or "" for v in sources.values()), default="")
     files = [("data/input/korea_scores.csv", "한국 V1 점수·MSI·KOSPI200"),
              ("data/input/us_scores.csv", "미국 V1 점수·MSI·SPY"),
-             ("data/input/provenance.json", "출처 커밋·SHA-256·수집 상태"),
+             ("data/input/provenance.json", "한국 출처 커밋·SHA-256·가격 대조·수집 상태"),
+             ("data/input/us_provenance.json", "미국 출처 커밋·SHA-256·수집 상태"),
              ("data/events/kospi_2026_events.csv", "급락일 주석 (사람이 작성)"),
              ("reports/event_diagnostics.csv", "사전 경보 진단 결과")]
     return f"""<!doctype html>

@@ -62,6 +62,11 @@ class EventFileTest(unittest.TestCase):
             "secondary repeats primary": event_record(trigger_secondary="geopolitics"),
             "no move": event_record(reported_close="", reported_change_pct=""),
             "unknown halt": event_record(market_halt="CB;halt"),
+            "impossible date": event_record(date="2026-02-30"),
+            "NaN close": event_record(reported_close="nan"),
+            "infinite return": event_record(reported_change_pct="inf"),
+            "negative close": event_record(reported_close="-1"),
+            "empty host": event_record(source_urls="https://"),
         }
         for name, rec in cases.items():
             with self.subTest(name):
@@ -112,7 +117,7 @@ class ScoreImportTest(unittest.TestCase):
             {"date": "2026-09-21", "risk": 0.9, "msi": 0.1, "threshold": 1.3, "recordType": "RETROSPECTIVE_INFERENCE"},
             {"date": "2026-11-06", "risk": 0.945, "msi": 1.14, "threshold": 1.29, "recordType": "OPERATIONAL"},
         ]}}}
-        rows = build_rows(global_markets, operational, "us")
+        rows = build_rows(global_markets, operational, market="us")
         self.assertEqual([r.record_type for r in rows], ["OOS_WALK_FORWARD", "OPERATIONAL"])
         self.assertEqual(rows[0].risk_v1, 0.3)
         with tempfile.TemporaryDirectory() as d:
@@ -123,32 +128,22 @@ class ScoreImportTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 read_scores(path)  # a US file is not a Korea file
 
-    def test_import_keeps_previous_us_file_when_skipped(self):
-        from qsignals.import_scores import import_scores
-        point = {"date": "2026-09-21", "price": 1.0, "risk": 0.3, "msi": 0.2, "threshold": 1.3}
-        gm = {"korea": [point], "us": [point]}
-        op = {"runId": "r", "markets": {m: {"history": [], "modelSha256": m, "trainingCutoff": "2026-09-16"} for m in ("korea", "us")}}
+    def test_import_us_writes_its_own_files_only(self):
+        from qsignals.import_scores import import_us
+        point = {"date": "2026-09-21", "price": 660.0, "risk": 0.3, "msi": 0.2, "threshold": 1.3}
+        payloads = {"global_markets": {"korea": [], "us": [point]},
+                    "operational_markets": {"runId": "r", "markets": {"us": {"history": [], "status": "DELAYED",
+                                                                              "trainingCutoff": "2026-09-16"}}}}
         with tempfile.TemporaryDirectory() as d:
-            src, out = Path(d) / "src", Path(d) / "out"
-            (src / "frontend/public/data").mkdir(parents=True)
-            (src / "frontend/public/data/global-markets.json").write_text(json.dumps(gm), encoding="utf-8")
-            (src / "frontend/public/data/operational-markets.json").write_text(json.dumps(op), encoding="utf-8")
-            first = import_scores(src, out)
-            self.assertEqual(set(first["markets"]), {"korea", "us"})
-            us_before = (out / "us_scores.csv").read_bytes()
-            second = import_scores(src, out, markets=("korea",))
-            self.assertTrue(second["markets"]["us"]["kept_from_previous_import"])
-            self.assertEqual((out / "us_scores.csv").read_bytes(), us_before)
-            korea_before = (out / "korea_scores.csv").read_bytes()
-            third = import_scores(src, out, {"source_git_commit": "new", "refresh": {}}, markets=("us",))  # stale Korea run
-            self.assertTrue(third["markets"]["korea"]["kept_from_previous_import"])
-            self.assertEqual(third["markets"]["us"]["source_git_commit"], "new")
-            self.assertIsNone(third["markets"]["korea"]["source_git_commit"])  # kept file keeps its own source
-            self.assertIsNone(third["source_git_commit"])  # top level describes korea_scores.csv
-            self.assertEqual(third["refresh"], {})
-            self.assertEqual((out / "korea_scores.csv").read_bytes(), korea_before)
-            with self.assertRaises(ValueError):
-                import_scores(src, Path(d) / "fresh", markets=("us",))  # no Korea import yet
+            out = Path(d)
+            (out / "korea_scores.csv").write_text("kept", encoding="utf-8")
+            prov = import_us(payloads, {}, {"source_git_commit": "abc"}, out, extra={"refresh": {"us": {}}})
+            self.assertEqual(prov["source_git_commit"], "abc")
+            self.assertEqual(prov["us_source_status"], "DELAYED")
+            self.assertEqual(prov["refresh"], {"us": {}})
+            self.assertEqual(read_scores(out / "us_scores.csv", "us")[0].kospi200_close, 660.0)
+            self.assertEqual(json.loads((out / "us_provenance.json").read_text(encoding="utf-8"))["scores_sha256"], prov["scores_sha256"])
+            self.assertEqual((out / "korea_scores.csv").read_text(encoding="utf-8"), "kept")  # Korea untouched
 
     def test_round_trip(self):
         rows = [ScoreRow("2026-01-02", 100.5, 0.25, -0.1, 1.0, "OOS_WALK_FORWARD"), ScoreRow("2026-01-05", None, None, None, None, "NO_SCORE")]
@@ -163,6 +158,9 @@ class ScoreImportTest(unittest.TestCase):
             "unsorted": [ScoreRow("2026-01-03", 1.0, 0.1, 0.0, 1.0, "OOS_WALK_FORWARD"), ScoreRow("2026-01-02", 1.0, 0.1, 0.0, 1.0, "OOS_WALK_FORWARD")],
             "score without type": [ScoreRow("2026-01-02", 1.0, 0.1, 0.0, 1.0, "NO_SCORE")],
             "unknown type": [ScoreRow("2026-01-02", 1.0, 0.1, 0.0, 1.0, "BACKFIT")],
+            "impossible date": [ScoreRow("2026-02-30", 1.0, 0.1, 0.0, 1.0, "OOS_WALK_FORWARD")],
+            "nan price": [ScoreRow("2026-01-02", float("nan"), 0.1, 0.0, 1.0, "OOS_WALK_FORWARD")],
+            "nan MSI": [ScoreRow("2026-01-02", 1.0, 0.1, float("nan"), 1.0, "OOS_WALK_FORWARD")],
         }
         for name, rows in bad.items():
             with self.subTest(name), self.assertRaises(ValueError):
