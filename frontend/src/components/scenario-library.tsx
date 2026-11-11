@@ -1,7 +1,8 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useDashboard } from "./dashboard-shell";
+import { marketOrder } from "@/lib/market-order";
 import type { CopyKey } from "@/lib/dashboard-copy";
 import type { ScenarioEpisode, ScenarioNote, ScenarioVerdict } from "@/lib/dashboard-types";
 
@@ -54,8 +55,18 @@ function EpisodeCard({ episode, names }: { episode: ScenarioEpisode; names: Reco
 }
 
 export function ScenarioLibrary() {
- const { scenarios } = useDashboard();
+ const { scenarios: korea, usScenarios } = useDashboard();
  const { t, category, language } = useScenarioLabels();
+ const [chosen, setChosen] = useState<"korea" | "us" | null>(null);
+ const market = chosen ?? marketOrder(language)[0];
+ const scenarios = market === "us" ? usScenarios : korea;
+ // A link from a market page (/cases#us, /cases#korea) opens that market's library.
+ useEffect(() => {
+  const read = () => { const hash = window.location.hash.slice(1); if (hash === "us" || hash === "korea") setChosen(hash); };
+  const timer = setTimeout(read, 0);
+  window.addEventListener("hashchange", read);
+  return () => { clearTimeout(timer); window.removeEventListener("hashchange", read); };
+ }, []);
  const [filter, setFilter] = useState("all");
  const [sort, setSort] = useState<"date" | "drawdown">("date");
  const [showAll, setShowAll] = useState(false);
@@ -69,8 +80,9 @@ export function ScenarioLibrary() {
  const hidden = showAll ? 0 : (scenarios?.episodes ?? []).filter(e => (filter === "all" || e.category === filter) && e.tier !== "core").length;
  if (!scenarios) return <section className="panel empty-state"><h2>{t("scenarioTitle")}</h2><p>{t("scenarioUnavailable")}</p></section>;
  return <section className="panel scenario-library" aria-labelledby="scenario-library-title">
-  <div className="panel-header"><h2 id="scenario-library-title">{t("scenarioTitle")}</h2><span className="tag">{t("scenarioTag")}</span></div>
-  <p className="scope-label">{t("scenarioScope")} · {scenarios.episodes.length}{language === "en" ? " " : ""}{t("scenarioEpisodes")} · {t("scenarioPriceAsOf")} {scenarios.asOf}</p>
+  <div className="panel-header"><h2 id="scenario-library-title">{t("scenarioTitle")} · {t(market)}</h2><span className="tag">{t("scenarioTag")}</span></div>
+  <div className="small-toggle scenario-market" role="group" aria-label={t("scenarioMarket")}>{marketOrder(language).map(m => <button type="button" key={m} aria-pressed={market === m} onClick={() => { setChosen(m); setFilter("all"); setShowAll(false); }}>{t(m)}</button>)}</div>
+  <p className="scope-label">{t(market === "us" ? "scenarioScopeUs" : "scenarioScope")} · {scenarios.episodes.length}{language === "en" ? " " : ""}{t("scenarioEpisodes")} · {t("scenarioPriceAsOf")} {scenarios.asOf}</p>
   <h3 className="scenario-subheading">{t("scenarioByCategory")}</h3>
   <div className="table-scroll"><table className="scenario-summary">
    <thead><tr><th scope="col">{t("scenarioCategory")}</th><th scope="col">{t("scenarioCount")}</th><th scope="col">{t("scenarioMedianDd")}</th><th scope="col">{t("scenarioWorstDd")}</th><th scope="col">{t("scenarioWarned")}</th></tr></thead>
@@ -93,15 +105,16 @@ export function ScenarioLibrary() {
  </section>;
 }
 
-export function ScenarioLinkPanel() {
- const { scenarios } = useDashboard();
+export function ScenarioLinkPanel({ country = "korea" }: { country?: "korea" | "us" }) {
+ const { scenarios: korea, usScenarios } = useDashboard();
+ const scenarios = country === "us" ? usScenarios : korea;
  const { t } = useScenarioLabels();
  if (!scenarios) return null;
  const judged = scenarios.episodes.filter(e => e.model.verdict !== "no_data");
  const warned = judged.filter(e => e.model.verdict === "warned").length;
  return <section className="panel scenario-link-panel">
-  <div className="panel-header"><h2>{t("scenarioTitle")}</h2><Link className="text-link" href="/cases">{t("scenarioLinkCta")} →</Link></div>
-  <p>{t("scenarioLinkText")}</p>
+  <div className="panel-header"><h2>{t("scenarioTitle")}</h2><Link className="text-link" href={`/cases#${country}`}>{t("scenarioLinkCta")} →</Link></div>
+  <p>{t(country === "us" ? "scenarioLinkTextUs" : "scenarioLinkText")}</p>
   <dl><div><dt>{t("scenarioCount")}</dt><dd>{scenarios.episodes.length}</dd></div><div><dt>{t("scenarioWarned")}</dt><dd>{warned} / {judged.length}</dd></div><div><dt>{t("scenarioPriceAsOf")}</dt><dd>{scenarios.asOf}</dd></div></dl>
  </section>;
 }

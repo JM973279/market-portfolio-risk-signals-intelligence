@@ -1,11 +1,12 @@
-"""Build the Korea historical scenario library shown on the Case Studies page.
+"""Build the Korea and US historical scenario libraries shown on the Scenario Analysis page.
 
 Read-only: combines curated qualitative inputs (korea_episodes.json) with stored
 KOSPI200 prices and frozen V1 / MSI values already exported for the dashboard.
 It never runs a model, never fills missing values and never forecasts.
 
-    python -m market_engine.scenarios.build_korea_library          # write the export
-    python -m market_engine.scenarios.build_korea_library --check  # fail if the export is stale
+    python -m market_engine.scenarios.build_korea_library          # write both exports
+    python -m market_engine.scenarios.build_korea_library --check  # fail if an export is stale
+    python -m market_engine.scenarios.build_korea_library --market us   # one market only
 """
 import argparse
 import hashlib
@@ -20,6 +21,12 @@ EPISODES_PATH = ROOT / "market_engine/scenarios/korea_episodes.json"
 GLOBAL_PATH = ROOT / "frontend/public/data/global-markets.json"
 OPERATIONAL_PATH = ROOT / "frontend/public/data/operational-markets.json"
 OUTPUT_PATH = ROOT / "frontend/public/data/korea-scenarios.json"
+# Same rules for both markets; each market reads only its own stored prices and model values.
+MARKETS = {
+    "korea": {"episodes": EPISODES_PATH, "output": OUTPUT_PATH, "index": "KOSPI200"},
+    "us": {"episodes": ROOT / "market_engine/scenarios/us_episodes.json",
+           "output": ROOT / "frontend/public/data/us-scenarios.json", "index": "SPY"},
+}
 
 # Fixed before looking at any result; not tuned per episode.
 WINDOW_SESSIONS = 60          # trough search window, onset day included
@@ -31,19 +38,20 @@ TIERS = {"core", "supporting"}
 
 
 def sha256(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    # Hash with LF line endings so a Windows checkout (CRLF) gives the same value as CI.
+    return hashlib.sha256(path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 
 
 def finite(value):
     return value if isinstance(value, (int, float)) and math.isfinite(value) else None
 
 
-def load_market():
+def load_market(market="korea"):
     """Return (sessions, price, model) where model maps date -> V1/MSI values and their origin."""
-    snapshot = json.loads(GLOBAL_PATH.read_text())
-    operational = json.loads(OPERATIONAL_PATH.read_text())
+    snapshot = json.loads(GLOBAL_PATH.read_text(encoding="utf-8"))
+    operational = json.loads(OPERATIONAL_PATH.read_text(encoding="utf-8"))
     price, model = {}, {}
-    for point in snapshot["korea"]:
+    for point in snapshot[market]:
         if finite(point.get("price")) is not None:
             price[point["date"]] = point["price"]
         model[point["date"]] = {
@@ -52,7 +60,7 @@ def load_market():
             "threshold": finite(point.get("threshold")),
             "origin": "historical_oos",
         }
-    for point in operational["markets"]["korea"]["history"]:
+    for point in operational["markets"][market]["history"]:
         current = model.get(point["date"])
         # Historical OOS values win; operational rows only fill dates the snapshot lacks.
         if current is None or all(current[k] is None for k in ("risk", "msi", "threshold")):
@@ -169,10 +177,11 @@ def validate(curated):
             raise ValueError(f"{e['id']}: source must be https")
 
 
-def build():
-    curated = json.loads(EPISODES_PATH.read_text())
+def build(market="korea"):
+    spec = MARKETS[market]
+    curated = json.loads(spec["episodes"].read_text(encoding="utf-8"))
     validate(curated)
-    sessions, price, model = load_market()
+    sessions, price, model = load_market(market)
     episodes = []
     for e in curated["episodes"]:
         metrics, missing = price_metrics(e["onset"], price)
@@ -197,7 +206,7 @@ def build():
         "asOf": max(price),
         "is_forecast": False,
         "parameters": {
-            "selection": "KOSPI200 one-session return <= -3% or <= -10% within ten sessions, clustered into episodes.",
+            "selection": f"{spec['index']} one-session return <= -3% or <= -10% within ten sessions, clustered into episodes.",
             "window_sessions": WINDOW_SESSIONS,
             "prior_sessions": PRIOR_SESSIONS,
             "verdict_rule": {"warned": f"prior-session V1 >= {WARN_AT}", "borderline": f"{BORDERLINE_AT} <= prior-session V1 < {WARN_AT}", "missed": f"prior-session V1 < {BORDERLINE_AT}"},
@@ -213,9 +222,9 @@ def build():
         "taxonomy": curated["taxonomy"],
         "categories": curated["categories"],
         "sources": {
-            "episodes": {"path": str(EPISODES_PATH.relative_to(ROOT)), "sha256": sha256(EPISODES_PATH)},
-            "prices_and_model": {"path": str(GLOBAL_PATH.relative_to(ROOT)), "sha256": sha256(GLOBAL_PATH)},
-            "operational": {"path": str(OPERATIONAL_PATH.relative_to(ROOT)), "sha256": sha256(OPERATIONAL_PATH)},
+            "episodes": {"path": spec["episodes"].relative_to(ROOT).as_posix(), "sha256": sha256(spec["episodes"])},
+            "prices_and_model": {"path": GLOBAL_PATH.relative_to(ROOT).as_posix(), "sha256": sha256(GLOBAL_PATH)},
+            "operational": {"path": OPERATIONAL_PATH.relative_to(ROOT).as_posix(), "sha256": sha256(OPERATIONAL_PATH)},
         },
         "summary": summarize(episodes, curated["categories"]),
         "episodes": episodes,
@@ -228,19 +237,24 @@ def render(library):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--check", action="store_true", help="exit 1 if the stored export differs")
+    parser.add_argument("--check", action="store_true", help="exit 1 if a stored export differs")
+    parser.add_argument("--market", choices=[*MARKETS, "all"], default="all")
     args = parser.parse_args(argv)
-    text = render(build())
-    if args.check:
-        stored = OUTPUT_PATH.read_text() if OUTPUT_PATH.exists() else ""
-        if stored != text:
-            print("korea-scenarios.json is stale; rerun build_korea_library.", file=sys.stderr)
-            return 1
-        print("korea-scenarios.json is current.")
-        return 0
-    OUTPUT_PATH.write_text(text)
-    print(f"Wrote {OUTPUT_PATH.relative_to(ROOT)}")
-    return 0
+    status = 0
+    for market in (MARKETS if args.market == "all" else [args.market]):
+        output = MARKETS[market]["output"]
+        text = render(build(market))
+        if args.check:
+            stored = output.read_text(encoding="utf-8") if output.exists() else ""
+            if stored != text:
+                print(f"{output.name} is stale; rerun build_korea_library.", file=sys.stderr)
+                status = 1
+            else:
+                print(f"{output.name} is current.")
+            continue
+        output.write_bytes(text.encode("utf-8"))
+        print(f"Wrote {output.relative_to(ROOT).as_posix()}")
+    return status
 
 
 if __name__ == "__main__":

@@ -26,7 +26,7 @@ docker compose -f infra/aws/compose.yaml up --build
 
 AWS Lightsail 배포는 `infra/aws/deploy_lightsail.sh`를 사용합니다(서비스를 처음 만들 때는 `CREATE_SERVICE=yes`, 월 과금 시작). 데이터는 빌드할 때 이미지에 들어가므로, GitHub Actions가 갱신한 데이터를 배포 화면에 반영하려면 최신 `main`으로 다시 빌드·배포해야 합니다. 배포 후 다음이 보이면 최신 버전입니다.
 
-- 메뉴에 `백테스팅 테스트`와 `시나리오 분석`이 있습니다.
+- 메뉴에 `백테스팅 테스트`와 `시나리오 분석`이 있습니다. 백테스팅 테스트에는 `10일 경고 백테스트`(미국·한국 탭, 경고 기준 조절, 연도별 성과, 스트레스 사건 목록)가, 시나리오 분석에는 한국·미국 탭이 있습니다.
 - 왼쪽 아래 `EN`을 누르면 포트폴리오 분석 화면까지 모든 글과 표시가 영어로 바뀝니다.
 
 아래의 루트 `Dockerfile`·`docker-compose.yml`은 포트폴리오 서버(`/portfolio`)만 실행합니다.
@@ -199,11 +199,13 @@ Secrets 공식 안내: https://docs.github.com/en/actions/how-tos/write-workflow
 ```bash
 python3 -m qsignals.refresh                        # 점수 CSV + data/input/operational/{korea,us}.json
 python3 -m qsignals.export_frontend                # → frontend/public/data/operational-markets.json
-python3 -m market_engine.scenarios.build_korea_library   # → frontend/public/data/korea-scenarios.json
+python3 -m market_engine.scenarios.build_korea_library   # → frontend/public/data/{korea,us}-scenarios.json (--market korea|us 로 한 시장만)
 cd frontend && npm ci && npm run build && npm run start   # http://localhost:3000
 ```
 
 - **이 저장소 데이터로 바뀌는 것:** `operational-markets.json`(시장 카드, 미국·한국 시장 페이지의 운영 추론, 헤더 날짜)과 그것을 읽는 `korea-scenarios.json`. `export_frontend`는 `data/input/operational/<시장>.json`(점수 CSV와 같은 export에서 import가 저장한 시장별 상태 블록, 가격 없음)을 합치고, 모든 점수가 `<시장>_scores.csv`와 같은지 확인한 뒤 씁니다. 두 시장은 서로 다른 수집 실행에서 올 수 있고 `runId`에 둘 다 적힙니다.
+- **시나리오 분석 (한국·미국):** 같은 규칙(하루 -3% 이하 또는 10거래일 -10% 이하, 60거래일 낙폭, 직전일 V1 50% 이상이면 사전 경고)을 KOSPI200과 SPY에 적용합니다. 사례 이름·원인·범주·출처는 `market_engine/scenarios/{korea,us}_episodes.json`에 큐레이션하고, 수치는 빌더가 저장된 가격·V1로 계산합니다. 미국은 미국 OOS 시작일(2006-08-09)부터이며, 확인한 링크가 없는 사례는 출처를 비워 '출처 미확인'으로 표시합니다. 빌더의 원천 SHA-256은 줄바꿈을 LF로 맞춰 계산하므로 Windows(CRLF) 체크아웃에서도 CI와 같은 값이 나옵니다.
+- **10일 경고 백테스트:** `frontend/src/lib/backtest.ts`가 `global-markets.json`의 저장된 10일 OOS 예측으로 브라우저에서 다시 계산합니다(모델 재실행 없음). 다음 1~10거래일 중 MSI가 임계값을 넘으면 '스트레스 예정일'이며, 50% 기준에서 저장된 미국 10D 정밀도·재현율·F1·ROC-AUC와 정확히 같습니다. `cd frontend && npm run test:backtest`가 이 일치를 검사합니다.
 - **복사본 그대로인 것:** `global-markets.json`(walk-forward OOS 연구 export), `korea-monitor.json`(시장 확산도·과거 검증). 동결 연구 자료라 갱신하지 않습니다.
 - **배포 화면과 다른 점(refresh로 갱신한 경우):** refresh가 한국 원천 이력을 매번 최신으로 채우므로 학습 기준일 이후 한국 행은 모두 `RETROSPECTIVE_INFERENCE`(과거 캐시 재현 추론)로 표시됩니다. 배포 사이트는 V1 캐시 끝(10/15) 이후를 `OPERATIONAL`로 표시합니다. 점수 값은 같습니다.
 - **KR/EN:** EN 토글이면 포트폴리오 iframe을 `/portfolio-lab?lang=en`으로 열고 API도 영어 문구로 받습니다. 자세한 규칙은 위의 [화면 언어](#화면-언어-kr--en) 절을 보세요.
@@ -232,7 +234,7 @@ qsignals/portfolio*.py              포트폴리오 성과·요인분해·위험
 qsignals/portfolio_i18n.py          포트폴리오 API의 영어 문구 (?lang=en)
 qsignals/portfolio_web/             포트폴리오 분석 화면 (사이트 iframe·단독 실행 공용)
 data/portfolio/                     GitHub Actions가 검증해 저장한 포트폴리오 가격·팩터 스냅샷
-market_engine/scenarios/            한국 급락 시나리오 큐레이션·빌더 (사례 분석 화면)
+market_engine/scenarios/            한국·미국 급락 시나리오 큐레이션·빌더 (시나리오 분석 화면)
 scripts/setup_inference_env.sh      refresh용 별도 Python 환경
 qsignals/scores.py                  점수 시계열 병합·검증
 qsignals/events.py                  이벤트 스키마·검증
