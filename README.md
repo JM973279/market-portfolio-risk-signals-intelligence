@@ -14,7 +14,7 @@ python3 -m qsignals.portfolio_server
 
 종목·비중을 입력하면 과거 가상성과, 종목별 수익 기여도, 벤치마크 대비 자산배분·선택·상호작용 효과, 별도 위험 추정, 비중 변경 비교를 제공합니다. SPY·주식/국채 60:40·사용자 지정 기준을 지원합니다. 실제 섹터별 종목선택 분석은 과거 구성·분류·수익률 자료가 연결된 기간에만 제공하며 현재 기본 자료는 미연결 상태입니다.
 
-데이터는 GitHub 검증 스냅샷을 읽습니다. 수집 시각을 최신 가격일로 표시하지 않으며 실제 가격 종료일은 화면과 `data/portfolio/current.json`에서 확인합니다. [실행·데이터 연결·계산 규칙](docs/portfolio.md), [검증 및 자동 갱신 workflow](.github/workflows/refresh-portfolio.yml).
+데이터는 GitHub Actions가 전체 수정종가·금리를 수집·검증해 저장한 스냅샷을 읽습니다. 원본 저장소·ref는 유지하고, 가격 최신일과 금리가 필요한 위험 추정일을 구분합니다. 수집 시각을 최신 가격일로 표시하지 않으며 실제 가격 종료일은 화면과 `data/portfolio/current.json`에서 확인합니다. [실행·데이터 연결·계산 규칙](docs/portfolio.md), [검증 및 자동 갱신 workflow](.github/workflows/refresh-portfolio.yml).
 
 ## 원칙
 
