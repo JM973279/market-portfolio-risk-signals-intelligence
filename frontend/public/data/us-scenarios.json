@@ -1,0 +1,1499 @@
+{
+ "schema_version": 1,
+ "asOf": "2026-10-05",
+ "is_forecast": false,
+ "parameters": {
+  "selection": "SPY one-session return <= -3% or <= -10% within ten sessions, clustered into episodes.",
+  "window_sessions": 60,
+  "prior_sessions": 10,
+  "verdict_rule": {
+   "warned": "prior-session V1 >= 0.5",
+   "borderline": "0.4 <= prior-session V1 < 0.5",
+   "missed": "prior-session V1 < 0.4"
+  },
+  "drawdown_reference": "close of the session before onset",
+  "note_codes": {
+   "price_missing": "KOSPI200 price for the onset date is not in the repository snapshot.",
+   "window_incomplete": "Fewer than 60 sessions after onset are stored; the low may not be final.",
+   "trough_at_window_end": "The low falls on the last session of the window; the decline may have continued.",
+   "source_unverified": "Source link not yet verified for this episode.",
+   "window_overlaps": "The drawdown window includes later episodes listed in overlaps."
+  }
+ },
+ "taxonomy": {
+  "name": "Baker, Bloom, Davis and Sammon, What Triggers Stock Market Jumps? (NBER Working Paper 28687)",
+  "url": "https://www.nber.org/system/files/working_papers/w28687/w28687.pdf",
+  "note": "Category names follow the paper. Assigning each episode to a category is a post-hoc judgment made in this project, not the authors' coding."
+ },
+ "categories": {
+  "macro": "Macroeconomic News & Outlook",
+  "earnings": "Corporate Earnings & Outlook",
+  "monetary": "Monetary Policy & Central Banking",
+  "trade": "International Trade Policy",
+  "foreign_markets": "Foreign Stock Markets",
+  "military": "Sovereign Military & Security Actions",
+  "elections": "Elections & Political Transitions",
+  "taxes": "Taxes",
+  "unclassified": "No matching category confirmed"
+ },
+ "sources": {
+  "episodes": {
+   "path": "market_engine/scenarios/us_episodes.json",
+   "sha256": "30e46a475fe11f365040df94e1dfb4839869ead86fa5d301d51f0adafa9f1d25"
+  },
+  "prices_and_model": {
+   "path": "frontend/public/data/global-markets.json",
+   "sha256": "21b2b6fab853da7e078c3194887d2b665717e867b8491ab3ad9e410bcd2d857b"
+  },
+  "operational": {
+   "path": "frontend/public/data/operational-markets.json",
+   "sha256": "fbf2cdb027178cb55ed984caf404b01bec01828ab7746a89e4a56bfa6313fddc"
+  }
+ },
+ "summary": [
+  {
+   "category": "macro",
+   "episodes": 14,
+   "with_prices": 14,
+   "median_max_drawdown": -0.105615,
+   "worst_max_drawdown": -0.406579,
+   "warned": 3,
+   "judged": 14
+  },
+  {
+   "category": "earnings",
+   "episodes": 3,
+   "with_prices": 3,
+   "median_max_drawdown": -0.041916,
+   "worst_max_drawdown": -0.142961,
+   "warned": 1,
+   "judged": 3
+  },
+  {
+   "category": "monetary",
+   "episodes": 5,
+   "with_prices": 5,
+   "median_max_drawdown": -0.057649,
+   "worst_max_drawdown": -0.179859,
+   "warned": 2,
+   "judged": 5
+  },
+  {
+   "category": "trade",
+   "episodes": 3,
+   "with_prices": 3,
+   "median_max_drawdown": -0.120527,
+   "worst_max_drawdown": -0.156074,
+   "warned": 2,
+   "judged": 3
+  },
+  {
+   "category": "foreign_markets",
+   "episodes": 2,
+   "with_prices": 2,
+   "median_max_drawdown": -0.067872,
+   "worst_max_drawdown": -0.081875,
+   "warned": 1,
+   "judged": 2
+  },
+  {
+   "category": "elections",
+   "episodes": 1,
+   "with_prices": 1,
+   "median_max_drawdown": -0.053176,
+   "worst_max_drawdown": -0.053176,
+   "warned": 0,
+   "judged": 1
+  },
+  {
+   "category": "unclassified",
+   "episodes": 1,
+   "with_prices": 1,
+   "median_max_drawdown": -0.094404,
+   "worst_max_drawdown": -0.094404,
+   "warned": 0,
+   "judged": 1
+  }
+ ],
+ "episodes": [
+  {
+   "id": "U01",
+   "onset": "2007-02-27",
+   "tier": "supporting",
+   "category": "foreign_markets",
+   "geo": "foreign",
+   "name": {
+    "en": "Shanghai sell-off",
+    "ko": "상하이 증시 급락"
+   },
+   "cause": {
+    "en": "Chinese shares fell about 9% in one session and the selling spread to global markets.",
+    "ko": "중국 증시가 하루 약 9% 떨어지며 세계 증시로 매도가 번졌습니다."
+   },
+   "source": {
+    "title": "Wikipedia, Chinese stock bubble of 2007",
+    "url": "https://en.wikipedia.org/wiki/Chinese_stock_bubble_of_2007"
+   },
+   "metrics": {
+    "reference_date": "2007-02-26",
+    "onset_return": -0.039058,
+    "max_drawdown": -0.053868,
+    "trough_date": "2007-03-05",
+    "sessions_to_trough": 5,
+    "recovery_date": "2007-04-10",
+    "sessions_to_recover": 25,
+    "window_sessions": 60,
+    "window_end_date": "2007-05-22",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.11058316379785538,
+    "prior_date": "2007-02-26",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 0.8950951328544772,
+    "threshold": 1.0408887922370074,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "U02",
+   "onset": "2008-06-06",
+   "tier": "supporting",
+   "category": "macro",
+   "geo": "both",
+   "name": {
+    "en": "Oil spike and jobless jump",
+    "ko": "유가 급등과 실업률 급등"
+   },
+   "cause": {
+    "en": "Oil jumped to a record while the unemployment rate rose from 5.0% to 5.5%.",
+    "ko": "유가가 사상 최고로 뛰었고 실업률이 5.0%에서 5.5%로 올랐습니다."
+   },
+   "source": null,
+   "metrics": {
+    "reference_date": "2008-06-05",
+    "onset_return": -0.031894,
+    "max_drawdown": -0.136275,
+    "trough_date": "2008-07-15",
+    "sessions_to_trough": 27,
+    "recovery_date": "2011-02-08",
+    "sessions_to_recover": 648,
+    "window_sessions": 60,
+    "window_end_date": "2008-08-29",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.13372580707073212,
+    "prior_date": "2008-06-05",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 0.5733214252337729,
+    "threshold": 1.4532380326390506,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "source_unverified"
+   ],
+   "overlaps": []
+  },
+  {
+   "id": "U03",
+   "onset": "2008-09-04",
+   "tier": "core",
+   "category": "macro",
+   "geo": "domestic",
+   "name": {
+    "en": "Global financial crisis",
+    "ko": "글로벌 금융위기"
+   },
+   "cause": {
+    "en": "Weak economic data started the slide; Lehman Brothers' failure on 15 September turned it into a global credit panic.",
+    "ko": "부진한 경제 지표로 하락이 시작됐고, 9월 15일 리먼 브라더스 파산으로 세계적인 신용 공황이 됐습니다."
+   },
+   "source": {
+    "title": "Wikipedia, 2007–2008 financial crisis",
+    "url": "https://en.wikipedia.org/wiki/2007%E2%80%932008_financial_crisis"
+   },
+   "metrics": {
+    "reference_date": "2008-09-03",
+    "onset_return": -0.030106,
+    "max_drawdown": -0.406579,
+    "trough_date": "2008-11-20",
+    "sessions_to_trough": 56,
+    "recovery_date": "2010-11-04",
+    "sessions_to_recover": 492,
+    "window_sessions": 60,
+    "window_end_date": "2008-11-26",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.16702832281589508,
+    "prior_date": "2008-09-03",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 0.695765854073179,
+    "threshold": 1.4386325980796282,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "U04",
+   "onset": "2009-01-14",
+   "tier": "supporting",
+   "category": "macro",
+   "geo": "domestic",
+   "name": {
+    "en": "Weak retail sales and bank fears",
+    "ko": "소매판매 부진과 은행 불안"
+   },
+   "cause": {
+    "en": "December retail sales fell sharply and fresh worries over bank losses hit financial shares.",
+    "ko": "12월 소매판매가 크게 줄었고 은행 손실 우려가 다시 금융주를 끌어내렸습니다."
+   },
+   "source": null,
+   "metrics": {
+    "reference_date": "2009-01-13",
+    "onset_return": -0.031454,
+    "max_drawdown": -0.218115,
+    "trough_date": "2009-03-09",
+    "sessions_to_trough": 37,
+    "recovery_date": "2009-04-16",
+    "sessions_to_recover": 27,
+    "window_sessions": 60,
+    "window_end_date": "2009-04-09",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.19964703917503357,
+    "prior_date": "2009-01-13",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 0.8950834934013058,
+    "threshold": 1.6209709583153795,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "source_unverified",
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "U05"
+   ]
+  },
+  {
+   "id": "U05",
+   "onset": "2009-03-30",
+   "tier": "supporting",
+   "category": "earnings",
+   "geo": "domestic",
+   "name": {
+    "en": "GM and Chrysler plans rejected",
+    "ko": "GM·크라이슬러 구조조정안 거부"
+   },
+   "cause": {
+    "en": "The US government rejected the restructuring plans of GM and Chrysler, and GM's chief executive stepped down.",
+    "ko": "미국 정부가 GM과 크라이슬러의 구조조정안을 거부했고 GM 최고경영자가 물러났습니다."
+   },
+   "source": {
+    "title": "Wikipedia, General Motors Chapter 11 reorganization",
+    "url": "https://en.wikipedia.org/wiki/General_Motors_Chapter_11_reorganization"
+   },
+   "metrics": {
+    "reference_date": "2009-03-27",
+    "onset_return": -0.034554,
+    "max_drawdown": -0.034554,
+    "trough_date": "2009-03-30",
+    "sessions_to_trough": 1,
+    "recovery_date": "2009-04-02",
+    "sessions_to_recover": 3,
+    "window_sessions": 60,
+    "window_end_date": "2009-06-23",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.05988166108727455,
+    "prior_date": "2009-03-27",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 0.0916054361963023,
+    "threshold": 1.605538180645358,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "U06"
+   ]
+  },
+  {
+   "id": "U06",
+   "onset": "2009-04-20",
+   "tier": "supporting",
+   "category": "earnings",
+   "geo": "domestic",
+   "name": {
+    "en": "Bank loan-loss worries",
+    "ko": "은행 대출 손실 우려"
+   },
+   "cause": {
+    "en": "Rising loan losses in bank earnings revived fears about the banking system.",
+    "ko": "은행 실적에서 대출 손실이 늘며 은행 시스템 우려가 다시 커졌습니다."
+   },
+   "source": null,
+   "metrics": {
+    "reference_date": "2009-04-17",
+    "onset_return": -0.041916,
+    "max_drawdown": -0.041916,
+    "trough_date": "2009-04-20",
+    "sessions_to_trough": 1,
+    "recovery_date": "2009-04-29",
+    "sessions_to_recover": 7,
+    "window_sessions": 60,
+    "window_end_date": "2009-07-14",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.017553111538290977,
+    "prior_date": "2009-04-17",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": -0.0912245734400847,
+    "threshold": 1.6026274845957895,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "source_unverified"
+   ],
+   "overlaps": []
+  },
+  {
+   "id": "U07",
+   "onset": "2010-02-04",
+   "tier": "supporting",
+   "category": "macro",
+   "geo": "foreign",
+   "name": {
+    "en": "European debt fears",
+    "ko": "유럽 재정 위기 우려"
+   },
+   "cause": {
+    "en": "Worries over Greek, Portuguese and Spanish public debt spread across markets.",
+    "ko": "그리스·포르투갈·스페인 국가부채 우려가 시장 전반으로 번졌습니다."
+   },
+   "source": {
+    "title": "Wikipedia, European debt crisis",
+    "url": "https://en.wikipedia.org/wiki/European_debt_crisis"
+   },
+   "metrics": {
+    "reference_date": "2010-02-03",
+    "onset_return": -0.030865,
+    "max_drawdown": -0.035873,
+    "trough_date": "2010-02-08",
+    "sessions_to_trough": 3,
+    "recovery_date": "2010-02-17",
+    "sessions_to_recover": 6,
+    "window_sessions": 60,
+    "window_end_date": "2010-04-30",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.01799791306257248,
+    "prior_date": "2010-02-03",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": -0.0210041165419314,
+    "threshold": 1.5202188364898928,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "U08",
+   "onset": "2010-05-06",
+   "tier": "core",
+   "category": "macro",
+   "geo": "both",
+   "name": {
+    "en": "Flash crash amid the Greek crisis",
+    "ko": "그리스 위기 속 플래시 크래시"
+   },
+   "cause": {
+    "en": "As the Greek debt crisis deepened, US stocks plunged and rebounded within minutes in the flash crash.",
+    "ko": "그리스 부채 위기가 깊어지는 가운데 미국 증시가 몇 분 만에 폭락했다 반등했습니다(플래시 크래시)."
+   },
+   "source": {
+    "title": "Wikipedia, 2010 flash crash",
+    "url": "https://en.wikipedia.org/wiki/2010_flash_crash"
+   },
+   "metrics": {
+    "reference_date": "2010-05-05",
+    "onset_return": -0.033213,
+    "max_drawdown": -0.120988,
+    "trough_date": "2010-07-02",
+    "sessions_to_trough": 41,
+    "recovery_date": "2010-10-05",
+    "sessions_to_recover": 65,
+    "window_sessions": 60,
+    "window_end_date": "2010-07-30",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.046563152223825455,
+    "prior_date": "2010-05-05",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 1.0013443596754126,
+    "threshold": 1.4952589173196056,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "U09"
+   ]
+  },
+  {
+   "id": "U09",
+   "onset": "2010-06-29",
+   "tier": "supporting",
+   "category": "macro",
+   "geo": "both",
+   "name": {
+    "en": "Global growth worries",
+    "ko": "세계 경기 둔화 우려"
+   },
+   "cause": {
+    "en": "A downward revision to a Chinese leading indicator and weak US consumer confidence raised fears of a slowing recovery.",
+    "ko": "중국 경기선행지수 하향 수정과 미국 소비자신뢰 부진으로 회복 둔화 우려가 커졌습니다."
+   },
+   "source": null,
+   "metrics": {
+    "reference_date": "2010-06-28",
+    "onset_return": -0.030875,
+    "max_drawdown": -0.049568,
+    "trough_date": "2010-07-02",
+    "sessions_to_trough": 4,
+    "recovery_date": "2010-07-09",
+    "sessions_to_recover": 4,
+    "window_sessions": 60,
+    "window_end_date": "2010-09-22",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "warned",
+    "prior_risk": 0.6752927899360657,
+    "prior_date": "2010-06-28",
+    "prior_warning_sessions": 3,
+    "prior_observed_sessions": 10,
+    "msi": 1.4127136595763,
+    "threshold": 1.521020709105871,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "source_unverified"
+   ],
+   "overlaps": []
+  },
+  {
+   "id": "U10",
+   "onset": "2011-08-04",
+   "tier": "core",
+   "category": "macro",
+   "geo": "both",
+   "name": {
+    "en": "Euro contagion and US downgrade",
+    "ko": "유로존 위기 확산과 미국 신용등급 강등"
+   },
+   "cause": {
+    "en": "Fears of the euro debt crisis spreading to Italy and Spain and of a US slowdown; S&P cut the US credit rating the next day.",
+    "ko": "유로존 위기가 이탈리아·스페인으로 번지고 미국 경기가 둔화할 것이란 우려가 겹쳤고, 다음 날 S&P가 미국 신용등급을 낮췄습니다."
+   },
+   "source": {
+    "title": "Wikipedia, August 2011 stock markets fall",
+    "url": "https://en.wikipedia.org/wiki/August_2011_stock_markets_fall"
+   },
+   "metrics": {
+    "reference_date": "2011-08-03",
+    "onset_return": -0.046842,
+    "max_drawdown": -0.124208,
+    "trough_date": "2011-10-03",
+    "sessions_to_trough": 42,
+    "recovery_date": "2011-10-27",
+    "sessions_to_recover": 18,
+    "window_sessions": 60,
+    "window_end_date": "2011-10-27",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "warned",
+    "prior_risk": 0.6233344674110413,
+    "prior_date": "2011-08-03",
+    "prior_warning_sessions": 6,
+    "prior_observed_sessions": 10,
+    "msi": 2.529388478635742,
+    "threshold": 1.419507564271566,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "U11"
+   ]
+  },
+  {
+   "id": "U11",
+   "onset": "2011-09-22",
+   "tier": "supporting",
+   "category": "monetary",
+   "geo": "both",
+   "name": {
+    "en": "Fed warns of downside risks",
+    "ko": "연준의 경기 하방 위험 경고"
+   },
+   "cause": {
+    "en": "The Fed launched Operation Twist and warned of significant downside risks to the economy, alongside weak Chinese factory data.",
+    "ko": "연준이 오퍼레이션 트위스트를 발표하며 경기 하방 위험이 크다고 경고했고, 중국 제조업 지표도 부진했습니다."
+   },
+   "source": {
+    "title": "Federal Reserve press release, 2011-09-21",
+    "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20110921a.htm"
+   },
+   "metrics": {
+    "reference_date": "2011-09-21",
+    "onset_return": -0.032324,
+    "max_drawdown": -0.057447,
+    "trough_date": "2011-10-03",
+    "sessions_to_trough": 8,
+    "recovery_date": "2011-10-10",
+    "sessions_to_recover": 5,
+    "window_sessions": 60,
+    "window_end_date": "2011-12-15",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "warned",
+    "prior_risk": 0.8413739204406738,
+    "prior_date": "2011-09-21",
+    "prior_warning_sessions": 7,
+    "prior_observed_sessions": 10,
+    "msi": 1.9378903047259293,
+    "threshold": 1.5023592141018842,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "U12"
+   ]
+  },
+  {
+   "id": "U12",
+   "onset": "2011-11-09",
+   "tier": "supporting",
+   "category": "macro",
+   "geo": "foreign",
+   "name": {
+    "en": "Italian yields above 7%",
+    "ko": "이탈리아 국채금리 7% 돌파"
+   },
+   "cause": {
+    "en": "Italy's 10-year bond yield rose above 7%, the level at which other euro countries had sought bailouts.",
+    "ko": "이탈리아 10년물 국채금리가 다른 유로존 국가들이 구제금융을 신청했던 수준인 7%를 넘었습니다."
+   },
+   "source": {
+    "title": "Wikipedia, European debt crisis",
+    "url": "https://en.wikipedia.org/wiki/European_debt_crisis"
+   },
+   "metrics": {
+    "reference_date": "2011-11-08",
+    "onset_return": -0.03691,
+    "max_drawdown": -0.090241,
+    "trough_date": "2011-11-25",
+    "sessions_to_trough": 12,
+    "recovery_date": "2012-01-03",
+    "sessions_to_recover": 25,
+    "window_sessions": 60,
+    "window_end_date": "2012-02-06",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.09746300429105759,
+    "prior_date": "2011-11-08",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 0.6975559711406497,
+    "threshold": 1.5241851119303402,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "U13",
+   "onset": "2015-08-21",
+   "tier": "core",
+   "category": "foreign_markets",
+   "geo": "foreign",
+   "name": {
+    "en": "China devaluation and global sell-off",
+    "ko": "위안화 절하와 세계 증시 급락"
+   },
+   "cause": {
+    "en": "After China's yuan devaluation, worries about Chinese growth drove a global sell-off that peaked on 24 August.",
+    "ko": "중국의 위안화 절하 이후 중국 경기 우려로 세계 증시가 급락했고 8월 24일에 정점을 찍었습니다."
+   },
+   "source": {
+    "title": "Wikipedia, 2015–2016 stock market selloff",
+    "url": "https://en.wikipedia.org/wiki/2015%E2%80%932016_stock_market_selloff"
+   },
+   "metrics": {
+    "reference_date": "2015-08-20",
+    "onset_return": -0.030102,
+    "max_drawdown": -0.081875,
+    "trough_date": "2015-08-25",
+    "sessions_to_trough": 3,
+    "recovery_date": "2015-10-16",
+    "sessions_to_recover": 37,
+    "window_sessions": 60,
+    "window_end_date": "2015-11-13",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "warned",
+    "prior_risk": 0.9330005645751953,
+    "prior_date": "2015-08-20",
+    "prior_warning_sessions": 6,
+    "prior_observed_sessions": 10,
+    "msi": 3.313539593181733,
+    "threshold": 1.3405753339969717,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "U14",
+   "onset": "2016-06-24",
+   "tier": "core",
+   "category": "elections",
+   "geo": "foreign",
+   "name": {
+    "en": "Brexit vote",
+    "ko": "브렉시트 국민투표"
+   },
+   "cause": {
+    "en": "The UK voted to leave the European Union.",
+    "ko": "영국이 국민투표로 유럽연합 탈퇴를 결정했습니다."
+   },
+   "source": {
+    "title": "Wikipedia, 2016 United Kingdom European Union membership referendum",
+    "url": "https://en.wikipedia.org/wiki/2016_United_Kingdom_European_Union_membership_referendum"
+   },
+   "metrics": {
+    "reference_date": "2016-06-23",
+    "onset_return": -0.03591,
+    "max_drawdown": -0.053176,
+    "trough_date": "2016-06-27",
+    "sessions_to_trough": 2,
+    "recovery_date": "2016-07-08",
+    "sessions_to_recover": 8,
+    "window_sessions": 60,
+    "window_end_date": "2016-09-19",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.1088634729385376,
+    "prior_date": "2016-06-23",
+    "prior_warning_sessions": 2,
+    "prior_observed_sessions": 10,
+    "msi": 0.5241615091764755,
+    "threshold": 1.4107042539028771,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "U15",
+   "onset": "2018-02-05",
+   "tier": "core",
+   "category": "macro",
+   "geo": "domestic",
+   "name": {
+    "en": "Rate fears and volatility spike",
+    "ko": "금리 우려와 변동성 폭등"
+   },
+   "cause": {
+    "en": "Strong wage growth raised inflation and rate fears; a record jump in the VIX forced short-volatility products to unwind.",
+    "ko": "임금 상승으로 물가·금리 우려가 커졌고, VIX가 기록적으로 뛰며 변동성 매도 상품이 청산됐습니다."
+   },
+   "source": null,
+   "metrics": {
+    "reference_date": "2018-02-02",
+    "onset_return": -0.041823,
+    "max_drawdown": -0.064694,
+    "trough_date": "2018-02-08",
+    "sessions_to_trough": 4,
+    "recovery_date": "2018-02-26",
+    "sessions_to_recover": 11,
+    "window_sessions": 60,
+    "window_end_date": "2018-05-01",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "warned",
+    "prior_risk": 0.7980190515518188,
+    "prior_date": "2018-02-02",
+    "prior_warning_sessions": 6,
+    "prior_observed_sessions": 10,
+    "msi": 6.116906501500684,
+    "threshold": 1.3130771759887732,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "source_unverified"
+   ],
+   "overlaps": []
+  },
+  {
+   "id": "U16",
+   "onset": "2018-10-10",
+   "tier": "core",
+   "category": "monetary",
+   "geo": "domestic",
+   "name": {
+    "en": "Rising yields and tech sell-off",
+    "ko": "금리 급등과 기술주 급락"
+   },
+   "cause": {
+    "en": "Treasury yields rose as the Fed signalled more hikes, and technology shares led the fall.",
+    "ko": "연준의 추가 인상 신호로 국채금리가 올랐고 기술주가 하락을 이끌었습니다."
+   },
+   "source": null,
+   "metrics": {
+    "reference_date": "2018-10-09",
+    "onset_return": -0.031663,
+    "max_drawdown": -0.179859,
+    "trough_date": "2018-12-24",
+    "sessions_to_trough": 52,
+    "recovery_date": "2019-03-21",
+    "sessions_to_recover": 59,
+    "window_sessions": 60,
+    "window_end_date": "2019-01-07",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.38249659538269043,
+    "prior_date": "2018-10-09",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 1.3799149216999134,
+    "threshold": 1.3003056260700454,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "source_unverified",
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "U17",
+    "U18"
+   ]
+  },
+  {
+   "id": "U17",
+   "onset": "2018-12-04",
+   "tier": "supporting",
+   "category": "trade",
+   "geo": "both",
+   "name": {
+    "en": "US–China truce doubts",
+    "ko": "미중 휴전 합의에 대한 의구심"
+   },
+   "cause": {
+    "en": "Doubts grew over the US–China trade truce agreed at the G20, and part of the Treasury yield curve inverted.",
+    "ko": "G20에서 합의한 미중 무역 휴전에 의구심이 커졌고 국채 수익률 곡선 일부가 역전됐습니다."
+   },
+   "source": {
+    "title": "Wikipedia, China–United States trade war",
+    "url": "https://en.wikipedia.org/wiki/China%E2%80%93United_States_trade_war"
+   },
+   "metrics": {
+    "reference_date": "2018-12-03",
+    "onset_return": -0.032402,
+    "max_drawdown": -0.156074,
+    "trough_date": "2018-12-24",
+    "sessions_to_trough": 14,
+    "recovery_date": "2019-02-19",
+    "sessions_to_recover": 37,
+    "window_sessions": 60,
+    "window_end_date": "2019-03-04",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "warned",
+    "prior_risk": 0.7141494750976562,
+    "prior_date": "2018-12-03",
+    "prior_warning_sessions": 10,
+    "prior_observed_sessions": 10,
+    "msi": 1.5517156690539442,
+    "threshold": 1.3466537817588906,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "U18"
+   ]
+  },
+  {
+   "id": "U18",
+   "onset": "2018-12-24",
+   "tier": "core",
+   "category": "monetary",
+   "geo": "domestic",
+   "name": {
+    "en": "Fed hike and government shutdown",
+    "ko": "연준 금리 인상과 정부 셧다운"
+   },
+   "cause": {
+    "en": "After the Fed's December hike and its signal of further tightening, a partial government shutdown added to the sell-off.",
+    "ko": "연준의 12월 금리 인상과 추가 긴축 신호 뒤에 연방정부 일부 셧다운까지 겹쳤습니다."
+   },
+   "source": {
+    "title": "Federal Reserve press release, 2018-12-19",
+    "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20181219a.htm"
+   },
+   "metrics": {
+    "reference_date": "2018-12-21",
+    "onset_return": -0.026423,
+    "max_drawdown": -0.026423,
+    "trough_date": "2018-12-24",
+    "sessions_to_trough": 1,
+    "recovery_date": "2018-12-26",
+    "sessions_to_recover": 1,
+    "window_sessions": 60,
+    "window_end_date": "2019-03-21",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "warned",
+    "prior_risk": 0.9843642115592957,
+    "prior_date": "2018-12-21",
+    "prior_warning_sessions": 10,
+    "prior_observed_sessions": 10,
+    "msi": 3.4556150916545256,
+    "threshold": 1.379430106391368,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "U19",
+   "onset": "2019-08-05",
+   "tier": "core",
+   "category": "trade",
+   "geo": "foreign",
+   "name": {
+    "en": "Yuan past 7 per dollar",
+    "ko": "위안화 달러당 7위안 돌파"
+   },
+   "cause": {
+    "en": "China let the yuan weaken past 7 per dollar after new US tariff threats.",
+    "ko": "미국의 추가 관세 위협 뒤 중국이 위안화 약세를 달러당 7위안 너머까지 용인했습니다."
+   },
+   "source": {
+    "title": "Wikipedia, China–United States trade war",
+    "url": "https://en.wikipedia.org/wiki/China%E2%80%93United_States_trade_war"
+   },
+   "metrics": {
+    "reference_date": "2019-08-02",
+    "onset_return": -0.030073,
+    "max_drawdown": -0.030073,
+    "trough_date": "2019-08-05",
+    "sessions_to_trough": 1,
+    "recovery_date": "2019-08-08",
+    "sessions_to_recover": 3,
+    "window_sessions": 60,
+    "window_end_date": "2019-10-28",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.38363024592399597,
+    "prior_date": "2019-08-02",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 1.2365076027110151,
+    "threshold": 1.3649787594629186,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "U20",
+   "onset": "2020-02-24",
+   "tier": "core",
+   "category": "macro",
+   "geo": "both",
+   "name": {
+    "en": "COVID-19 crash",
+    "ko": "코로나19 폭락"
+   },
+   "cause": {
+    "en": "COVID-19 spreading outside China, starting with Italy and South Korea, set off a global crash.",
+    "ko": "코로나19가 이탈리아·한국 등 중국 밖으로 퍼지며 세계 증시가 폭락했습니다."
+   },
+   "source": {
+    "title": "Wikipedia, 2020 stock market crash",
+    "url": "https://en.wikipedia.org/wiki/2020_stock_market_crash"
+   },
+   "metrics": {
+    "reference_date": "2020-02-21",
+    "onset_return": -0.033166,
+    "max_drawdown": -0.327513,
+    "trough_date": "2020-03-23",
+    "sessions_to_trough": 21,
+    "recovery_date": "2020-08-05",
+    "sessions_to_recover": 94,
+    "window_sessions": 60,
+    "window_end_date": "2020-05-18",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "borderline",
+    "prior_risk": 0.47769516706466675,
+    "prior_date": "2020-02-21",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 1.8482853178164893,
+    "threshold": 1.337854724269042,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "U21"
+   ]
+  },
+  {
+   "id": "U21",
+   "onset": "2020-04-21",
+   "tier": "supporting",
+   "category": "macro",
+   "geo": "both",
+   "name": {
+    "en": "Negative oil prices",
+    "ko": "마이너스 유가"
+   },
+   "cause": {
+    "en": "US crude futures had fallen below zero the day before as storage ran out during lockdowns.",
+    "ko": "전날 봉쇄로 저장 공간이 바닥나며 미국 원유 선물 가격이 0 아래로 떨어졌습니다."
+   },
+   "source": {
+    "title": "Wikipedia, 2020 Russia–Saudi Arabia oil price war",
+    "url": "https://en.wikipedia.org/wiki/2020_Russia%E2%80%93Saudi_Arabia_oil_price_war"
+   },
+   "metrics": {
+    "reference_date": "2020-04-20",
+    "onset_return": -0.030363,
+    "max_drawdown": -0.030363,
+    "trough_date": "2020-04-21",
+    "sessions_to_trough": 1,
+    "recovery_date": "2020-04-24",
+    "sessions_to_recover": 3,
+    "window_sessions": 60,
+    "window_end_date": "2020-07-15",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.09263011068105698,
+    "prior_date": "2020-04-20",
+    "prior_warning_sessions": 2,
+    "prior_observed_sessions": 10,
+    "msi": 0.3218450836311033,
+    "threshold": 1.3921455372534892,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "U22"
+   ]
+  },
+  {
+   "id": "U22",
+   "onset": "2020-06-11",
+   "tier": "core",
+   "category": "monetary",
+   "geo": "domestic",
+   "name": {
+    "en": "Grim Fed outlook and second-wave fears",
+    "ko": "연준의 어두운 전망과 재확산 우려"
+   },
+   "cause": {
+    "en": "The Fed projected a long recovery the day before, and rising COVID-19 cases raised fears of a second wave.",
+    "ko": "전날 연준이 긴 회복을 전망했고, 코로나19 확진 증가로 2차 확산 우려가 커졌습니다."
+   },
+   "source": {
+    "title": "Federal Reserve press release, 2020-06-10",
+    "url": "https://www.federalreserve.gov/newsevents/pressreleases/monetary20200610a.htm"
+   },
+   "metrics": {
+    "reference_date": "2020-06-10",
+    "onset_return": -0.057649,
+    "max_drawdown": -0.057649,
+    "trough_date": "2020-06-11",
+    "sessions_to_trough": 1,
+    "recovery_date": "2020-07-14",
+    "sessions_to_recover": 22,
+    "window_sessions": 60,
+    "window_end_date": "2020-09-03",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.055305492132902145,
+    "prior_date": "2020-06-10",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 0.4949927375026945,
+    "threshold": 1.3895441163845677,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "U23"
+   ]
+  },
+  {
+   "id": "U23",
+   "onset": "2020-09-03",
+   "tier": "supporting",
+   "category": "unclassified",
+   "geo": "domestic",
+   "name": {
+    "en": "Tech stock reversal",
+    "ko": "기술주 급반락"
+   },
+   "cause": {
+    "en": "Large technology shares reversed sharply after a steep rally; no single news trigger is confirmed.",
+    "ko": "급등하던 대형 기술주가 크게 되밀렸습니다. 하나의 뉴스 원인은 확인되지 않았습니다."
+   },
+   "source": null,
+   "metrics": {
+    "reference_date": "2020-09-02",
+    "onset_return": -0.034414,
+    "max_drawdown": -0.094404,
+    "trough_date": "2020-09-23",
+    "sessions_to_trough": 14,
+    "recovery_date": "2020-11-11",
+    "sessions_to_recover": 35,
+    "window_sessions": 60,
+    "window_end_date": "2020-11-27",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.20114544034004211,
+    "prior_date": "2020-09-02",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 0.1320675127294569,
+    "threshold": 1.3796725140456405,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "source_unverified",
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "U24"
+   ]
+  },
+  {
+   "id": "U24",
+   "onset": "2020-10-28",
+   "tier": "supporting",
+   "category": "macro",
+   "geo": "both",
+   "name": {
+    "en": "Autumn COVID-19 surge",
+    "ko": "가을 코로나19 재확산"
+   },
+   "cause": {
+    "en": "Rising infections in the US and Europe led France and Germany to announce new lockdowns.",
+    "ko": "미국·유럽의 확진 증가로 프랑스와 독일이 새 봉쇄를 발표했습니다."
+   },
+   "source": {
+    "title": "Wikipedia, COVID-19 pandemic in Europe",
+    "url": "https://en.wikipedia.org/wiki/COVID-19_pandemic_in_Europe"
+   },
+   "metrics": {
+    "reference_date": "2020-10-27",
+    "onset_return": -0.034179,
+    "max_drawdown": -0.034534,
+    "trough_date": "2020-10-30",
+    "sessions_to_trough": 3,
+    "recovery_date": "2020-11-04",
+    "sessions_to_recover": 3,
+    "window_sessions": 60,
+    "window_end_date": "2021-01-25",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.29228416085243225,
+    "prior_date": "2020-10-27",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 0.4251768002799933,
+    "threshold": 1.3695610029474663,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "U25",
+   "onset": "2022-04-29",
+   "tier": "supporting",
+   "category": "earnings",
+   "geo": "domestic",
+   "name": {
+    "en": "Amazon earnings miss",
+    "ko": "아마존 실적 쇼크"
+   },
+   "cause": {
+    "en": "Amazon's weak results and outlook hit growth shares ahead of a large Fed rate hike.",
+    "ko": "아마존의 부진한 실적과 전망이 연준의 큰 폭 금리 인상을 앞둔 성장주를 끌어내렸습니다."
+   },
+   "source": null,
+   "metrics": {
+    "reference_date": "2022-04-28",
+    "onset_return": -0.036956,
+    "max_drawdown": -0.142961,
+    "trough_date": "2022-06-16",
+    "sessions_to_trough": 34,
+    "recovery_date": "2022-08-12",
+    "sessions_to_recover": 39,
+    "window_sessions": 60,
+    "window_end_date": "2022-07-26",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "warned",
+    "prior_risk": 0.9688291549682617,
+    "prior_date": "2022-04-28",
+    "prior_warning_sessions": 5,
+    "prior_observed_sessions": 10,
+    "msi": 2.228724470284676,
+    "threshold": 1.3500928427438652,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "source_unverified",
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "U26"
+   ]
+  },
+  {
+   "id": "U26",
+   "onset": "2022-06-13",
+   "tier": "core",
+   "category": "macro",
+   "geo": "domestic",
+   "name": {
+    "en": "Hot CPI and bear market",
+    "ko": "물가 충격과 약세장 진입"
+   },
+   "cause": {
+    "en": "May inflation of 8.6% raised fears of larger Fed hikes, and the S&P 500 entered a bear market.",
+    "ko": "5월 물가상승률 8.6%로 연준의 더 큰 인상 우려가 커졌고 S&P 500이 약세장에 들어섰습니다."
+   },
+   "source": {
+    "title": "Wikipedia, 2022 stock market decline",
+    "url": "https://en.wikipedia.org/wiki/2022_stock_market_decline"
+   },
+   "metrics": {
+    "reference_date": "2022-06-10",
+    "onset_return": -0.037968,
+    "max_drawdown": -0.05939,
+    "trough_date": "2022-06-16",
+    "sessions_to_trough": 4,
+    "recovery_date": "2022-06-24",
+    "sessions_to_recover": 5,
+    "window_sessions": 60,
+    "window_end_date": "2022-09-07",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.25231555104255676,
+    "prior_date": "2022-06-10",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 1.179318445273264,
+    "threshold": 1.384764156121329,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "U27"
+   ]
+  },
+  {
+   "id": "U27",
+   "onset": "2022-08-26",
+   "tier": "core",
+   "category": "monetary",
+   "geo": "domestic",
+   "name": {
+    "en": "Powell at Jackson Hole",
+    "ko": "파월의 잭슨홀 연설"
+   },
+   "cause": {
+    "en": "Powell said the Fed would keep raising rates to curb inflation even if it brought some pain.",
+    "ko": "파월 의장이 고통이 따르더라도 물가를 잡기 위해 금리를 계속 올리겠다고 말했습니다."
+   },
+   "source": {
+    "title": "Federal Reserve, Powell speech, 2022-08-26",
+    "url": "https://www.federalreserve.gov/newsevents/speech/powell20220826a.htm"
+   },
+   "metrics": {
+    "reference_date": "2022-08-25",
+    "onset_return": -0.033849,
+    "max_drawdown": -0.146564,
+    "trough_date": "2022-10-12",
+    "sessions_to_trough": 33,
+    "recovery_date": "2023-02-02",
+    "sessions_to_recover": 77,
+    "window_sessions": 60,
+    "window_end_date": "2022-11-18",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.09523565322160721,
+    "prior_date": "2022-08-25",
+    "prior_warning_sessions": 0,
+    "prior_observed_sessions": 10,
+    "msi": 0.4313012464533563,
+    "threshold": 1.3861430286118512,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [
+    "window_overlaps"
+   ],
+   "overlaps": [
+    "U28"
+   ]
+  },
+  {
+   "id": "U28",
+   "onset": "2022-09-13",
+   "tier": "core",
+   "category": "macro",
+   "geo": "domestic",
+   "name": {
+    "en": "Hot August CPI",
+    "ko": "8월 물가 충격"
+   },
+   "cause": {
+    "en": "August inflation came in above expectations, raising fears of further large rate hikes.",
+    "ko": "8월 물가가 예상보다 높게 나와 큰 폭 금리 인상이 이어질 것이란 우려가 커졌습니다."
+   },
+   "source": {
+    "title": "Wikipedia, 2022 stock market decline",
+    "url": "https://en.wikipedia.org/wiki/2022_stock_market_decline"
+   },
+   "metrics": {
+    "reference_date": "2022-09-12",
+    "onset_return": -0.043483,
+    "max_drawdown": -0.12883,
+    "trough_date": "2022-10-12",
+    "sessions_to_trough": 22,
+    "recovery_date": "2023-02-01",
+    "sessions_to_recover": 76,
+    "window_sessions": 60,
+    "window_end_date": "2022-12-06",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "missed",
+    "prior_risk": 0.3225771188735962,
+    "prior_date": "2022-09-12",
+    "prior_warning_sessions": 3,
+    "prior_observed_sessions": 10,
+    "msi": 0.9614981109371792,
+    "threshold": 1.3843441537828862,
+    "msi_recognized": false,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  },
+  {
+   "id": "U29",
+   "onset": "2025-04-03",
+   "tier": "core",
+   "category": "trade",
+   "geo": "domestic",
+   "name": {
+    "en": "Liberation Day tariffs",
+    "ko": "'해방의 날' 관세"
+   },
+   "cause": {
+    "en": "Sweeping US tariffs announced on 2 April set off a global sell-off.",
+    "ko": "4월 2일 발표된 미국의 대규모 관세로 세계 증시가 급락했습니다."
+   },
+   "source": {
+    "title": "Wikipedia, Liberation Day tariffs",
+    "url": "https://en.wikipedia.org/wiki/Liberation_Day_tariffs"
+   },
+   "metrics": {
+    "reference_date": "2025-04-02",
+    "onset_return": -0.049281,
+    "max_drawdown": -0.120527,
+    "trough_date": "2025-04-08",
+    "sessions_to_trough": 4,
+    "recovery_date": "2025-05-02",
+    "sessions_to_recover": 17,
+    "window_sessions": 60,
+    "window_end_date": "2025-06-30",
+    "window_complete": true,
+    "trough_at_window_end": false,
+    "price_last_date": "2026-10-05"
+   },
+   "model": {
+    "verdict": "warned",
+    "prior_risk": 0.9390046000480652,
+    "prior_date": "2025-04-02",
+    "prior_warning_sessions": 10,
+    "prior_observed_sessions": 10,
+    "msi": 3.0872183053058,
+    "threshold": 1.3136513953591489,
+    "msi_recognized": true,
+    "origin": "historical_oos"
+   },
+   "notes": [],
+   "overlaps": []
+  }
+ ]
+}

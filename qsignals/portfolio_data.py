@@ -94,6 +94,13 @@ class Dataset:
 
 
 def parse_files(raw, provenance):
+    from qsignals.portfolio_markets import profile
+    meta, scenarios = (json.loads(raw[n]) for n in ('snapshot_meta.json', 'scenarios.json'))
+    try:
+        market = profile(meta)
+    except ValueError as exc:
+        raise PortfolioError('알 수 없는 시장입니다.', 'invalid_data') from exc
+    anchor = market['market_ticker']
     _, rows = _csv(raw['universe.csv'])
     universe = {}
     for r in rows:
@@ -105,14 +112,13 @@ def parse_files(raw, provenance):
         if r['type'] not in ('stock', 'etf') or r['asset_class'] not in ('equity', 'bond', 'commodity'):
             raise PortfolioError('지원하지 않는 자산 분류입니다.', 'invalid_data')
         universe[ticker] = r
-    if not {'SPY', 'IEF', 'GLD'} <= set(universe):
-        raise PortfolioError('기준 자산 SPY·IEF·GLD가 필요합니다.', 'invalid_data')
+    if not set(market['required']) <= set(universe):
+        raise PortfolioError('기준 자산이 필요합니다: ' + '·'.join(market['required']), 'invalid_data')
     prices = _matrix(raw['prices.csv'], universe)
     for day, values in prices.items():
-        if values.get('SPY') is None or any(v is not None and v <= 0 for v in values.values()):
-            raise PortfolioError('가격은 양수이며 SPY 관측이 필요합니다.', 'invalid_data', date=day)
-    factors = _matrix(raw['factors.csv'], ('VIX', 'DGS10'))
-    meta, scenarios = (json.loads(raw[n]) for n in ('snapshot_meta.json', 'scenarios.json'))
+        if values.get(anchor) is None or any(v is not None and v <= 0 for v in values.values()):
+            raise PortfolioError('가격은 양수이며 시장 기준 자산 관측이 필요합니다: ' + anchor, 'invalid_data', date=day)
+    factors = _matrix(raw['factors.csv'], tuple(market['factor_columns'].values()))
     if iso_day(meta['as_of']) != max(prices) or scenarios['as_of'] != meta.get('scenario_as_of', meta['as_of']):
         raise PortfolioError('가격·시나리오 기준일이 다릅니다.', 'invalid_data')
     for key in ('window_start', 'window_end'):
@@ -129,7 +135,7 @@ def parse_files(raw, provenance):
 def load_dataset(directory=DEFAULT_DATA):
     directory = Path(directory)
     try:
-        manifest = json.loads((directory / 'current.json').read_text())
+        manifest = json.loads((directory / 'current.json').read_text(encoding='utf-8'))
         source_sha = manifest['source_commit']
         if not re.fullmatch(r'[a-f0-9]{40}', source_sha):
             raise PortfolioError('잘못된 원본 커밋입니다.', 'invalid_data')

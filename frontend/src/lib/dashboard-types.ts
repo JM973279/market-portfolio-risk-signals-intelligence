@@ -28,8 +28,9 @@ export type ScenarioLibraryData = {
  schema_version: 1; asOf: string; is_forecast: false;
  parameters: { window_sessions: number; prior_sessions: number };
  taxonomy: { name: string; url: string; note: string };
+ sources?: Record<string, { path: string; sha256: string }>;
  categories: Record<string, string>; summary: ScenarioSummary[]; episodes: ScenarioEpisode[];
 };
-export type DashboardData = { monitor: MonitorData | null; global: GlobalData | null; operational?: OperationalData | null; scenarios?: ScenarioLibraryData | null };
+export type DashboardData = { monitor: MonitorData | null; global: GlobalData | null; operational?: OperationalData | null; scenarios?: ScenarioLibraryData | null; usScenarios?: ScenarioLibraryData | null };
 export const views = ["us", "korea", "breadth", "validation", "cases", "sources", "methodology"] as const;
 export type View = "dashboard" | typeof views[number];

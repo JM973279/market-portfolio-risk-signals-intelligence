@@ -1,4 +1,4 @@
-"""Checks for the Korea historical scenario library export. Read-only; never runs a model."""
+"""Checks for the Korea and US historical scenario library exports. Read-only; never runs a model."""
 import json
 import unittest
 from pathlib import Path
@@ -10,15 +10,18 @@ NOTE_CODES = {"price_missing", "window_incomplete", "trough_at_window_end", "sou
 
 
 class KoreaScenarioLibraryTests(unittest.TestCase):
+    MARKET = "korea"
+
     @classmethod
     def setUpClass(cls):
-        cls.text = library.OUTPUT_PATH.read_text()
+        spec = library.MARKETS[cls.MARKET]
+        cls.text = spec["output"].read_text(encoding="utf-8")
         cls.export = json.loads(cls.text)
-        cls.snapshot = json.loads(library.GLOBAL_PATH.read_text())
-        cls.curated = json.loads(library.EPISODES_PATH.read_text())
+        cls.snapshot = json.loads(library.GLOBAL_PATH.read_text(encoding="utf-8"))
+        cls.curated = json.loads(spec["episodes"].read_text(encoding="utf-8"))
 
     def test_export_is_current(self):
-        self.assertEqual(library.render(library.build()), self.text)
+        self.assertEqual(library.render(library.build(self.MARKET)), self.text)
 
     def test_no_forecast_and_no_non_finite_values(self):
         self.assertIs(self.export["is_forecast"], False)
@@ -39,7 +42,7 @@ class KoreaScenarioLibraryTests(unittest.TestCase):
             self.assertEqual("window_overlaps" in e["notes"], bool(e["overlaps"]))
 
     def test_onset_return_matches_stored_prices(self):
-        prices = [(p["date"], p["price"]) for p in self.snapshot["korea"] if p["price"] is not None]
+        prices = [(p["date"], p["price"]) for p in self.snapshot[self.MARKET] if p["price"] is not None]
         index = {d: i for i, (d, _) in enumerate(prices)}
         for e in self.export["episodes"]:
             m = e["metrics"]
@@ -61,7 +64,7 @@ class KoreaScenarioLibraryTests(unittest.TestCase):
         self.assertEqual(library.verdict(0.3999), "missed")
 
     def test_historical_oos_values_take_precedence(self):
-        by_date = {p["date"]: p for p in self.snapshot["korea"]}
+        by_date = {p["date"]: p for p in self.snapshot[self.MARKET]}
         for e in self.export["episodes"]:
             model = e["model"]
             if model["origin"] == "historical_oos":
@@ -85,6 +88,20 @@ class KoreaScenarioLibraryTests(unittest.TestCase):
         bad["episodes"][0]["name"]["ko"] = ""
         with self.assertRaises(ValueError):
             library.validate(bad)
+
+
+class UsScenarioLibraryTests(KoreaScenarioLibraryTests):
+    MARKET = "us"
+
+    def test_episodes_follow_the_selection_rule(self):
+        # Every onset is a stored SPY session that met the rule: -3% in one session or -10% over ten.
+        prices = [(p["date"], p["price"]) for p in self.snapshot["us"] if p["price"] is not None]
+        index = {d: i for i, (d, _) in enumerate(prices)}
+        for e in self.export["episodes"]:
+            i = index[e["onset"]]
+            one = prices[i][1] / prices[i - 1][1] - 1
+            ten = prices[i][1] / prices[max(0, i - 10)][1] - 1
+            self.assertTrue(one <= -0.03 or ten <= -0.10, e["id"])
 
 
 if __name__ == "__main__":

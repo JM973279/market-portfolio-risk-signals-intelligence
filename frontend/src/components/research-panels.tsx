@@ -4,6 +4,7 @@ import { currentOperationalPoint, lastValidOperationalPoint, operationalMessage,
 import CountryFlag from "./country-flag";
 import { useState } from "react";
 import { useDashboard } from "./dashboard-shell";
+import { marketOrder } from "@/lib/market-order";
 import { signalCopy, stateCopy, stateRules, reasonCopy } from "@/lib/monitor-copy";
 import type { MonitorData } from "@/lib/dashboard-types";
 type Row = MonitorData["history"][number];
@@ -13,7 +14,7 @@ const num=(value:unknown,digits=3)=>typeof value==="number"?value.toFixed(digits
 export function CountryCards({only}:{only?:"us"|"korea"}) {
  const {t,global,monitor,language,operational}=useDashboard();
  const asOf=global?.asOf ?? monitor?.latest?.Date;
- return <div className={`country-grid ${only ? "single" : ""}`}>{(["us","korea"] as const).filter(c=>!only||c===only).map(country=>{
+ return <div className={`country-grid ${only ? "single" : ""}`}>{marketOrder(language).filter(c=>!only||c===only).map(country=>{
   const points=country==="us"?global?.us:global?.korea;
   const latestSource=points?.filter(p=>p.price!==null||p.msi!==null||p.risk!==null).at(-1);
   const current=points?.find(p=>p.date===asOf);
@@ -104,7 +105,8 @@ export function BreadthTrend() {
 }
 
 export function SourcesPanel() {
- const {t,monitor,global}=useDashboard();
- const sources=[...Object.entries(monitor?.sources??{}).map(([name,s])=>({name,...s,project:t("experimentalKorea")})),...Object.entries(global?.sources??{}).map(([name,s])=>({name,...s,project:s.project.startsWith("Original")?t("originalV1"):t("experimentalKorea")}))];
- return <><section className="panel"><div className="panel-header"><h2>{t("sources")}</h2><span className="tag">{t("snapshot")}</span></div><p>{t("dataIntro")}</p><div className="source-actions"><a className="button-link" href="/data/korea-monitor.json" download>{t("download")}</a><a className="button-link" href="/data/global-markets.json" download>{t("downloadGlobal")}</a></div><div className="table-scroll"><table className="source-table"><thead><tr><th>{t("source")}</th><th>{t("project")}</th><th>{t("rows")}</th><th>{t("latest")}</th></tr></thead><tbody>{sources.map((s,i)=><tr key={`${s.name}-${i}`}><th scope="row">{s.name}<code>{s.path}</code></th><td>{s.project}</td><td>{s.rows.toLocaleString("en-US")}</td><td>{s.latest??"N/A"}</td></tr>)}</tbody></table></div><p>{t("provenanceNote")}</p><p className="panel-note">{t("sourceText")}</p><details><summary>{t("fingerprints")}</summary>{sources.map((s,i)=><div className="fingerprint" key={`${s.name}-${i}`}><b>{s.name}</b><code>{s.sha256??"N/A"}</code></div>)}</details>{[...(monitor?.issues??[]),...(global?.issues??[])].map(issue=><p className="source-diagnostic" key={issue} lang="en">{issue}</p>)}</section></>;
+ const {t,monitor,global,scenarios,usScenarios}=useDashboard();
+ const libraries=([["korea_scenarios",scenarios,"srcScenarioKorea"],["us_scenarios",usScenarios,"srcScenarioUs"]] as const).flatMap(([name,lib,label])=>lib?[{name,path:`${lib.sources?.episodes?.path??""} → frontend/public/data/${name.replace("_","-")}.json`,rows:lib.episodes.length,latest:lib.asOf,sha256:lib.sources?.episodes?.sha256,project:`${t(label)} · ${t("srcScenarioScope")}`,unit:t("srcEpisodes")}]:[]);
+ const sources=[...Object.entries(monitor?.sources??{}).map(([name,s])=>({name,...s,project:t("experimentalKorea"),unit:""})),...Object.entries(global?.sources??{}).map(([name,s])=>({name,...s,project:s.project.startsWith("Original")?t("originalV1"):t("experimentalKorea"),unit:""})),...libraries];
+ return <><section className="panel"><div className="panel-header"><h2>{t("sources")}</h2><span className="tag">{t("snapshot")}</span></div><p>{t("dataIntro")}</p><div className="source-actions"><a className="button-link" href="/data/korea-monitor.json" download>{t("download")}</a><a className="button-link" href="/data/global-markets.json" download>{t("downloadGlobal")}</a>{scenarios&&<a className="button-link" href="/data/korea-scenarios.json" download>{t("downloadKoreaScenarios")}</a>}{usScenarios&&<a className="button-link" href="/data/us-scenarios.json" download>{t("downloadUsScenarios")}</a>}</div><div className="table-scroll"><table className="source-table"><thead><tr><th>{t("source")}</th><th>{t("project")}</th><th>{t("rows")}</th><th>{t("latest")}</th></tr></thead><tbody>{sources.map((s,i)=><tr key={`${s.name}-${i}`}><th scope="row">{s.name}<code>{s.path}</code></th><td>{s.project}</td><td>{s.rows.toLocaleString("en-US")}{s.unit&&` ${s.unit}`}</td><td>{s.latest??"N/A"}</td></tr>)}</tbody></table></div><p>{t("provenanceNote")}</p><p className="panel-note">{t("sourceText")}</p><details><summary>{t("fingerprints")}</summary>{sources.map((s,i)=><div className="fingerprint" key={`${s.name}-${i}`}><b>{s.name}</b><code>{s.sha256??"N/A"}</code></div>)}</details>{[...(monitor?.issues??[]),...(global?.issues??[])].map(issue=><p className="source-diagnostic" key={issue} lang="en">{issue}</p>)}</section></>;
 }

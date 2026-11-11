@@ -24,5 +24,10 @@ export async function getDashboardData(): Promise<DashboardData> {
   const parsed = JSON.parse(await readFile(path.join(process.cwd(), "public/data/korea-scenarios.json"), "utf8"));
   if (parsed.schema_version === 1 && parsed.is_forecast === false && Array.isArray(parsed.episodes) && Array.isArray(parsed.summary) && parsed.categories) scenarios = parsed;
  } catch { /* The scenario library is optional; Case Studies still renders the holdout. */ }
- return { monitor, global, operational, scenarios };
+ let usScenarios: ScenarioLibraryData | null = null;
+ try {
+  const parsed = JSON.parse(await readFile(path.join(process.cwd(), "public/data/us-scenarios.json"), "utf8"));
+  if (parsed.schema_version === 1 && parsed.is_forecast === false && Array.isArray(parsed.episodes) && Array.isArray(parsed.summary) && parsed.categories) usScenarios = parsed;
+ } catch { /* The US library is optional; the Korea library still renders. */ }
+ return { monitor, global, operational, scenarios, usScenarios };
 }

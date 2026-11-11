@@ -63,7 +63,7 @@ export function staleScoreNote(market: OperationalMarketData | null | undefined,
 export function operationalMessage(market: OperationalMarketData | null | undefined, language: Language): string {
  const ko = language === "ko";
  if (!market) return ko ? "운영 export가 없습니다. 수집·검증 후 다시 빌드해야 합니다." : "No operational export. Collect, validate and rebuild.";
- if (currentOperationalPoint(market)) return ko ? "표시한 관측일의 필수 원천과 고정 모델 추론이 검증되었습니다. 실시간 자동 갱신 자료는 아닙니다." : "Required sources and frozen model inference are verified for the displayed observation date. This is a manually refreshed snapshot.";
+ if (currentOperationalPoint(market)) return ko ? "표시한 관측일의 필수 원천과 고정 모델 추론이 검증되었습니다. 평일마다 검증해 게시하는 스냅샷이며 실시간 자료는 아닙니다." : "Required sources and frozen model inference are verified for the displayed observation date. This is a validated daily snapshot, not a live feed.";
  if (market.status === "CURRENT") return ko ? "동일 날짜의 완전한 운영 추론을 확인할 수 없습니다. 현재 점수를 표시하지 않습니다." : "A complete same-date operational inference could not be verified. Current scores are unavailable.";
  if (ko && market.reason) return market.reason;
  if (market.status === "BLOCKED") {
