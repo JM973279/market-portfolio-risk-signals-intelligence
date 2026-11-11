@@ -1,11 +1,19 @@
 import hashlib
+import io
 import json
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-from qsignals.refresh import RefreshError, archive, find_v1_commit, freshness, install_reference, load_env, prune_runs, us_importable
+import os
+import urllib.error
+from unittest.mock import patch
+
+from qsignals import refresh
+from qsignals.refresh import (RefreshError, archive, check_ecos_key, check_krx_key, check_provider_keys, find_v1_commit,
+                              freshness, install_reference, key_fingerprint, load_env, prune_runs, run_logged, us_importable)
 
 
 def sha(text):
@@ -120,6 +128,97 @@ class EnvTest(unittest.TestCase):
             path.write_text("# c\nKRX_API_KEY=abc\nexport ECOS_API_KEY='x=y'\nBAD\n", encoding="utf-8")
             self.assertEqual(load_env(path), {"KRX_API_KEY": "abc", "ECOS_API_KEY": "x=y"})
             self.assertEqual(load_env(Path(tmp) / "missing"), {})
+
+
+class KeyCheckTest(unittest.TestCase):
+    KRX = "k" * 40
+    ECOS = "e" * 20
+    REJECTED = (401, b'{"respMsg":"Unauthorized Key","respCode":"401"}')
+
+    def setUp(self):
+        # Keep check output (incl. a "::error" line) out of the CI log, where it would become an annotation.
+        stderr = patch("sys.stderr", new_callable=io.StringIO)
+        self.stderr = stderr.start()
+        self.addCleanup(stderr.stop)
+
+    def test_accepted_key_checks_both_downloader_endpoints(self):
+        with patch("qsignals.refresh._http_get", return_value=(200, b'{"OutBlock_1": []}')) as get:
+            self.assertEqual(check_krx_key(self.KRX), [])
+        urls = [call.args[0] for call in get.call_args_list]
+        self.assertEqual([u.split("?")[0].rsplit("/", 1)[-1] for u in urls], ["kospi_dd_trd", "drvprod_dd_trd"])
+        self.assertTrue(all(call.args[1] == {"AUTH_KEY": self.KRX} for call in get.call_args_list))
+
+    def test_rejected_key_stops_with_fingerprint_not_value(self):
+        with patch("qsignals.refresh._http_get", return_value=self.REJECTED), \
+             patch.dict(os.environ, {"GITHUB_ACTIONS": "", "GITHUB_STEP_SUMMARY": ""}):
+            problems = check_krx_key(self.KRX)
+            with self.assertRaises(SystemExit) as stop:
+                check_provider_keys({"KRX_API_KEY": self.KRX, "ECOS_API_KEY": self.ECOS}, ecos=False)
+        self.assertEqual(len(problems), 2)
+        self.assertIn("HTTP 401 Unauthorized Key", problems[0])
+        message = str(stop.exception.code)
+        self.assertIn("Provider rejected KRX_API_KEY", message)
+        self.assertIn(key_fingerprint(self.KRX), message)
+        self.assertNotIn(self.KRX, message)
+
+    def test_step_summary_on_actions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            summary = Path(tmp) / "summary.md"
+            with patch("qsignals.refresh._http_get", return_value=self.REJECTED), \
+                 patch.dict(os.environ, {"GITHUB_ACTIONS": "true", "GITHUB_STEP_SUMMARY": str(summary)}), \
+                 self.assertRaises(SystemExit):
+                check_provider_keys({"KRX_API_KEY": self.KRX, "ECOS_API_KEY": self.ECOS}, ecos=False)
+            text = summary.read_text(encoding="utf-8")
+        self.assertIn("API key rejected", text)
+        self.assertNotIn(self.KRX, text)
+        self.assertIn("::error title=API key rejected::", self.stderr.getvalue())
+        self.assertNotIn(self.KRX, self.stderr.getvalue())
+
+    def test_unreachable_provider_is_reported_without_url(self):
+        with patch("qsignals.refresh._http_get", side_effect=urllib.error.URLError("timed out")), \
+             patch("qsignals.refresh.time.sleep") as sleep:
+            ecos = check_ecos_key(self.ECOS)
+        self.assertEqual(sleep.call_count, 2)
+        self.assertIn("unreachable after 3 attempts (timed out)", ecos[0])
+        self.assertNotIn(self.ECOS, ecos[0])
+
+    def test_ecos_result_error(self):
+        body = '{"RESULT":{"CODE":"INFO-100","MESSAGE":"인증키가 유효하지 않습니다."}}'.encode()
+        with patch("qsignals.refresh._http_get", return_value=(200, body)):
+            self.assertEqual(check_ecos_key(self.ECOS), ["StatisticSearch: INFO-100 인증키가 유효하지 않습니다."])
+        with patch("qsignals.refresh._http_get", return_value=(200, b'{"StatisticSearch": {"row": []}}')):
+            self.assertEqual(check_ecos_key(self.ECOS), [])
+
+    def test_refresh_stops_before_any_snapshot_or_download(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            env_file = Path(tmp) / ".env"
+            env_file.write_text(f"KRX_API_KEY={self.KRX}\nECOS_API_KEY={self.ECOS}\n", encoding="utf-8")
+            argv = ["--env-file", str(env_file), "--python", str(Path(tmp) / "missing-python"),
+                    "--work-root", str(Path(tmp) / "runs"), "--v1-data", str(Path(tmp) / "v1-data")]
+            with patch("qsignals.refresh._http_get", return_value=self.REJECTED) as get, \
+                 patch("qsignals.refresh.archive", side_effect=AssertionError("snapshot started")), \
+                 patch.dict(os.environ, {"GITHUB_ACTIONS": ""}), self.assertRaises(SystemExit) as stop:
+                refresh.main(argv)
+            self.assertIn("Provider rejected KRX_API_KEY", str(stop.exception.code))
+            self.assertEqual(get.call_count, 2)  # KRX only; ECOS is checked by --check-keys
+            self.assertFalse((Path(tmp) / "runs").exists())
+
+    def test_check_keys_mode_checks_both_and_exits(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            env_file = Path(tmp) / ".env"
+            env_file.write_text(f"KRX_API_KEY={self.KRX}\nECOS_API_KEY={self.ECOS}\n", encoding="utf-8")
+            responses = [(200, b'{"OutBlock_1": []}'), (200, b'{"OutBlock_1": []}'), (200, b'{"StatisticSearch": {}}')]
+            with patch("qsignals.refresh._http_get", side_effect=responses), \
+                 patch("qsignals.refresh.archive", side_effect=AssertionError("snapshot started")):
+                self.assertEqual(refresh.main(["--check-keys", "--env-file", str(env_file)]), 0)
+
+    def test_children_run_unbuffered(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            log = Path(tmp) / "refresh.log"
+            code = run_logged([sys.executable, "-c", "import os; print(os.environ.get('PYTHONUNBUFFERED'))"],
+                              tmp, {"PATH": os.environ.get("PATH", "")}, log)
+            self.assertEqual(code, 0)
+            self.assertEqual(log.read_text(encoding="utf-8").splitlines()[-1], "1")
 
 
 class FreshnessTest(unittest.TestCase):

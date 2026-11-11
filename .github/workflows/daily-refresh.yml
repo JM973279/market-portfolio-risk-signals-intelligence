@@ -5,6 +5,9 @@ name: Daily V1 score refresh
 # Required repository secrets: KRX_API_KEY, ECOS_API_KEY.
 # The first run rebuilds the Korea raw history from 2010 (~8,800 KRX calls,
 # about 90 minutes); later runs restore it from the Actions cache.
+# qsignals.refresh checks KRX_API_KEY with KRX before downloading and stops at
+# once if KRX rejects it (otherwise the downloaders retry every session until
+# the 300-minute timeout). Data is published only from main.
 
 on:
   schedule:
@@ -146,8 +149,15 @@ jobs:
           python -m qsignals.export_frontend
           python -m market_engine.scenarios.build_korea_library
 
+      - name: Skip publication outside main
+        if: steps.refresh.outputs.publish == 'true' && github.ref != 'refs/heads/main'
+        run: |
+          # push_data_commit.sh pushes HEAD to main, which on a branch would carry
+          # the branch's own commits into main. Branch runs only verify.
+          echo "::notice::Verified on ${GITHUB_REF_NAME}; data is published only by runs on main."
+
       - name: Commit refreshed data
-        if: steps.refresh.outputs.publish == 'true'
+        if: steps.refresh.outputs.publish == 'true' && github.ref == 'refs/heads/main'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
