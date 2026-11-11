@@ -10,7 +10,7 @@
   - 기록 유형: 점수 없음 1행, walk-forward OOS 2,454행, 동결 모델 운영 추론 17행, 동결 모델 사후 추론 17행 (동결 모델 학습 기준일 2026-09-16)
   - KOSPI200 가격은 2026-11-10까지만 있습니다.
   - V1 점수 마지막 관측일: 2026-11-09; 한국 원천 생성: 2026-11-10T12:29:59.077890+00:00
-  - 가격 보충: [Naver Finance KPI200](https://fchart.stock.naver.com/sise.nhn?symbol=KPI200&timeframe=day&count=500&requestType=0), 원응답 sha256 `0b7a471088c36d87af674a11da94e46282dfbbb2313ce1e0cf7a2ede39caefc1`
+  - 가격 보충: [Naver Finance KPI200](https://fchart.stock.naver.com/sise.nhn?symbol=KPI200&timeframe=day&count=500&requestType=0), 원응답 sha256 `5254528c2f9628a80a6ec0e1fea71d8fa83d48e04d52a877b65f809dc4cf3369`
   - 동결 가격과 겹치는 474일 대조, 최대 절대 차이 0.000000. 가격은 사건 수익률에만 사용하며 점수·MSI는 바꾸지 않았습니다.
   - 생성 CSV sha256 `509dcd298a7d52473ef31921b21d5fab6fc3ced2bb33be721df6f333505673a6`
   - 최신성 점검일: 2026-11-11 KST; 6시간 게시 여유를 적용한 기대 거래일 2026-11-10
