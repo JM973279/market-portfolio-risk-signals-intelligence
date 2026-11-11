@@ -1,0 +1,11 @@
+.git
+.github
+tests
+reports
+docs
+scripts
+__pycache__
+*.pyc
+*.md
+AGENTS.md
+.gitignore

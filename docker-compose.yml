@@ -1,0 +1,6 @@
+services:
+  portfolio:
+    build: .
+    ports:
+      - "3108:3108"
+    restart: unless-stopped

@@ -12,6 +12,29 @@ python3 -m qsignals.portfolio_server
 # http://127.0.0.1:3108/portfolio
 ```
 
+### Docker로 실행 (다른 사람과 공유하기 쉬움)
+
+Dockerfile과 docker-compose가 포함되어 있습니다. 서버는 표준 라이브러리만 사용하며 데이터는 이미지에 포함됩니다.
+
+```bash
+# 로컬 빌드·실행
+docker compose up --build
+# 또는
+docker build -t market-portfolio-risk .
+docker run -p 3108:3108 market-portfolio-risk
+```
+
+브라우저에서 **http://localhost:3108/portfolio** 로 접속하세요.
+
+GitHub Actions가 main 브랜치 푸시 시 자동으로 [GitHub Container Registry](https://ghcr.io)에 이미지를 퍼블리시합니다.
+
+```bash
+docker pull ghcr.io/jm973279/market-portfolio-risk-signals-intelligence:latest
+docker run -p 3108:3108 ghcr.io/jm973279/market-portfolio-risk-signals-intelligence:latest
+```
+
+공개적으로 다른 사람이 바로 볼 수 있게 하려면 [Render](https://render.com), [Railway](https://railway.app), [Fly.io](https://fly.io) 등에서 이 저장소를 연결하고 Docker로 배포하세요. (무료 티어 이용 가능)
+
 종목·비중을 입력하면 과거 가상성과, 종목별 수익 기여도, 벤치마크 대비 자산배분·선택·상호작용 효과, 별도 위험 추정, 비중 변경 비교를 제공합니다. SPY·주식/국채 60:40·사용자 지정 기준을 지원합니다. 실제 섹터별 종목선택 분석은 과거 구성·분류·수익률 자료가 연결된 기간에만 제공하며 현재 기본 자료는 미연결 상태입니다.
 
 데이터는 GitHub Actions가 전체 수정종가·금리를 수집·검증해 저장한 스냅샷을 읽습니다. 원본 저장소·ref는 유지하고, 가격 최신일과 금리가 필요한 위험 추정일을 구분합니다. 수집 시각을 최신 가격일로 표시하지 않으며 실제 가격 종료일은 화면과 `data/portfolio/current.json`에서 확인합니다. [실행·데이터 연결·계산 규칙](docs/portfolio.md), [검증 및 자동 갱신 workflow](.github/workflows/refresh-portfolio.yml).
@@ -85,7 +108,7 @@ reports/                            진단 결과
 - 스트레스 진행 중 추가 급락: 직전 5거래일 중 MSI ≥ 공식 Stress 기준인 날이 있음
 - 사전 경보 있음: 위가 아니고, 직전 10거래일(Target_10D 기간) 중 경보가 하루 이상
 - 사전 경보 없음: 둘 다 아님
-- 급락 당일 점수는 당일 종가까지 반영하므로 '사전' 판정에서 뺍니다. 직전 구간에 행 전체가 빠진 경우까지 결측으로 처리합니다. 직전 거래일 가격이 없으면 여러 거래일 누적 등락을 일간 등락으로 계산하지 않습니다.
+- 급락 당일 점수는 당일 종가까지 반영하므로 '사전' 판정에서 빡니다. 직전 구간에 행 전체가 빠진 경우까지 결측으로 처리합니다. 직전 거래일 가격이 없으면 여러 거래일 누적 등락을 일간 등락으로 계산하지 않습니다.
 
 ## 이벤트 CSV 작성 규칙
 
