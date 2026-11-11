@@ -12,6 +12,7 @@ on:
       - 'qsignals/portfolio_web/**'
       - 'tests/test_portfolio*.py'
       - 'requirements.portfolio-refresh.txt'
+      - 'scripts/push_data_commit.sh'
   pull_request:
     paths:
       - '.github/workflows/refresh-portfolio.yml'
@@ -20,6 +21,7 @@ on:
       - 'data/portfolio/**'
       - 'tests/test_portfolio*.py'
       - 'requirements.portfolio-refresh.txt'
+      - 'scripts/push_data_commit.sh'
 
 permissions:
   contents: read
@@ -60,4 +62,4 @@ jobs:
           git add data/portfolio
           if git diff --cached --quiet; then exit 0; fi
           git commit -m 'data: refresh verified portfolio snapshot'
-          git push origin HEAD:main
+          bash scripts/push_data_commit.sh
