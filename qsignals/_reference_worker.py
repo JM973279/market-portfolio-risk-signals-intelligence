@@ -29,9 +29,14 @@ import shutil
 import sys
 from pathlib import Path
 
-import joblib
-import numpy as np
-import pandas as pd
+# Run as a script, Python puts this folder first on sys.path, where calendar.py
+# hides the standard library's calendar and pandas fails to import.
+_HERE = Path(__file__).resolve().parent
+sys.path[:] = [p for p in sys.path if Path(p or ".").resolve() != _HERE]
+
+import joblib  # noqa: E402
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
 
 RAW = ("krx_indices.csv", "vkospi.csv", "ecos_credit.csv")
 MATRIX = "korea_feature_matrix_v1_reproduction.csv"

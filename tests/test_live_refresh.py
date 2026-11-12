@@ -245,5 +245,19 @@ class FreshnessTest(unittest.TestCase):
         self.assertEqual(blocked["reason"], "mismatch")
 
 
+class ReferenceWorkerScriptTest(unittest.TestCase):
+    def test_worker_run_as_a_script_keeps_the_standard_calendar(self):
+        # refresh.py runs the worker by path, which puts qsignals/ first on sys.path;
+        # qsignals/calendar.py must not replace the calendar module pandas imports.
+        worker = Path(refresh.__file__).with_name("_reference_worker.py")
+        with tempfile.TemporaryDirectory() as tmp:
+            for name in ("joblib", "numpy"):
+                (Path(tmp) / f"{name}.py").write_text("")
+            (Path(tmp) / "pandas.py").write_text("import calendar\ncalendar.day_abbr\n")
+            out = subprocess.run([sys.executable, str(worker), "--help"], capture_output=True, text=True,
+                                 env={**os.environ, "PYTHONPATH": tmp})
+        self.assertEqual(out.returncode, 0, out.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()
