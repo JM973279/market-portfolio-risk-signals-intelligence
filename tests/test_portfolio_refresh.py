@@ -97,6 +97,23 @@ class PortfolioRefreshTest(unittest.TestCase):
                 with self.assertRaises(PortfolioError):refresh(output=tmp)
             self.assertEqual((Path(tmp)/'current.json').read_bytes(),before)
 
+    def test_provider_withholding_a_verified_session_keeps_snapshot_but_new_gap_fails(self):
+        m,raw,quotes,rates,days=fixture()
+        published=parse_files(raw,{}).days
+        for missing,code in [(published[-1],'provider_withheld'),(days[-1],'missing_price')]:
+            q=copy.deepcopy(quotes); del q['SPY'][missing]
+            with self.subTest(missing=missing), tempfile.TemporaryDirectory() as tmp:
+                publish(raw,m['source_repo'],m['source_commit'],tmp)
+                before=(Path(tmp)/'current.json').read_bytes()
+                with patch('qsignals.portfolio_refresh.fetch_upstream',return_value=(raw,m['source_commit'])), \
+                     patch('qsignals.portfolio_refresh.completed_sessions',return_value=days), \
+                     patch('qsignals.portfolio_refresh.fetch_quotes',return_value=q), \
+                     patch('qsignals.portfolio_refresh.fetch_fred',return_value=b'observation_date,DGS10\n'), \
+                     patch('qsignals.portfolio_refresh.parse_fred',return_value=rates):
+                    with self.assertRaises(PortfolioError) as caught: refresh(output=tmp)
+                self.assertEqual(caught.exception.code,code)
+                self.assertEqual((Path(tmp)/'current.json').read_bytes(),before)
+
     def test_fred_dot_is_missing_and_bad_schema_rejected(self):
         rates=parse_fred(b'observation_date,DGS10\n2026-10-29,4.1\n2026-10-30,.\n')
         self.assertIsNone(rates['2026-10-30'])

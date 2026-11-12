@@ -191,7 +191,19 @@ def refresh(repo=DEFAULT_REPO, ref='main', output=DEFAULT_DATA, *, now=None, rep
                  'fred-dgs10.csv': fred_raw,
                  'nyse-sessions.csv': csv_bytes(['Date'], [[d] for d in sessions])}
         retrieved_at = now.isoformat(timespec='seconds')
-    raw, quality = build_snapshot(seed_raw, quotes, rates, sessions)
+    previous_path = Path(output) / 'current.json'
+    previous_as_of = json.loads(previous_path.read_text())['price_as_of'] if previous_path.exists() else None
+    try:
+        raw, quality = build_snapshot(seed_raw, quotes, rates, sessions)
+    except PortfolioError as exc:
+        # Yahoo sometimes blanks a daily bar it served earlier. If that session is already
+        # verified in the published snapshot, keep it and skip publication; never fill.
+        day = exc.details.get('date')
+        if exc.code == 'missing_price' and previous_as_of and day and day <= previous_as_of:
+            raise PortfolioError(f'Yahoo withheld already-verified session {day} '
+                                 f'({exc.details.get("ticker")}); kept published snapshot {previous_as_of}.',
+                                 'provider_withheld', **exc.details) from None
+        raise
     collection = {'policy': POLICY, 'retrieved_at': retrieved_at,
                   'seed_repo': repo, 'seed_ref': ref, 'seed_commit': source_commit,
                   'seed_files': {n: hashlib.sha256(v).hexdigest() for n, v in seed_raw.items()},
@@ -200,10 +212,8 @@ def refresh(repo=DEFAULT_REPO, ref='main', output=DEFAULT_DATA, *, now=None, rep
                   'versions': {p: version(p) for p in ('yfinance', 'pandas', 'numpy', 'exchange_calendars', 'requests', 'curl_cffi')},
                   'normalization': 'full-history single provider vintage; no cached-price splicing',
                   **quality}
-    previous_path = Path(output) / 'current.json'
-    if previous_path.exists():
-        previous = json.loads(previous_path.read_text())
-        if quality['price_as_of'] < previous['price_as_of']:
+    if previous_as_of:
+        if quality['price_as_of'] < previous_as_of:
             raise PortfolioError('기존 발행본보다 오래된 자료는 게시하지 않습니다.', 'stale_data')
     manifest = publish(raw, repo, source_commit, output, collection=collection, receipts=files)
     print(json.dumps({'price_as_of': manifest['price_as_of'],
@@ -220,7 +230,13 @@ def main():
     parser.add_argument('--output-dir', type=Path, default=DEFAULT_DATA)
     parser.add_argument('--replay', type=Path)
     args = parser.parse_args()
-    refresh(args.source_repo, args.source_ref, args.output_dir, replay=args.replay)
+    try:
+        refresh(args.source_repo, args.source_ref, args.output_dir, replay=args.replay)
+    except PortfolioError as exc:
+        if exc.code != 'provider_withheld':
+            raise
+        # Not a failure of the published data: the run keeps it and the next schedule retries.
+        print(f'::warning::{exc}')
 
 
 if __name__ == '__main__':
