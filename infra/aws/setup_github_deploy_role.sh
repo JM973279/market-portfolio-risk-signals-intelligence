@@ -9,6 +9,10 @@
 set -euo pipefail
 
 REPO="${GITHUB_REPO:-JM973279/market-portfolio-risk-signals-intelligence}"
+# The repository uses GitHub's immutable OIDC subject (owner and repository IDs), which keeps
+# matching after a rename and never matches a re-created repository with the same name.
+# Check with: gh api repos/$REPO/actions/oidc/customization/sub  (sub_claim_prefix)
+SUB_PREFIX="${SUB_PREFIX:-repo:JM973279@310814418/market-portfolio-risk-signals-intelligence@1452353262}"
 ROLE="${DEPLOY_ROLE:-mpri-github-lightsail-deploy}"
 export AWS_REGION="${AWS_REGION:-ap-northeast-2}" AWS_DEFAULT_OUTPUT=text
 
@@ -28,7 +32,7 @@ cat >"$work/trust.json" <<JSON
   "Action": "sts:AssumeRoleWithWebIdentity",
   "Condition": {"StringEquals": {
     "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-    "token.actions.githubusercontent.com:sub": "repo:$REPO:ref:refs/heads/main"}}}]}
+    "token.actions.githubusercontent.com:sub": "$SUB_PREFIX:ref:refs/heads/main"}}}]}
 JSON
 cat >"$work/policy.json" <<'JSON'
 {"Version": "2012-10-17", "Statement": [{"Sid": "DeployMpriContainers", "Effect": "Allow",
