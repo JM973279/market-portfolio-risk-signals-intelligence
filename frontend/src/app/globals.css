@@ -98,7 +98,7 @@ h1 {font-family:Georgia,"Times New Roman","Noto Serif KR",serif;font-size:clamp(
 .range-toggle button[aria-pressed=true],.small-toggle button[aria-pressed=true] {background:var(--navy);color:white;box-shadow:0 2px 4px #10294b15}
 .chart-legend {display:flex;gap:10px 15px;align-items:center;flex-wrap:wrap;font-size:11px;color:#3a5576;margin-bottom:6px}
 .chart-legend>span {display:flex;align-items:center;gap:6px}
-.legend-line {display:inline-block;width:16px;height:3px;border-radius:2px}.legend-line.navy {background:#173f70}.legend-line.red {background:var(--red)}
+.legend-line {display:inline-block;width:16px;height:3px;border-radius:2px}.legend-line.navy {background:#173f70}.legend-line.red {background:var(--red)}.legend-line.red.dashed {background:repeating-linear-gradient(90deg,var(--red) 0 4px,transparent 4px 6px)}.market-dates {display:grid;gap:2px;margin-top:2px}.market-dates span {display:flex;gap:8px;justify-content:space-between;white-space:nowrap}.market-dates em {font-style:normal;color:#b2434d}.sidebar-snapshot .market-dates {margin:4px 0 2px}.sidebar-snapshot .market-dates span {flex-wrap:wrap;justify-content:flex-start;white-space:normal;column-gap:6px}.sidebar-snapshot .market-dates b {display:inline}.sidebar-snapshot .market-dates em {flex-basis:100%;font-size:11px}
 .legend-dash {display:inline-block;width:18px;border-top:1px dashed var(--red)}
 .market-chart svg {display:block;width:100%;height:auto;margin-top:8px;overflow:visible;user-select:none}
 .market-chart svg text {font-size:11px;fill:#6e85a1;font-variant-numeric:tabular-nums}
@@ -213,3 +213,4 @@ small,.tag,.panel-subheader,.source-date,.source-date b,.country-meta,.country-m
 @media(max-width:1150px) { .backtest-grid,.backtest-grid.lower {grid-template-columns:1fr}.backtest-kpis {grid-template-columns:repeat(3,minmax(0,1fr))} }
 @media(max-width:760px) { .backtest-kpis {grid-template-columns:repeat(2,minmax(0,1fr))}.backtest-kpis article:last-child {grid-column:1/-1}.backtest-kpis strong {font-size:21px}.backtest-cut input {width:120px} }
 .scenario-market {margin:10px 0 6px}
+@media(max-width:760px) { .page-hero {flex-direction:column}.hero-status {position:static;order:-1;align-self:flex-end;margin-bottom:-14px}.hero-copy {padding-top:0} }

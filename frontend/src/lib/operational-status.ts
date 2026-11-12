@@ -88,3 +88,11 @@ export function pipelineText(value: string | null | undefined, language: Languag
  // 모르는 문구는 한국어 원문 대신 안내만 보여 준다(KR 화면에서 원문 확인).
  return /[가-힣]/.test(value) ? "Diagnostic recorded by the data pipeline in Korean; switch to KR to read the original." : value;
 }
+
+// 시장별 기준일: 실제로 점수를 표시하는 관측일(현재 점수, 없으면 마지막 유효 점수)과 지연 여부.
+// 한국·미국은 거래일과 원천 공개 시점이 달라 하나의 날짜로 합치지 않는다.
+export function marketAsOf(market?: OperationalMarketData | null): { date: string | null; expected: string | null; delayed: boolean } {
+ const current = currentOperationalPoint(market);
+ const shown = current ?? lastValidOperationalPoint(market);
+ return { date: shown?.date ?? null, expected: market?.expectedDate ?? null, delayed: !current };
+}

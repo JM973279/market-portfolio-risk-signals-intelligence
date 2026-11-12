@@ -1,11 +1,17 @@
 "use client";
 import { useId, useState } from "react";
 import { useDashboard } from "./dashboard-shell";
-import { chartRanges, linePath, rangeStart, timestamp, type ChartRange } from "@/lib/chart-data";
+import { chartRanges, linePath, mergeOperational, rangeStart, timestamp, type ChartRange } from "@/lib/chart-data";
 import type { MarketPoint } from "@/lib/dashboard-types";
 
-export default function MarketChart({country, points, end}: {country:"us"|"korea"; points:MarketPoint[]; end:string}) {
- const {t,language}=useDashboard();
+export default function MarketChart({country, points: research, end: researchEnd}: {country:"us"|"korea"; points:MarketPoint[]; end:string}) {
+ const {t,language,operational}=useDashboard();
+ // 과거 OOS 종료일은 연구 export 기준으로 따로 기억하고, 그 뒤는 운영 추론으로 잇는다.
+ const oosEnd=research.filter(p=>p.risk!==null && p.date<=researchEnd).at(-1)?.date;
+ const opHistory=operational?.markets[country]?.history;
+ const points=mergeOperational(research, opHistory);
+ const opLast=opHistory?.at(-1)?.date;
+ const end=opLast && opLast>researchEnd ? opLast : researchEnd;
  const [range,setRange]=useState<ChartRange>("6M");
  const [inspected,setInspected]=useState<string|null>(null);
  const id=useId().replaceAll(":", "");
@@ -21,7 +27,9 @@ export default function MarketChart({country, points, end}: {country:"us"|"korea
  const y=(value:number)=>bottom-(value-min)/(max-min)*(bottom-top);
  const ry=(value:number)=>bottom-value*(bottom-top);
  const indexPath=linePath(shown,"price",x,y);
- const riskPath=linePath(shown,"risk",x,ry);
+ const riskPath=linePath(shown.filter(p=>!oosEnd||p.date<=oosEnd),"risk",x,ry);
+ // 운영 추론 구간은 OOS와 섞이지 않게 점선으로 그린다(경계일을 이어 붙인다).
+ const opPath=oosEnd?linePath(shown.filter(p=>p.date>=oosEnd),"risk",x,ry):"";
  const active=shown.find(p=>p.date===inspected) ?? shown[shown.length-1];
  const latestRisk=points.filter(p=>p.risk!==null && p.date<=end).at(-1)?.date;
  const missingFrom=latestRisk ? Math.max(left,x(latestRisk)) : left;
@@ -38,9 +46,9 @@ export default function MarketChart({country, points, end}: {country:"us"|"korea
   }} onMouseLeave={()=>setInspected(null)}>
    <defs><clipPath id={`clip-${id}`}><rect x={left} y={top} width={right-left} height={bottom-top}/></clipPath></defs>
    {[0,.25,.5,.75,1].map(n=><g key={n}><line x1={left} x2={right} y1={top+n*(bottom-top)} y2={top+n*(bottom-top)} stroke="#e8eef5"/><text x={left-10} y={top+n*(bottom-top)+4} textAnchor="end">{Math.round(max-n*(max-min)).toLocaleString("en-US")}</text><text x={right+10} y={top+n*(bottom-top)+4} className="risk-axis">{100-n*100}</text></g>)}
-   <g clipPath={`url(#clip-${id})`}><rect x={missingFrom} y={top} width={Math.max(0,right-missingFrom)} height={bottom-top} fill="#edf1f6" opacity=".65"/><line x1={left} x2={right} y1={ry(.5)} y2={ry(.5)} stroke="#df6972" strokeWidth="1" strokeDasharray="5 4"/><path d={indexPath} fill="none" stroke="#173f70" strokeWidth="2" strokeLinejoin="round"/><path d={riskPath} fill="none" stroke="#eb6874" strokeWidth="1.4" strokeLinejoin="round"/>{inspected && active && <line x1={x(active.date)} x2={x(active.date)} y1={top} y2={bottom} stroke="#8195af" strokeDasharray="3 3"/>}</g>
+   <g clipPath={`url(#clip-${id})`}><rect x={missingFrom} y={top} width={Math.max(0,right-missingFrom)} height={bottom-top} fill="#edf1f6" opacity=".65"/><line x1={left} x2={right} y1={ry(.5)} y2={ry(.5)} stroke="#df6972" strokeWidth="1" strokeDasharray="5 4"/><path d={indexPath} fill="none" stroke="#173f70" strokeWidth="2" strokeLinejoin="round"/><path d={riskPath} fill="none" stroke="#eb6874" strokeWidth="1.4" strokeLinejoin="round"/>{opPath&&<path d={opPath} fill="none" stroke="#eb6874" strokeWidth="1.4" strokeDasharray="4 2" strokeLinejoin="round"/>}{inspected && active && <line x1={x(active.date)} x2={x(active.date)} y1={top} y2={bottom} stroke="#8195af" strokeDasharray="3 3"/>}</g>
    {[0,.25,.5,.75,1].map(n=>{const date=new Date(start+n*(timestamp(end)-start));return <text key={n} x={left+n*(right-left)} y="191" textAnchor={n===0?"start":n===1?"end":"middle"}>{date.toISOString().slice(0,10)}</text>;})}
   </svg><div className="chart-readout"><time>{active?.date}</time><span>{label} <b>{format(active?.price)}</b></span><span className="risk-readout">V1 <b>{active?.risk==null?"N/A":`${format(active.risk*100,1)}%`}</b></span><span>MSI <b>{format(active?.msi,3)}</b></span></div><label className="chart-slider-label"><span>{t("inspectDate")}</span><input aria-label={`${label} ${t("inspectDate")}`} type="range" min="0" max={shown.length-1} value={Math.max(0,shown.findIndex(p=>p.date===active?.date))} onChange={event=>setInspected(shown[Number(event.target.value)].date)}/></label></> : <div className="chart-empty">{t("noSeries")}</div>}
-  <div className="chart-caption"><span><i className="legend-square"/>{t("noRisk")}</span><span>{t("historicalOos")} → {latestRisk ?? "N/A"}</span></div><p className="panel-note">{t("gaps")}</p>
+  <div className="chart-caption"><span><i className="legend-square"/>{t("noRisk")}</span><span>{t("historicalOos")} → {oosEnd ?? "N/A"}</span>{latestRisk&&oosEnd&&latestRisk>oosEnd&&<span><i className="legend-line red dashed"/>{t("operationalInference")} → {latestRisk}</span>}</div><p className="panel-note">{t("gaps")}</p>
  </section>;
 }

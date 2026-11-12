@@ -23,3 +23,20 @@ export function linePath(points: MarketPoint[], key: "price" | "risk", x: (day: 
   return `${command}${x(point.date).toFixed(2)},${y(value).toFixed(2)}`;
  }).join(" ");
 }
+
+// 차트 시계열 = 고정 연구 export(과거 OOS·가격) + 운영 export(고정 모델 추론 V1·MSI·임계값).
+// - 같은 날짜에 연구 값이 있으면 그대로 둔다. 연구 값이 비어 있는 칸만 운영 추론 값으로 채운다
+//   (서로 다른 실제 기록을 합치는 것이며, 앞 날짜 값을 이월하지 않는다).
+// - 운영 export에는 가격이 없으므로(sourceValuesIncluded=false) 그 구간 가격선은 비워 둔다.
+export function mergeOperational(points: MarketPoint[], history: MarketPoint[] | undefined): MarketPoint[] {
+ if (!history?.length) return points;
+ const byDate = new Map(points.map(point => [point.date, {...point}]));
+ for (const op of history) {
+  const base = byDate.get(op.date);
+  if (!base) { byDate.set(op.date, {date: op.date, price: null, risk: op.risk, msi: op.msi, threshold: op.threshold}); continue; }
+  if (base.risk === null) base.risk = op.risk;
+  if (base.msi === null) base.msi = op.msi;
+  if (base.threshold === null) base.threshold = op.threshold;
+ }
+ return Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
+}

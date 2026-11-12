@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import type { DashboardData } from "@/lib/dashboard-types";
 import { dashboardCopy, type CopyKey } from "@/lib/dashboard-copy";
 import type { Language } from "@/lib/monitor-copy";
-import { headerSnapshot } from "@/lib/operational-status";
+import { headerSnapshot, marketAsOf } from "@/lib/operational-status";
 import { marketOrder } from "@/lib/market-order";
 
 type Context = DashboardData & { language: Language; t: (key: CopyKey) => string };
@@ -26,6 +26,15 @@ const navigation: { href: string; key: CopyKey; icon: string }[] = [
  { href:"/sources",key:"sources",icon:"M4 5c0-3 16-3 16 0v14c0 3-16 3-16 0zM4 5c0 3 16 3 16 0M4 12c0 3 16 3 16 0" },
  { href:"/methodology",key:"methodology",icon:"M3 4h7l2 2 2-2h7v16h-7l-2 2-2-2H3zM12 6v16M6 8h3m-3 4h3m6-4h3m-3 4h3" },
 ];
+// 한국·미국 기준일을 따로 보여 준다. country가 있으면 그 시장만.
+export function MarketDates({data, language, t, country}: {data: Pick<DashboardData, "operational">; language: Language; t: (key: CopyKey) => string; country?: "us" | "korea"}) {
+ const markets = marketOrder(language).filter(c => !country || c === country);
+ return <span className="market-dates">{markets.map(c => {
+  const asOf = marketAsOf(data.operational?.markets[c]);
+  return <span key={c}>{t(c === "korea" ? "marketKoreaShort" : "marketUsShort")} <b>{asOf.date ?? "N/A"}</b>{asOf.delayed && asOf.expected && asOf.expected !== asOf.date && <em title={`${t("dueDelayed")} ${asOf.expected}`}>{asOf.expected.slice(5)} {t("dueDelayed")}</em>}</span>;
+ })}</span>;
+}
+
 export default function DashboardShell({ data, children }: { data: DashboardData; children: React.ReactNode }) {
  const [language, setLanguage] = useState<Language>("ko");
  const [open, setOpen] = useState(false);
@@ -53,7 +62,7 @@ export default function DashboardShell({ data, children }: { data: DashboardData
    <Link href="/" className="wordmark" aria-label="M/PRI home">M / PRI</Link>
    <p className="brand-description">Market &amp; Portfolio<br/>Risk Intelligence</p>
    <nav id="primary-navigation" aria-label={language === "ko" ? "주요 탐색" : "Main navigation"}>{menu.map(item => <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className={pathname === item.href ? "active" : ""} aria-current={pathname === item.href ? "page" : undefined}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={item.icon}/></svg>{t(item.key)}</Link>)}</nav>
-   <div className="sidebar-bottom"><div className="sidebar-snapshot"><small>{t(snapshot.operational ? "operationalSnapshot" : "snapshot")}</small><b>{snapshot.date ?? "N/A"}</b><span className="live-label"><i/>{t("notLive")}</span></div><div className="language-toggle" role="group" aria-label={language === "ko" ? "언어 / Language" : "Language"}>{(["ko","en"] as const).map(lang => <button key={lang} lang={lang} aria-pressed={language===lang} onClick={() => changeLanguage(lang)}>{lang==="ko" ? "KR" : "EN"}</button>)}</div><small className="sidebar-research">{t("research")}</small></div>
+   <div className="sidebar-bottom"><div className="sidebar-snapshot"><small>{t(snapshot.operational ? "operationalSnapshot" : "snapshot")}</small>{snapshot.operational ? <MarketDates data={data} language={language} t={t}/> : <b>{snapshot.date ?? "N/A"}</b>}<span className="live-label"><i/>{t("notLive")}</span></div><div className="language-toggle" role="group" aria-label={language === "ko" ? "언어 / Language" : "Language"}>{(["ko","en"] as const).map(lang => <button key={lang} lang={lang} aria-pressed={language===lang} onClick={() => changeLanguage(lang)}>{lang==="ko" ? "KR" : "EN"}</button>)}</div><small className="sidebar-research">{t("research")}</small></div>
   </aside>
   <div className="app-body"><div className="mobile-topbar"><Link href="/" className="wordmark">M / PRI</Link><button aria-label={t("menu")} aria-expanded={open} aria-controls="primary-navigation" onClick={() => setOpen(!open)}>☰</button></div>{open && <button className="nav-backdrop" aria-label={t("menu")} onClick={() => setOpen(false)}/>}{children}<footer><span>M / PRI <span className="footer-divider">/</span> {t("research")}</span><span>{t("footer")}</span></footer></div>
  </div></DashboardContext.Provider>;
