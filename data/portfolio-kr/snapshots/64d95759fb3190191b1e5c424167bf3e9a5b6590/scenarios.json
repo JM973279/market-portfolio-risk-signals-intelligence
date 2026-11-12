@@ -1,0 +1,47 @@
+{
+  "as_of": "2026-11-12",
+  "lookback_start": "2018-01-02",
+  "horizon_days": 10,
+  "scenarios": [
+    {
+      "id": "equity_selloff",
+      "name": "Equity Sell-off",
+      "definition": "국내 주식시장 급락",
+      "factor": "market",
+      "unit": "return",
+      "rule": "스냅샷 기간 중 KODEX 200 10거래일 수익률의 최저값",
+      "shock": -0.288576,
+      "reference": {
+        "start": "2020-03-05",
+        "end": "2020-03-19"
+      }
+    },
+    {
+      "id": "rate_shock",
+      "name": "Interest Rate Shock",
+      "definition": "국고채 10년 금리 급등",
+      "factor": "rate",
+      "unit": "bp",
+      "rule": "스냅샷 기간 중 국고채 10년 10거래일 변화(bp)의 최고값",
+      "shock": 71.3,
+      "reference": {
+        "start": "2022-09-08",
+        "end": "2022-09-26"
+      }
+    },
+    {
+      "id": "volatility_shock",
+      "name": "Volatility Shock",
+      "definition": "VKOSPI 급등",
+      "factor": "volatility",
+      "unit": "pt",
+      "rule": "스냅샷 기간 중 VKOSPI 10거래일 변화(pt)의 최고값",
+      "shock": 45.58,
+      "reference": {
+        "start": "2020-03-05",
+        "end": "2020-03-19"
+      }
+    }
+  ],
+  "note": "사전에 정한 충격 가정에 따른 추정치이며 미래 손실 예측이 아닙니다."
+}
