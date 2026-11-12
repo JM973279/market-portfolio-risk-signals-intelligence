@@ -39,8 +39,14 @@ def next_session_after(day):
     return later[0]
 
 
-def build(sessions, quotes, next_session, tickers=TICKERS):
-    """Pure validation: one row per completed session, blanks for provider gaps."""
+def build(sessions, quotes, next_session, tickers=TICKERS, stored_last=None):
+    """Pure validation: one row per completed session, blanks for provider gaps.
+
+    A missing close on the newest session blocks publication. When the stored data already
+    covers every earlier session (stored_last), Yahoo is late with that close or withholding a
+    stored one, not broken: the code is 'provider_delayed', so the run keeps the stored data and
+    retries. Once a later session completes, the gap is no longer the newest and the run fails.
+    """
     if sessions != sorted(set(sessions)) or not sessions:
         raise PortfolioError("미국 거래일 목록 오류", "invalid_data")
     if next_session <= sessions[-1]:
@@ -57,7 +63,9 @@ def build(sessions, quotes, next_session, tickers=TICKERS):
         if coverage[t] < MIN_COVERAGE:
             raise PortfolioError(f"{t} 관측 비율 {coverage[t]:.3f}가 기준 미달입니다. 기존 자료를 보존합니다.", "invalid_data")
         if values.get(sessions[-1]) is None:
-            raise PortfolioError(f"{t} 최신 완료 거래일 종가가 없습니다. 기존 자료를 보존합니다.", "invalid_data")
+            delayed = stored_last is not None and len(sessions) > 1 and sessions[-2] <= stored_last
+            raise PortfolioError(f"{t} 최신 완료 거래일({sessions[-1]}) 종가가 없습니다. 기존 자료를 보존합니다.",
+                                 "provider_delayed" if delayed else "invalid_data", ticker=t, day=sessions[-1])
     for day in sessions:
         row = [day]
         for t in tickers:
@@ -114,7 +122,16 @@ def main(argv=None):
     args = parser.parse_args(argv)
     sessions = completed_sessions(args.start, datetime.now(timezone.utc))
     quotes = fetch_quotes(list(TICKERS), args.start, sessions[-1])
-    raw, meta = build(sessions, quotes, next_session_after(sessions[-1]))
+    stored = Path(DEFAULT_PROVENANCE)
+    stored_last = json.loads(stored.read_text(encoding="utf-8"))["last_date"] if stored.exists() else None
+    try:
+        raw, meta = build(sessions, quotes, next_session_after(sessions[-1]), stored_last=stored_last)
+    except PortfolioError as exc:
+        if exc.code != "provider_delayed":
+            raise
+        # Not a failure of the stored data: it stays as published and the next schedule retries.
+        print(f"::warning::{exc} 저장본 {stored_last} 유지, 다음 일정에서 다시 수집합니다.")
+        return
     meta = publish(raw, meta)
     print(json.dumps({k: meta[k] for k in ("first_date", "last_date", "rows", "next_us_session", "coverage")}, ensure_ascii=False))
 

@@ -116,6 +116,18 @@ class OvernightRefreshTest(unittest.TestCase):
         with self.assertRaises(PortfolioError):
             build(sessions, quotes, "2026-12-31")
 
+    def test_late_newest_close_is_a_delay_only_when_stored_data_covers_the_rest(self):
+        sessions = weekdays("2026-01-05", 120)
+        quotes = {t: {d: 10.0 for d in sessions} for t in ("EWY", "^SOX")}
+        quotes["EWY"].pop(sessions[-1])
+        cases = [(sessions[-2], "provider_delayed"), (sessions[-3], "invalid_data"),
+                 (None, "invalid_data"), (sessions[-1], "provider_delayed")]
+        for stored_last, code in cases:
+            with self.subTest(stored_last=stored_last), self.assertRaises(PortfolioError) as caught:
+                build(sessions, quotes, "2026-12-31", stored_last=stored_last)
+            self.assertEqual(caught.exception.code, code)
+            self.assertEqual(caught.exception.details, {"ticker": "EWY", "day": sessions[-1]})
+
     def test_low_coverage_is_rejected(self):
         sessions = weekdays("2026-01-05", 100)
         quotes = {"EWY": {d: 1.0 for d in sessions[::2] + [sessions[-1]]}, "^SOX": {d: 1.0 for d in sessions}}
