@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>발표자료</title>
+<style>
+:root{
+  --navy:#10233a; --navy-2:#1a3352; --teal:#0f8a86; --teal-soft:#e3f1f0;
+  --amber:#e2a93b; --red:#c2493f; --ink:#13202e; --muted:#5f6d7c;
+  --line:#d9e1e7; --track:#e4e9ee; --bg:#f3f6f8; --paper:#f7f9fa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:#0b1726; color:var(--ink); overflow:hidden;
+  font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Noto Sans CJK KR",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+#viewport{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#stage{width:1280px;height:720px;position:relative;transform-origin:center center;flex:none}
+.slide{
+  position:absolute;inset:0;background:var(--paper);padding:52px 72px 44px;
+  display:none;flex-direction:column;border-left:10px solid var(--teal);
+  box-shadow:0 20px 60px rgba(0,0,0,.35);
+}
+.slide.active{display:flex}
+.kicker{font-size:13px;font-weight:700;color:var(--teal);letter-spacing:.02em;margin-bottom:10px}
+h2{font-size:34px;font-weight:800;letter-spacing:-.02em;color:var(--navy);margin-bottom:24px}
+.foot{margin-top:auto;border-top:1px solid var(--line);padding-top:10px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.note-line{font-size:15px;font-weight:700}
+.red{color:var(--red)} .teal{color:var(--teal)} .muted{color:var(--muted)} .amber{color:#b07b12}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* title */
+.slide.title{background:var(--navy);color:#fff;border-left:none;padding:0}
+.title .inner{margin:80px 0 0 90px;border-left:8px solid var(--teal);padding:4px 0 4px 36px;height:500px;display:flex;flex-direction:column}
+.title .k{font-size:15px;font-weight:700;color:#cfe3e2}
+.title h1{font-size:62px;line-height:1.18;font-weight:800;letter-spacing:-.03em;margin-top:70px}
+.title .sub{font-size:22px;color:#d6e0ea;margin-top:36px}
+.title .src{margin-top:auto;font-size:14px;color:#a9b8c7}
+
+/* slide 2 */
+.compare{display:grid;grid-template-columns:1fr 70px 1fr;gap:0;align-items:stretch}
+.col h3{font-size:16px;font-weight:700;color:var(--muted);margin-bottom:12px}
+.col.now h3{color:var(--teal)}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 22px;margin-bottom:12px;font-size:19px;line-height:1.45;font-weight:600}
+.col.now .card{border-color:#b9dcda;background:var(--teal-soft)}
+.arrow{display:flex;align-items:center;justify-content:center;font-size:34px;color:var(--teal)}
+.callout{margin-top:16px;padding:14px 22px;border-radius:10px;background:var(--navy);color:#fff;font-size:19px;font-weight:700}
+.terms{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+.terms div{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-size:14px;line-height:1.45;color:var(--muted)}
+.terms b{display:block;font-size:17px;color:var(--navy)}
+
+/* bars */
+.read2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
+.read2 div{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 16px;font-size:15px;line-height:1.45;color:var(--muted)}
+.read2 b{display:block;font-size:18px}
+.limits{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px}
+.limits div{background:#fbeeea;border:1px solid #efc9c2;border-radius:8px;padding:10px 12px;font-size:13.5px;line-height:1.4}
+.limits b{display:block;font-size:15px;color:var(--red);margin-bottom:2px}
+.bars{display:grid;grid-template-columns:200px 1fr 130px;row-gap:12px;column-gap:24px;align-items:center;margin-top:4px}
+.bars .lab{font-size:18px}
+.track{height:12px;background:var(--track);border-radius:6px;position:relative;overflow:hidden}
+.fill{position:absolute;inset:0 auto 0 0;background:var(--teal);border-radius:6px}
+.fill.ext{background:var(--amber)}
+.mark90{position:absolute;left:90%;top:-6px;bottom:-6px;border-left:2px dashed #9aa8b4}
+.val{font-size:16px;font-weight:700}
+.sub-k{font-size:15px;color:var(--muted);font-weight:600;margin-bottom:16px}
+
+/* rule boxes */
+.rules{display:flex;gap:18px;align-items:center;margin-bottom:20px}
+.rule{flex:1;background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px;font-size:21px;font-weight:700;line-height:1.4;text-align:center}
+.plus{font-size:30px;color:var(--teal);font-weight:800}
+.status{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.status .box{border-radius:10px;padding:16px 18px;font-size:16px;line-height:1.55}
+.box.a{background:var(--teal-soft)}
+.box.b{background:#fbeeea;border:1px solid #efc9c2}
+.box.c{background:#fff7e8;border:1px solid #efd7a6}
+.box strong{display:block;font-size:18px;margin-bottom:4px}
+
+/* backtest */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 22px}
+.panel h4{font-size:16px;color:var(--teal);margin-bottom:6px}
+.panel .meta{font-size:14px;color:var(--muted);margin-bottom:12px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.metric b{display:block;font-size:26px;font-weight:800;color:var(--navy)}
+.metric span{font-size:13px;color:var(--muted)}
+.base{margin-top:10px;font-size:14px;color:var(--muted)}
+.base b{color:var(--navy)}
+.mini{font-size:15px;line-height:1.55;margin-top:14px}
+.mini b{font-size:16px}
+
+/* scenario */
+.stack{display:flex;height:34px;border-radius:6px;overflow:hidden;margin:10px 0 8px}
+.stack div{display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;white-space:nowrap}
+.s-warn{background:var(--teal)} .s-edge{background:var(--amber)} .s-miss{background:#9aa8b4}
+.legend{font-size:14px;color:var(--muted)}
+table.den{width:100%;border-collapse:collapse;margin-top:14px;font-size:15px;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+table.den th{background:var(--navy);color:#fff;text-align:left;padding:8px 14px;font-weight:700;font-size:14px}
+table.den td{padding:8px 14px;border-top:1px solid var(--line)}
+table.den td:first-child{font-weight:800;color:var(--navy);white-space:nowrap}
+
+/* october */
+.oct{display:grid;grid-template-columns:1fr 60px 1fr;align-items:stretch}
+.day{background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px 28px}
+.day.ok{border:2px solid var(--teal)}
+.day .d{font-size:17px;font-weight:700;color:var(--muted)}
+.day .ret{font-size:54px;font-weight:800;color:var(--red);margin:6px 0 8px}
+.day .info{font-size:18px;line-height:1.6}
+
+/* method */
+.sig{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.sig div{border-top:4px solid var(--navy);background:#fff;padding:10px 16px;border-radius:0 0 8px 8px}
+.sig div:nth-child(3){border-color:var(--teal)}
+.sig b{font-size:22px;display:block}
+.sig span{font-size:14px;color:var(--muted)}
+.flow{font-size:15px;line-height:1.75;margin-bottom:12px}
+.flow b{color:var(--navy)}
+.asof{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:12px;margin-top:4px}
+.asof div{border-radius:8px;padding:10px 16px;font-size:14px;line-height:1.45;background:#fff;border:1px solid var(--line)}
+.asof b{font-size:19px;display:block;color:var(--navy)}
+.asof .us{background:#fff7e8;border-color:#efd7a6}
+.asof-h{font-size:14px;font-weight:700;color:var(--teal);margin-bottom:8px}
+
+/* summary */
+.sum{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:4px}
+.sum div{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 20px;font-size:17px;line-height:1.5}
+.sum b{display:block;font-size:22px;color:var(--teal);margin-bottom:6px}
+.next{margin-top:16px;background:#fff;border:1px dashed #9aa8b4;border-radius:10px;padding:14px 20px;font-size:16px;line-height:1.6}
+.next b{color:var(--navy)}
+
+/* chrome */
+#hud{position:fixed;left:0;right:0;bottom:0;height:40px;display:flex;align-items:center;gap:14px;padding:0 16px;
+  color:#cfd9e3;font-size:13px;background:linear-gradient(transparent,rgba(5,12,20,.85));opacity:.25;transition:opacity .2s}
+#hud:hover,body.notes-on #hud{opacity:1}
+#hud button{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:4px 10px;font:inherit;cursor:pointer}
+#hud .sp{flex:1}
+#progress{position:fixed;left:0;top:0;height:3px;background:var(--teal);transition:width .2s}
+#notes{position:fixed;right:0;top:0;bottom:40px;width:min(440px,100%);background:#fff;color:var(--ink);
+  transform:translateX(100%);transition:transform .2s;overflow:auto;padding:22px 24px 30px;font-size:16px;line-height:1.75;z-index:5;
+  box-shadow:-10px 0 30px rgba(0,0,0,.3)}
+body.notes-on #notes{transform:none}
+#notes .cue{font-size:13px;font-weight:700;color:var(--teal);margin-bottom:4px}
+#notes .stage{display:block;background:#eef3f6;border-radius:6px;padding:6px 10px;margin:8px 0;font-size:14px;color:var(--muted)}
+#notes p{margin-bottom:10px}
+#notes .opt{color:#8a6a1e;font-size:14px}
+#notes .qa{border-top:1px solid var(--line);margin-top:14px;padding-top:10px;font-size:14px;color:var(--muted)}
+#notes .qa b{color:var(--ink)}
+aside.notes{display:none}
+@media (max-width:700px){#hud .hint{display:none}}
+
+@media print{
+  @page{size:1280px 720px;margin:0}
+  body{background:#fff;overflow:visible}
+  #viewport{position:static;display:block}
+  #stage{transform:none!important;width:auto;height:auto}
+  .slide{display:flex!important;position:relative;width:1280px;height:720px;page-break-after:always;box-shadow:none}
+  #hud,#notes,#progress{display:none}
+}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div id="viewport"><div id="stage">
+
+<!-- 1 -->
+<section class="slide title" data-time="0:00">
+  <div class="inner">
+    <div class="k">시장 스트레스 조기경보 · 10분 발표</div>
+    <h1>시장확산도부터<br>연구방법론까지</h1>
+    <div class="sub">예측 · 관측 · 확산을 나눠 읽는 시장 위험 모니터</div>
+    <div class="src">한국·미국 시장 연구 대시보드 &nbsp;|&nbsp; 스냅샷 기준 자료</div>
+  </div>
+  <aside class="notes">
+    <div class="cue">0:00 – 0:10</div>
+    <span class="stage">[시장 확산도 화면으로 이동]</span>
+    <p>이제부터는 시장확산도부터 연구 방법론까지 말씀드리겠습니다.</p>
+  </aside>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-time="0:10">
+  <div class="kicker">M/PRI · 연구용</div>
+  <h2>이전 검토에서 확산도 연구로</h2>
+  <div class="compare">
+    <div class="col">
+      <h3>이전 버전</h3>
+      <div class="card">Z-score WATCH 후보를<br>제품 경보로 채택할지 평가</div>
+      <div class="card">이전 발표안 보고값<br><span class="tnum">WATCH 6/19 · XGBoost 8/19</span> → 미채택</div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="col now">
+      <h3>이번 업데이트</h3>
+      <div class="card">독립 시장확산도와<br>지속성 판정 추가 (한국)</div>
+      <div class="card">백테스트 · 시나리오 · 방법론<br>각 실험의 역할과 범위 표시</div>
+    </div>
+  </div>
+  <div class="callout">새 확산도는 기존 Z-score WATCH를 다시 넣은 것이 아닙니다</div>
+  <div class="terms">
+    <div><b>V1</b>고정된 XGBoost 모델 · 향후 10거래일 스트레스 확률 · 경고 기준 50%</div>
+    <div><b>MSI</b>이미 나타난 시장 스트레스 지수 · 확률 아님 · 공식 임계값과 비교</div>
+    <div><b>OOS</b>학습에 쓰지 않은 기간의 예측 (표본 외) · 저장된 예측으로 재계산</div>
+  </div>
+  <div class="foot"><span>Market &amp; Portfolio Risk Intelligence</span><span>02</span></div>
+  <aside class="notes">
+    <div class="cue">0:10 – 0:50</div>
+    <p>먼저 앞으로 계속 나올 용어 두 가지만 짚겠습니다. V1은 고정해 둔 XGBoost 모델이 내는 향후 10거래일 스트레스 확률이고, 50%가 경고 기준입니다. MSI는 이미 시장에 나타난 스트레스 수준을 나타내는 지수로, 확률이 아니라 공식 임계값과 비교합니다.</p>
+    <p>이전 발표안에서는 MSI의 과거 분포로 만든 별도 Z-score WATCH를 검토했습니다. 당시 한국 D3 결과에서 19건 중 WATCH는 6건, 기존 XGBoost는 8건을 잡아냈습니다. 기존 모델보다 낫다는 근거가 부족해서 제품 경보에는 넣지 않았습니다.</p>
+    <p>이번에 추가한 시장확산도는 그 WATCH를 되살린 것이 아닙니다. 여러 종목 지표가 한꺼번에 나빠지고, 그 상태가 계속되는지를 보는 별도 신호입니다. 백테스트, 시나리오 분석, 방법론 화면도 새로 넣었습니다. 다만 이전 발표안의 운영 로그와 모의투자 검증 계획은 아직 남아 있는 과제입니다.</p>
+  </aside>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-time="0:50">
+  <div class="kicker">M/PRI · 연구용</div>
+  <h2>시장확산도: 지수에 드러나지 않는 약세</h2>
+  <div class="sub-k">2026.10.27 · 과거 백분위 보기 (점선 = 90백분위 극단 기준) · 한국 KOSPI·KOSDAQ 종목 기준</div>
+  <div class="bars tnum">
+    <div class="lab">하락 종목</div><div class="track"><div class="fill" style="width:18.6%"></div><div class="mark90"></div></div><div class="val">18.6백분위</div>
+    <div class="lab">일간 손실 ≥ 2%</div><div class="track"><div class="fill" style="width:21.2%"></div><div class="mark90"></div></div><div class="val">21.2백분위</div>
+    <div class="lab">5일 손실 ≥ 5%</div><div class="track"><div class="fill ext" style="width:90.1%"></div><div class="mark90"></div></div><div class="val amber">90.1백분위</div>
+    <div class="lab">낙폭 ≥ 10%</div><div class="track"><div class="fill" style="width:89.7%"></div><div class="mark90"></div></div><div class="val">89.7백분위</div>
+    <div class="lab">높은 변동성</div><div class="track"><div class="fill" style="width:12%"></div><div class="mark90"></div></div><div class="val">12.0백분위</div>
+    <div class="lab">이상 거래량</div><div class="track"><div class="fill" style="width:0.7%"></div><div class="mark90"></div></div><div class="val">0.7백분위</div>
+  </div>
+  <div class="read2">
+    <div><b class="amber">누적 손상은 큼</b>5일 손실 90.1 · 낙폭 89.7 → 극단에 근접</div>
+    <div><b class="teal">현재 패닉은 아님</b>하락 종목 18.6 · 일간 손실 21.2 · 변동성 12.0 · 거래량 0.7</div>
+  </div>
+  <div class="note-line" style="margin-top:12px">극단 1/6 · 최근 3회 중 1회 → 지속성 해제 &nbsp;<span class="muted">(급락 뒤 진정 국면과 비슷한 모습 · 단, 그날 종합 상태는 ‘미확인’)</span></div>
+  <div class="callout" style="margin-top:14px;font-size:17px">하락이 소수 종목의 문제인지, 종목 분산으로 피하기 어려운 시장 전체의 악화인지 구분 → 위험 신호를 얼마나 무겁게 읽을지의 근거</div>
+  <div class="foot"><span>Market &amp; Portfolio Risk Intelligence</span><span>03 · 백분위는 그날까지의 과거 값만으로 계산 · 확률 아님</span></div>
+  <aside class="notes">
+    <div class="cue">0:50 – 1:40</div>
+    <p class="opt">(선택: 사이드바에 한국·미국 기준일이 계속 보이면 한 줄) “사이드바의 한국·미국 기준일이 다른 이유는 방법론에서 설명드리겠습니다.”</p>
+    <p>지수만 봐서는 하락이 일부 종목에 몰렸는지, 시장 전체로 번졌는지 알 수 없습니다. 시장확산도는 KOSPI·KOSDAQ 종목 전체를 놓고, 약세가 얼마나 넓게 퍼졌고 얼마나 오래 가는지를 봅니다.</p>
+    <p>지표는 하락 종목, 큰 일간 손실, 큰 5일 손실, 고점 대비 낙폭, 높은 변동성, 이상 거래량 여섯 가지입니다. 각 지표는 그날까지의 과거 값만으로 백분위를 매깁니다. 미래 자료는 쓰지 않습니다. 그래서 90.1은 종목의 90.1%가 떨어졌다는 뜻이 아니라, 이 지표가 자기 과거 분포에서 90.1백분위에 있다는 뜻입니다.</p>
+    <p>10월 27일 화면을 리스크 관점에서 읽어 보겠습니다. 5일 손실 지표는 90.1백분위, 낙폭 지표는 89.7백분위로 극단에 가까웠습니다. 반면 하락 종목 18.6, 일간 손실 21.2, 변동성 12.0, 거래량 0.7은 낮았습니다.</p>
+    <p>제 해석으로는 이미 쌓인 손상은 크지만, 지금 패닉이 진행 중인 모습은 아닙니다. 급락 직후 시장이 진정되는 국면과 비슷합니다. 극단 지표가 여섯 개 중 하나뿐이고 최근 세 번 중 조건을 채운 것도 한 번이라 지속성 조건에서 벗어난 것도 이 해석과 맞습니다. 다만 그날 종합 상태는 ‘미확인’이라 이 해석만으로 결론을 내리지는 않습니다.</p>
+    <p>한 줄로 정리하면, 시장확산도는 하락이 소수 종목의 문제인지, 종목을 나눠 담아도 피하기 어려운 시장 전체의 악화인지를 구분해서, 위험 신호를 얼마나 무겁게 읽을지 판단하는 근거가 됩니다.</p>
+  </aside>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-time="1:40">
+  <div class="kicker">M/PRI · 연구용</div>
+  <h2>지속성 규칙과 자료 상태를 함께 봅니다</h2>
+  <div class="rules">
+    <div class="rule">2개 이상 지표가<br><span class="teal">90백분위 이상</span></div>
+    <div class="plus">+</div>
+    <div class="rule">최근 3회 중<br><span class="teal">2회 이상 충족</span></div>
+    <div class="plus">=</div>
+    <div class="rule">지속 악화</div>
+  </div>
+  <div class="status">
+    <div class="box a"><strong>10/22 · 10/26 지속 악화</strong>10/27에는 지속성 조건에서 벗어남</div>
+    <div class="box b"><strong class="red">10/27 종합 상태는 미확인</strong>V1·MSI 누락 · 마지막 완전 판정은 9/16 ‘정상’ · 고정 연구 자료 기준이라 운영 스냅샷(11/11)과 다름</div>
+    <div class="box c"><strong class="amber">미국 확산도는 없음</strong>같은 기준으로 검증·연결한 미국 탐지기가 없어 값을 비워 둠</div>
+  </div>
+  <div class="mini muted">종목군은 현재 상장 종목 기준 → 생존 편향 남아 있음 &nbsp;|&nbsp; 상관관계는 보조 확인 · 20회 관측 · 2026.10.02 기준 · 판정에 영향 없음</div>
+  <div class="foot"><span>Market &amp; Portfolio Risk Intelligence</span><span>04</span></div>
+  <aside class="notes">
+    <div class="cue">1:40 – 2:50</div>
+    <p>먼저 지속성 규칙입니다. 90백분위를 넘은 지표가 두 개 이상인 관측이 최근 세 번 중 두 번 이상이면 ‘지속 악화’로 봅니다. 하루 급락만으로 지속 악화로 판정하지 않으려는 장치입니다.</p>
+    <p>이 규칙으로 보면 10월 26일에는 극단 지표가 네 개였고, 10월 22일에도 지속 악화였습니다. 10월 16일 이후로는 판정이 들어왔다 빠졌다를 반복했고, 27일에는 조건에서 벗어났습니다.</p>
+    <p>그렇다고 27일이 ‘정상’이었던 것은 아닙니다. 확산도 판정은 고정해 둔 연구 자료로 하는데, 이 자료에서 27일에는 V1과 MSI가 없어서 종합 상태가 ‘미확인’입니다. 자료가 다 갖춰진 마지막 판정은 9월 16일의 ‘정상’입니다. 사이드바의 11월 11일은 별도로 갱신되는 운영 스냅샷 날짜라서 이 판정 날짜와 다릅니다.</p>
+    <p>확산도는 한국 시장만 대상으로 합니다. 확산도는 지수 하나가 아니라 개별 종목 전체 자료로 계산하는데, 미국은 같은 기준으로 검증한 탐지기가 아직 없습니다. 검증하지 않은 값을 보여주는 대신 비워 두었습니다. 또 한국 종목군은 현재 상장 종목 기준이라 생존 편향이 남아 있습니다.</p>
+    <p>상관관계 화면은 KOSPI200, SPY, TLT, GLD의 최근 20회 관측을 보여주는 참고 자료이고, 확산도 판정에는 영향을 주지 않습니다. 기준일도 10월 2일이라 10월 27일 확산도와 묶어서 해석하지 않습니다.</p>
+    <div class="qa"><b>Q. SPY 구성 종목으로 계산하면 되지 않나요?</b><br>계산은 가능하지만, 백분위 기준과 지속성 규칙을 미국 자료로 따로 검증해야 합니다. 한국 기준을 그대로 옮겨 쓰지 않았습니다.<br><b>Q. 이전에 미국 확산 연구가 있지 않았나요?</b><br>RSP/SPY 비율로 시험한 연구가 있었지만, 연구 참고용으로만 분류해서 제품 근거로 쓰지 않습니다.</div>
+  </aside>
+</section>
+
+<!-- 5 -->
+<section class="slide" data-time="2:50">
+  <div class="kicker">M/PRI · 연구용</div>
+  <h2>백테스트는 시장 · 정답 · 기간을 나눠서 봅니다</h2>
+  <div class="sub-k" style="margin-bottom:12px">정답 = 다음 1–10거래일 중 MSI가 공식 임계값 이상인 날이 있음 · 경고 = V1 ≥ 50%</div>
+  <div class="two">
+    <div class="panel">
+      <h4>한국 · V1 10일 재현</h4>
+      <div class="meta tnum">n=2,454 &nbsp;|&nbsp; 2016.09 – 2026.09 &nbsp;|&nbsp; 저장 성과 비교 기준 없음</div>
+      <div class="metrics tnum">
+        <div class="metric"><b>62.7%</b><span>정밀도</span></div>
+        <div class="metric"><b>75.0%</b><span>재현율</span></div>
+        <div class="metric"><b>0.683</b><span>F1</span></div>
+        <div class="metric"><b>0.880</b><span>ROC-AUC</span></div>
+      </div>
+      <div class="base tnum">정답 비율 <b>25.1%</b> (617/2,454일) → 정밀도는 기준선의 약 2.5배</div>
+    </div>
+    <div class="panel">
+      <h4>미국 · 저장 OOS 예측</h4>
+      <div class="meta tnum">n=5,060 &nbsp;|&nbsp; 2006.08 – 2026.09</div>
+      <div class="metrics tnum">
+        <div class="metric"><b>59.3%</b><span>정밀도</span></div>
+        <div class="metric"><b>77.6%</b><span>재현율</span></div>
+        <div class="metric"><b>0.672</b><span>F1</span></div>
+        <div class="metric"><b>0.899</b><span>ROC-AUC</span></div>
+      </div>
+      <div class="base tnum">정답 비율 <b>17.5%</b> (884/5,060일) → 정밀도는 기준선의 약 3.4배</div>
+    </div>
+  </div>
+  <div class="two mini tnum">
+    <div><b>한국 사건 목록</b><br>20건 중 16건 사전 경고 · 4건 놓침<br>첫 경고 중앙값 10+ 거래일 <span class="muted">(직전 10거래일 중 하루라도 ≥50%)</span></div>
+    <div><b>확산도 별도 실험 (연구 보고값)</b><br>V1·MSI가 모두 놓친 적격 사건 18건 중 6건 · 33.3%<br><span class="muted">선행 중앙값 6거래일 · 오경보 연 약 4.2회</span></div>
+  </div>
+  <div class="note-line red" style="margin-top:14px">50% 기준만 저장 규칙 · 다른 슬라이더 값은 사후 탐색 · 한국과 미국은 직접 비교하지 않음</div>
+  <div class="foot"><span>Market &amp; Portfolio Risk Intelligence</span><span>05</span></div>
+  <aside class="notes">
+    <div class="cue">2:50 – 4:30</div>
+    <span class="stage">[백테스트 테스트 화면을 열고 한국 탭을 보여줍니다]</span>
+    <p>먼저 정답 기준입니다. 다음 1~10거래일 안에 MSI가 공식 임계값을 넘는 날이 있으면 ‘스트레스’로 보고, V1이 50% 이상이면 경고로 봅니다.</p>
+    <p>한국 V1 10일 OOS 재현 결과입니다. 기간은 2016년 9월 13일부터 2026년 9월 16일까지, 관측 수는 2,454개입니다. 정밀도 62.7%, 재현율 75.0%, F1 0.683, ROC-AUC 0.880입니다. 이 기간 중 실제 스트레스였던 날의 비율은 25.1%입니다. 아무 날이나 경고를 켰을 때의 정밀도가 25% 정도라는 뜻이니, 62.7%는 그 기준선의 약 2.5배입니다.</p>
+    <p>이 값은 저장된 예측으로 다시 계산한 ‘V1 재현’ 결과입니다. 한국은 맞춰볼 저장 성과가 없어서, 미국처럼 저장된 성과와 일치하는지까지 확인한 결과는 아닙니다.</p>
+    <p>미국 탭은 관측 수 5,060개에서 정밀도 59.3%, 재현율 77.6%, F1 0.672, ROC-AUC 0.899입니다. 미국의 정답 비율은 17.5%라서 정밀도는 기준선의 약 3.4배입니다. 한국과 미국은 시장과 평가 기간이 달라 직접 비교하지 않습니다.</p>
+    <p>슬라이더로 기준을 바꿔볼 수는 있지만, 검증된 규칙은 50%뿐입니다. 다른 값은 결과를 보고 나서 찾아본 사후 탐색입니다.</p>
+    <p>아래 사건 목록은 평가 단위가 하루가 아니라 사건입니다. 한국 스트레스 사건 20건 중 16건은 첫 스트레스일 직전 10거래일 중 하루라도 V1이 50% 이상이었고, 4건은 놓쳤습니다. 첫 경고 중앙값 ‘10+’는 그 10거래일 구간이 시작될 때 이미 경고가 켜져 있었다는 뜻입니다.</p>
+    <p>오른쪽 확산도 실험은 분모가 완전히 다릅니다. V1도 50% 아래이고 MSI도 임계값 아래였는데, 실제로는 스트레스가 온 사건만 모은 것이 ‘적격 미포착 사건’ 18건입니다. 즉 기존 신호가 놓친 사건 가운데 확산도 지속성 규칙이 미리 잡은 것이 6건, 33.3%입니다. 선행 기간 중앙값은 6거래일, 오경보는 1년에 약 4.2번입니다. 다만 이 값은 과거 연구에서 보고한 값이고, 화면에서 사건별로 다시 계산한 것은 아닙니다.</p>
+  </aside>
+</section>
+
+<!-- 6 -->
+<section class="slide" data-time="4:30">
+  <div class="kicker">M/PRI · 연구용</div>
+  <h2>시나리오 분석은 과거 급락 기록입니다</h2>
+  <div class="sub-k">기준: 하루 ≤ −3% 또는 10거래일 ≤ −10% · 가까운 급락은 하나로 묶음 · 예측이 아님</div>
+  <div class="two">
+    <div class="panel">
+      <h4>한국 · KOSPI200 · 21건</h4>
+      <div class="stack tnum"><div class="s-warn" style="width:33.3%">사전 경고 7</div><div class="s-edge" style="width:4.8%">1</div><div class="s-miss" style="width:61.9%">놓침 13</div></div>
+    </div>
+    <div class="panel">
+      <h4>미국 · SPY · 29건</h4>
+      <div class="stack tnum"><div class="s-warn" style="width:31%">사전 경고 9</div><div class="s-edge" style="width:3.5%">1</div><div class="s-miss" style="width:65.5%">놓침 19</div></div>
+    </div>
+  </div>
+  <div class="legend" style="margin-top:10px">■ 사전 경고: 급락 직전 거래일 V1 ≥ 50% &nbsp;&nbsp; <span class="amber">■ 경계선: 40–50%</span> &nbsp;&nbsp; ■ 놓침 &nbsp;|&nbsp; 사례 이름·원인 분류는 사후 큐레이션 · 확인된 출처 링크만 표시</div>
+  <table class="den tnum">
+    <tr><th>수치</th><th>분모</th><th>평가 방식</th></tr>
+    <tr><td>16/20</td><td>한국 MSI 스트레스 사건</td><td>첫 스트레스일 직전 10거래일 중 하루라도 V1 ≥ 50%</td></tr>
+    <tr><td>6/18</td><td>V1·MSI가 모두 놓친 적격 사건</td><td>사건 전 확산도 지속성 발동 (연구 보고값)</td></tr>
+    <tr><td>7/21 · 9/29</td><td>과거 급락 사례 (한국 · 미국)</td><td>급락 직전 1거래일 V1 ≥ 50%</td></tr>
+  </table>
+  <div class="note-line red" style="margin-top:10px">분모와 평가 창이 모두 달라 세 수치를 서로 비교할 수 없습니다</div>
+  <div class="foot"><span>Market &amp; Portfolio Risk Intelligence</span><span>06</span></div>
+  <aside class="notes">
+    <div class="cue">4:30 – 5:50</div>
+    <span class="stage">[‘시나리오 분석’ 화면을 열고 과거 급락 시나리오를 먼저 보여줍니다]</span>
+    <p>시나리오 분석 화면 위쪽은 과거 급락 사례 모음입니다. 하루에 3% 이상, 또는 10거래일 안에 10% 이상 떨어진 경우를 모았고, 날짜가 가까운 급락은 한 사례로 묶었습니다. 미래를 예측한 것이 아니라 과거 기록입니다.</p>
+    <p>한국 KOSPI200 사례는 21건입니다. 그중 직전 거래일에 V1이 50% 이상이었던 사전 경고는 7건, 40~50%였던 경계선은 1건, 놓친 경우는 13건입니다. 미국 SPY는 29건 중 사전 경고 9건, 경계선 1건, 놓침 19건입니다.</p>
+    <p>여기서 사전 경고는 급락 첫날 바로 전 거래일의 V1만 봅니다. 그리고 기준이 MSI 스트레스가 아니라 실제 가격 급락입니다. 아래 표처럼 오늘 나온 세 숫자는 분모도, 평가 창도 다릅니다. 그래서 서로 비교하지 않고 각자의 질문에 대한 답으로만 봐 주시면 됩니다. 사례 이름과 원인은 사후에 붙였고, 출처는 확인된 링크가 있을 때만 달았습니다.</p>
+  </aside>
+</section>
+
+<!-- 7 -->
+<section class="slide" data-time="5:50">
+  <div class="kicker">M/PRI · 연구용</div>
+  <h2>10월 사례: 첫 급락 다음 날부터 지속성 확인</h2>
+  <div class="oct tnum">
+    <div class="day">
+      <div class="d">10월 12일 · 초기 급락</div>
+      <div class="ret">−3.79%</div>
+      <div class="info">V1 15.6% · 극단 지표 2/6<br><b class="muted">지속성 미확인</b></div>
+    </div>
+    <div class="arrow">→</div>
+    <div class="day ok">
+      <div class="d">10월 13일 · 지속 확인</div>
+      <div class="ret">−6.25%</div>
+      <div class="info">V1 37.8% · 극단 지표 2/6<br><b class="teal">지속성 확인</b></div>
+    </div>
+  </div>
+  <div class="mini">10/14 극단 지표 1/6로 줄었지만 지속 유지 · 10/15 극단 지표 4/6 &nbsp;|&nbsp; <span class="muted">규칙은 과거 OOS로 먼저 선택 · 10월 사례에 그대로 적용 (사후 조정 없음)</span></div>
+  <div class="callout" style="margin-top:14px">첫 급락을 미리 맞힌 사례가 아니라, 뒤이은 악화를 확인한 홀드아웃 사례</div>
+  <div class="foot"><span>Market &amp; Portfolio Risk Intelligence</span><span>07</span></div>
+  <aside class="notes">
+    <div class="cue">5:50 – 7:00</div>
+    <span class="stage">[같은 화면 아래쪽의 2026년 10월 홀드아웃 타임라인으로 이동합니다]</span>
+    <p>그 아래에는 10월 한국 사례가 있습니다. 지속성 규칙은 과거 OOS 결과로 먼저 골라 두었고, 10월 사례를 보고 고친 것이 아니라 그대로 적용했습니다.</p>
+    <p>10월 12일 KOSPI200은 3.79% 하락했고 V1은 15.6%였습니다. 극단 확산도 지표 두 개가 있었지만 지속성은 확인되지 않았습니다.</p>
+    <p>10월 13일에는 하루에 6.25% 떨어졌고 V1은 37.8%였습니다. 극단 지표는 그대로 두 개였지만, 이틀 연속 조건을 채워서 이날부터 지속성이 확인됩니다. 14일에는 극단 지표가 하나로 줄었는데도 최근 세 번 중 두 번 조건이 유지돼서 지속성이 이어졌고, 15일에는 극단 지표가 네 개로 늘었습니다.</p>
+    <p>정리하면 이 사례는 10월 12일 급락을 미리 맞힌 것이 아니라, 첫 급락 뒤 시장 내부 악화가 이어지는 것을 확인한 사례입니다. 다만 당시 MSI와 공식 임계값 자료가 없어서, 신호 괴리 여부까지 따로 다시 계산해 보지는 못했습니다.</p>
+  </aside>
+</section>
+
+<!-- 8 -->
+<section class="slide" data-time="7:00">
+  <div class="kicker">M/PRI · 연구용</div>
+  <h2 style="margin-bottom:16px">방법론: 신호별 역할과 판정 순서를 정해 둡니다</h2>
+  <div class="sig">
+    <div><b>V1</b><span>향후 10일 예측</span></div>
+    <div><b>MSI</b><span>현재 스트레스 관측</span></div>
+    <div><b class="teal">확산도</b><span>반복 약세 탐지 · 한국만</span></div>
+    <div><b>상관</b><span>보조 확인</span></div>
+  </div>
+  <div class="flow">
+    <b>필수 자료 누락 → 미확인</b> &nbsp;|&nbsp; 예측+관측/확산 → 일치 &nbsp;|&nbsp; 예측만 → 모델 경고<br>
+    MSI 기준 초과 → 관측 스트레스 &nbsp;|&nbsp; 확산만 지속 → 신호 괴리 &nbsp;|&nbsp; 모두 낮음 → 정상<br>
+    <span class="muted">실제 관측일끼리만 결합 · 빈 날 채우기 없음 · 백테스트는 저장 OOS 예측으로 지표만 재계산</span>
+  </div>
+  <div class="asof-h">운영 스냅샷 기준일 · 평일 GitHub Actions 검증 · 시장별 거래일 캘린더와 데이터 소스를 따름 · 실시간 아님</div>
+  <div class="asof tnum">
+    <div><b>한국 11/11</b>V1·리스크 모두 · KRX(KOSPI200·VKOSPI), ECOS 국고채 10년 · 가격 Yahoo(.KS)</div>
+    <div class="us"><b>미국 V1·리스크 11/09</b>FRED DGS10·DBAA 11/10분 미공시 · 11/11 재향군인의 날 채권시장 휴장</div>
+    <div><b>미국 가격 11/11</b>Yahoo 정상 수집 · 지연 원인은 Yahoo가 아니라 FRED 금리</div>
+  </div>
+  <div class="foot"><span>Market &amp; Portfolio Risk Intelligence</span><span>08</span></div>
+  <aside class="notes">
+    <div class="cue">7:00 – 9:20</div>
+    <span class="stage">[연구 방법론 화면으로 이동합니다]</span>
+    <p>방법론의 핵심은 신호마다 맡는 역할을 나누는 것입니다. V1은 앞으로의 위험을 예측하고, MSI는 이미 나타난 스트레스를 보여줍니다. 확산도는 시장 내부 약세가 반복되는지를 보고, 상관관계는 참고용으로만 씁니다.</p>
+    <p>상태 판정에는 순서가 있습니다. 필수 자료가 빠지면 먼저 ‘미확인’입니다. V1 경고에 MSI 스트레스나 확산도 지속성이 겹치면 ‘위험 신호 일치’, V1만 경고하면 ‘모델 주도 경고’, MSI가 공식 기준을 넘으면 ‘관측 스트레스’입니다. V1과 MSI는 기준 아래인데 확산도 악화만 이어지면 ‘신호 괴리’입니다. 폭락 확률이라는 뜻은 아닙니다. 모두 기준 아래이고 확산도 지속성도 없어야 ‘정상’이고, 확산도 관측이 세 번 다 갖춰지지 않았을 때는 정상으로 보지 않습니다.</p>
+    <p>자료는 실제 관측일끼리만 맞춰 붙이고 빈 날을 앞의 값으로 채우지 않습니다. 백테스트는 모델을 다시 돌리지 않고 저장된 OOS 예측으로 지표만 다시 계산합니다.</p>
+    <p>마지막으로 운영 스냅샷입니다. 평일마다 GitHub Actions가 검증해서 갱신하고, 기준일은 시장마다 다릅니다. 한국은 KRX와 ECOS 자료가 모두 들어와 11월 11일 기준입니다. 미국은 FRED 금리 DGS10과 DBAA의 11월 10일 값이 아직 나오지 않았고, 11월 11일은 재향군인의 날이라 채권시장이 쉬어서 11월 9일 기준입니다. 주가는 11일까지 정상으로 들어왔으니 지연 원인은 금리 발표 일정입니다. 주기적으로 갱신되지만 실시간 자료는 아닙니다.</p>
+  </aside>
+</section>
+
+<!-- 9 -->
+<section class="slide" data-time="9:20">
+  <div class="kicker">M/PRI · 연구용</div>
+  <h2>정리 · 한계 · 다음 단계</h2>
+  <div class="sum">
+    <div><b>이전 버전</b>별도 Z-score WATCH를 평가했고, 제품 경보에는 추가하지 않음</div>
+    <div><b>이번 업데이트</b>한국 시장확산도·지속성 규칙, 한국·미국 백테스트, 양국 과거 급락 시나리오, 신호 판정 방법론</div>
+    <div><b>목적</b>폭락을 단정하지 않고 예측 위험 · 관측 스트레스 · 시장 내부 확산을 구분해 해석</div>
+  </div>
+  <div class="limits">
+    <div><b>한국 전용</b>미국 확산도 탐지기 미검증</div>
+    <div><b>생존 편향</b>현재 상장 종목 기준 종목군</div>
+    <div><b>확률 아님</b>과거 대비 백분위일 뿐</div>
+    <div><b>보고값</b>6/18은 연구 보고값 · 화면 재현 안 함</div>
+    <div><b>선행성 제한</b>단독 선행 지표로 쓰지 않음</div>
+  </div>
+  <div class="next" style="margin-top:12px">
+    <b>다음 단계</b> &nbsp; ① 미국 확산도 별도 검증 &nbsp; ② 시점별 종목군 재구성으로 생존 편향 보정 &nbsp; ③ 확산도 판정을 운영 스냅샷과 연결·별도 검증 &nbsp; ④ 운영 로그·모의투자 검증
+  </div>
+  <div class="callout" style="margin-top:18px">하나의 점수가 아니라, 역할이 다른 신호를 나눠 읽는 시장 위험 모니터</div>
+  <div class="foot"><span>Market &amp; Portfolio Risk Intelligence</span><span>09</span></div>
+  <aside class="notes">
+    <div class="cue">9:20 – 10:00</div>
+    <p>정리하겠습니다. 이전 버전에서는 별도 Z-score WATCH를 평가했고, 제품 경보에는 넣지 않았습니다. 이번에는 한국 시장확산도와 지속성 규칙, 한국·미국 백테스트, 두 시장의 과거 급락 시나리오, 신호 판정 방법론을 추가했습니다.</p>
+    <p>한계도 분명히 말씀드립니다. 확산도는 한국 전용이고, 현재 상장 종목 기준이라 생존 편향이 있습니다. 확률이 아니라 과거 대비 백분위입니다. 6/18 실험은 분모 정의는 문서로 확인했지만, 화면에서 사건별로 다시 계산하지는 않았습니다. 그리고 과거 OOS에서 사건 전에 잡은 경우가 있긴 하지만 18건 중 6건 수준이고, 10월 사례에서도 첫 급락 뒤에 악화를 확인했습니다. 그래서 확산도는 단독 선행 지표가 아니라 V1·MSI를 보완하는 확인 신호로 봐야 합니다.</p>
+    <p>남은 과제는 네 가지입니다. 미국 확산도를 따로 검증하는 것, 시점별 종목군을 다시 구성해 생존 편향을 줄이는 것, 확산도 판정을 운영 스냅샷과 연결해 따로 검증하는 것, 그리고 운영 로그와 모의투자 검증입니다.</p>
+    <p>이 시스템은 폭락을 단정하려는 것이 아닙니다. 앞으로의 위험 예측, 이미 나타난 스트레스, 시장 내부로 번지는 약세를 나눠서 읽기 위한 도구입니다.</p>
+  </aside>
+</section>
+
+</div></div>
+
+<div id="notes"></div>
+<div id="hud">
+  <button id="prev" aria-label="이전">◀</button>
+  <span id="count" class="tnum">1 / 9</span>
+  <button id="next" aria-label="다음">▶</button>
+  <span class="tnum">⏱ <span id="clock">0:00</span> · 목표 <span id="target">0:00</span></span>
+  <span class="sp"></span>
+  <span class="hint">← → 이동 · N 대본 · T 타이머 · F 전체화면</span>
+  <button id="nbtn">대본 (N)</button>
+  <button id="fbtn">전체화면 (F)</button>
+</div>
+
+<script>
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var stage=document.getElementById('stage'), notes=document.getElementById('notes');
+  var i=0, t0=null, timer=null;
+  function fit(){
+    var notesW=document.body.classList.contains('notes-on')&&innerWidth>900?Math.min(440,innerWidth):0;
+    var w=innerWidth-notesW, h=innerHeight-40;
+    var s=Math.min(w/1280,h/720);
+    stage.style.transform='scale('+s+')';
+    document.getElementById('viewport').style.right=notesW+'px';
+    document.getElementById('viewport').style.bottom='40px';
+  }
+  function show(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach(function(s,k){s.classList.toggle('active',k===i)});
+    document.getElementById('count').textContent=(i+1)+' / '+slides.length;
+    document.getElementById('target').textContent=slides[i].dataset.time||'';
+    document.getElementById('progress').style.width=((i+1)/slides.length*100)+'%';
+    var a=slides[i].querySelector('aside.notes');
+    notes.innerHTML='<div class="cue">슬라이드 '+(i+1)+'</div>'+(a?a.innerHTML:'');
+    notes.scrollTop=0;
+    if(location.hash!=='#'+(i+1)) history.replaceState(null,'','#'+(i+1));
+    if(i>0&&!t0) startTimer();
+  }
+  function fmt(ms){var s=Math.floor(ms/1000);return Math.floor(s/60)+':'+('0'+s%60).slice(-2)}
+  function startTimer(){t0=Date.now();clearInterval(timer);timer=setInterval(function(){document.getElementById('clock').textContent=fmt(Date.now()-t0)},500)}
+  function resetTimer(){t0=null;clearInterval(timer);document.getElementById('clock').textContent='0:00'}
+  function toggleNotes(){document.body.classList.toggle('notes-on');fit()}
+  function fs(){if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen()}else{document.exitFullscreen()}}
+  addEventListener('keydown',function(e){
+    if(e.metaKey||e.ctrlKey||e.altKey)return;
+    var k=e.key;
+    if(k==='ArrowRight'||k==='PageDown'||k===' '||k==='Enter'){e.preventDefault();show(i+1)}
+    else if(k==='ArrowLeft'||k==='PageUp'||k==='Backspace'){e.preventDefault();show(i-1)}
+    else if(k==='Home')show(0); else if(k==='End')show(slides.length-1);
+    else if(k==='n'||k==='N')toggleNotes();
+    else if(k==='f'||k==='F')fs();
+    else if(k==='t'||k==='T')resetTimer();
+    else if(/^[1-9]$/.test(k))show(+k-1);
+  });
+  var sx=null;
+  addEventListener('touchstart',function(e){sx=e.touches[0].clientX},{passive:true});
+  addEventListener('touchend',function(e){if(sx===null)return;var dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>50)show(i+(dx<0?1:-1));sx=null});
+  document.getElementById('prev').onclick=function(){show(i-1)};
+  document.getElementById('next').onclick=function(){show(i+1)};
+  document.getElementById('nbtn').onclick=toggleNotes;
+  document.getElementById('fbtn').onclick=fs;
+  addEventListener('resize',fit);
+  addEventListener('hashchange',function(){var n=parseInt(location.hash.slice(1),10);if(n&&n-1!==i)show(n-1)});
+  if(/notes/.test(location.search))document.body.classList.add('notes-on');
+  fit();
+  show((parseInt(location.hash.slice(1),10)||1)-1);
+})();
+</script>
+</body>
+</html>
