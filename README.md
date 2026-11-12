@@ -31,13 +31,13 @@ AWS Lightsail 배포는 `infra/aws/deploy_lightsail.sh`를 사용합니다(서�
 
 아래의 루트 `Dockerfile`·`docker-compose.yml`은 포트폴리오 서버(`/portfolio`)만 실행합니다.
 
-## 한국 포트폴리오 연결 상태
+## 한국 포트폴리오 GitHub 데이터 연결
 
-배포 소스는 `JM973279/market-portfolio-risk-signals-intelligence`의 `main`입니다. 미국 포트폴리오의 GitHub 기준 원본은 기존 `tina77302/market-portfolio-risk-intelligence`의 `main`을 유지하고, Actions가 수집·검증한 스냅샷을 이 저장소의 `data/portfolio`에 저장해 이미지에 포함합니다.
+한국 포트폴리오의 운영 입력은 이 저장소 `main`의 `data/portfolio-kr`입니다. [Refresh verified Korea portfolio data](https://github.com/JM973279/market-portfolio-risk-signals-intelligence/actions/workflows/refresh-korea-portfolio.yml)가 평일 **11:47·23:47 KST**와 수동 실행 시 기존 23개 국내 상장 주식·ETF의 Yahoo 수정종가, KRX VKOSPI, 한국은행 ECOS 국고채 10년 금리를 수집합니다. `KRX_API_KEY`·`ECOS_API_KEY`는 기존 Repository secrets를 재사용하고, 한국 V1 Actions 캐시의 VKOSPI 이력을 검증해 재사용합니다.
 
-한국 포트폴리오 입력은 별도입니다. 한국 기능 추가 당시 `scripts/build_korea_portfolio.py`는 명시적 로컬 재현용으로 만들어졌고, 출력 `data/portfolio-kr`는 gitignore되어 GitHub·배포 이미지에 없습니다. 한국 시장 점수와 급락 시나리오는 개별 주식·ETF 포트폴리오 입력을 대신하지 않습니다. 검증된 한국 입력이 없으면 한국 탭에 **자료 연결 필요**를 표시하며, 미국 포트폴리오는 이용할 수 있습니다.
+검증을 통과한 스냅샷과 수집 기록만 GitHub에 저장합니다. `current.json`은 불변 스냅샷 경로·파일 SHA-256·코드 커밋·Actions 실행 ID·실제 가격일·위험 추정일을 기록합니다. 수집 실패나 관측일 역행 시 마지막 검증본을 유지합니다. KRX 거래일과 종목별 가격 결측을 그대로 보존하며 과거 값으로 채우거나 전체 거래일을 제거하지 않습니다. 한국 시장 점수·급락 시나리오와 개별 종목 포트폴리오는 서로 다른 입력입니다.
 
-한국·미국 API는 기본적으로 같은 배포 서버(`3108`)가 처리합니다. 한국 API `/api/portfolio-kr/*`는 한국 자료만 읽고, 별도 서버를 명시적으로 지정한 `PORTFOLIO_KR_API_INTERNAL_URL` 설정도 지원합니다. 서버에서 원천 제공처를 직접 수집하지 않습니다. GitHub 원본·ref·수신 경로를 바꾸려면 명시적인 연결 변경 지시가 필요합니다.
+배포 소스는 `JM973279/market-portfolio-risk-signals-intelligence/main`이며, 미국 포트폴리오의 기존 `tina77302/market-portfolio-risk-intelligence/main` 기준 연결은 유지합니다. 웹/API가 원천 제공처를 직접 수집하지 않습니다. 명시적 로컬 재현 스크립트 `scripts/build_korea_portfolio.py`의 기본 출력은 운영 자료와 분리된 `data/portfolio-kr-local`입니다.
 
 ## 화면 언어 (KR / EN)
 

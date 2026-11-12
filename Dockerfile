@@ -5,6 +5,7 @@ WORKDIR /app
 # Copy the package and portfolio data (server is stdlib-only)
 COPY qsignals/ ./qsignals/
 COPY data/portfolio/ ./data/portfolio/
+COPY data/portfolio-kr/ ./data/portfolio-kr/
 
 EXPOSE 3108
 

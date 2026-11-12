@@ -2,5 +2,5 @@ __pycache__/
 *.pyc
 .venv/
 
-# Korea portfolio demo data: local only, providers do not allow redistribution
-data/portfolio-kr/
+# Explicit local reproductions stay separate from the Actions-published inputs.
+data/portfolio-kr-local/

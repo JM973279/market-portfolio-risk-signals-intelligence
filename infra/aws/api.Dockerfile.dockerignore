@@ -1,5 +1,6 @@
 *
 !qsignals
 !data/portfolio
+!data/portfolio-kr
 !frontend/public/data/korea-scenarios.json
 **/__pycache__

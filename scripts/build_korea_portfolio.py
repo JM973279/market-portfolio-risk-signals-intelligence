@@ -1,8 +1,8 @@
 """Explicit local option: build a Korea portfolio snapshot (KRW, KRX sessions).
 
-Not the default operating path (see AGENTS.md). Run it on your own machine with your own
-keys; the output directory is gitignored and must not be committed or shared, because
-the providers do not allow redistribution:
+Not the default operating path (see AGENTS.md). The service reads the GitHub Actions
+snapshot in data/portfolio-kr. This explicit local reproduction uses your own keys
+and writes to the separate, gitignored data/portfolio-kr-local directory:
 - prices: Yahoo Finance adjusted close (dividends and splits), <code>.KS
 - volatility: VKOSPI from your own KRX Open API raw cache (V1 download_vkospi.py)
 - rate: Korea Treasury 10Y from the Bank of Korea ECOS API (your ECOS_API_KEY)
@@ -28,7 +28,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_OUT = ROOT / 'data' / 'portfolio-kr'
+DEFAULT_OUT = ROOT / 'data' / 'portfolio-kr-local'
 CALENDAR = ROOT / 'data' / 'calendar' / 'xkrx_sessions.csv'
 KST = timezone(timedelta(hours=9))
 UA = {'User-Agent': 'Mozilla/5.0'}

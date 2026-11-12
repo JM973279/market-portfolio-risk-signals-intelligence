@@ -10,6 +10,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 COPY qsignals/ qsignals/
 COPY data/portfolio/ data/portfolio/
+COPY data/portfolio-kr/ data/portfolio-kr/
 # Historical replay reads the Korean scenario library from here.
 COPY frontend/public/data/korea-scenarios.json frontend/public/data/korea-scenarios.json
 

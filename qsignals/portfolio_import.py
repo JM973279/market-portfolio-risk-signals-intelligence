@@ -15,7 +15,7 @@ from qsignals.import_scores import DEFAULT_REPO, _download
 from qsignals.portfolio_data import DEFAULT_DATA, FILES, PortfolioError, parse_files
 
 
-def publish(raw, source_repo, source_commit, output=DEFAULT_DATA, *, collection=None, receipts=None):
+def publish(raw, source_repo, source_commit, output=DEFAULT_DATA, *, collection=None, receipts=None, source_paths=None):
     if set(raw) != set(FILES) or not re.fullmatch(r'[a-f0-9]{40}', source_commit):
         raise PortfolioError('필수 입력 파일 또는 고정 커밋이 없습니다.', 'invalid_data')
     snapshot_id = (hashlib.sha256(b''.join(name.encode() + b'\0' + raw[name] for name in sorted(raw))).hexdigest()[:40]
@@ -33,6 +33,12 @@ def publish(raw, source_repo, source_commit, output=DEFAULT_DATA, *, collection=
     if collection:
         manifest.update(schema_version=2, snapshot_id=snapshot_id, collection=collection)
     dataset = parse_files(raw, manifest)  # Validate everything before any publication.
+    manifest['currency'] = dataset.meta.get('currency', 'USD')
+    if dataset.meta.get('market'):
+        manifest['market'] = dataset.meta['market']
+    if source_paths is not None:
+        for name, record in records.items():
+            record['source_path'] = source_paths.get(name)
     manifest['price_as_of'] = dataset.meta['as_of']
     output = Path(output)
     current = output / 'current.json'
