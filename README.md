@@ -7,10 +7,10 @@ AWS에 배포하는 `market-portfolio-risk-intelligence`와 분리되어 있고,
 
 | 화면 | 주소 |
 |---|---|
-| 전체 사이트 (대시보드·백테스팅 테스트·시나리오 분석·포트폴리오 분석) | **https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com** |
-| 포트폴리오 분석 | https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/portfolio-lab |
+| 전체 사이트 (대시보드·백테스팅 테스트·시나리오 분석·포트폴리오 분석) | [사이트 열기](https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/) |
+| 포트폴리오 분석 | [포트폴리오 분석 열기](https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/portfolio-lab) |
 
-AWS Lightsail 컨테이너 서비스 `mpri`(서울, `ap-northeast-2`)에 배포한 주소입니다. 아래의 `localhost` 주소는 내 PC에서 직접 실행할 때만 열립니다.
+AWS Lightsail 컨테이너 서비스 `mpri`(서울, `ap-northeast-2`)의 공개 배포 주소입니다. **2026-11-12(KST)에 데이터 커밋 [`89e6ab6`](https://github.com/JM973279/market-portfolio-risk-signals-intelligence/commit/89e6ab6f1912d3cafc205243e50b24820501f05f)으로 이미지를 다시 빌드하고 배포 버전 3의 `ACTIVE` 전환을 확인했습니다.** 당시 배포 이미지의 점수 관측일은 한국 2026-11-11, 미국 2026-11-09이며, 주요 화면·포트폴리오 API·한국/미국 시나리오 JSON의 정상 응답을 확인했습니다. 아래의 `localhost` 주소는 내 PC에서 직접 실행할 때만 열립니다.
 
 ## 전체 웹사이트 배포 (AWS·Docker) — 이 저장소가 기준입니다
 
