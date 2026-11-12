@@ -35,7 +35,7 @@ AWS Lightsail 배포는 `infra/aws/deploy_lightsail.sh`를 사용합니다(서�
 
 한국 포트폴리오의 운영 입력은 이 저장소 `main`의 `data/portfolio-kr`입니다. [Refresh verified Korea portfolio data](https://github.com/JM973279/market-portfolio-risk-signals-intelligence/actions/workflows/refresh-korea-portfolio.yml)가 평일 **11:47·23:47 KST**와 수동 실행 시 기존 23개 국내 상장 주식·ETF의 Yahoo 수정종가, KRX VKOSPI, 한국은행 ECOS 국고채 10년 금리를 수집합니다. `KRX_API_KEY`·`ECOS_API_KEY`는 기존 Repository secrets를 재사용하고, 한국 V1 Actions 캐시의 VKOSPI 이력을 검증해 재사용합니다.
 
-검증을 통과한 스냅샷과 수집 기록만 GitHub에 저장합니다. `current.json`은 불변 스냅샷 경로·파일 SHA-256·코드 커밋·Actions 실행 ID·실제 가격일·위험 추정일을 기록합니다. 수집 실패나 관측일 역행 시 마지막 검증본을 유지합니다. KRX 거래일과 종목별 가격 결측을 그대로 보존하며 과거 값으로 채우거나 전체 거래일을 제거하지 않습니다. 한국 시장 점수·급락 시나리오와 개별 종목 포트폴리오는 서로 다른 입력입니다.
+검증을 통과한 스냅샷과 수집 기록만 GitHub에 저장합니다. `current.json`은 불변 스냅샷 경로·파일 SHA-256·코드 커밋·Actions 실행 ID·실제 가격일·위험 추정일을 기록합니다. 수집 실패나 관측일 역행 시 마지막 검증본을 유지합니다. 가격은 과거 값으로 채우지 않습니다. 분석은 보유 종목 가격이 모든 날짜에 있어야 하므로, Yahoo 수정종가가 일부 상장 종목에서 빠진 KRX 거래일은 가격표에서 제외하고 그 날짜와 종목을 `current.json`의 `collection.excluded_price_sessions`에 기록합니다(제외 거래일이 5%를 넘거나 최신 거래일이 비면 게시 중단). 한국 시장 점수·급락 시나리오와 개별 종목 포트폴리오는 서로 다른 입력입니다.
 
 배포 소스는 `JM973279/market-portfolio-risk-signals-intelligence/main`이며, 미국 포트폴리오의 기존 `tina77302/market-portfolio-risk-intelligence/main` 기준 연결은 유지합니다. 웹/API가 원천 제공처를 직접 수집하지 않습니다. 명시적 로컬 재현 스크립트 `scripts/build_korea_portfolio.py`의 기본 출력은 운영 자료와 분리된 `data/portfolio-kr-local`입니다.
 

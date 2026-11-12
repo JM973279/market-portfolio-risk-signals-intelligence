@@ -43,25 +43,45 @@ class KoreaRefreshTest(unittest.TestCase):
         self.assertIsNone(data.factors[days[-1]]['VKOSPI'])
         self.assertEqual(data.meta['currency'], 'KRW')
 
-    def test_suspension_stays_missing_without_dropping_krx_sessions(self):
+    def test_session_lacking_a_listed_price_is_excluded_and_recorded_not_filled(self):
         quotes, rates, vk, days = fixture()
         del quotes['005930'][days[10]]
+        del quotes['069500'][days[20]]
+        raw, quality = build_snapshot(quotes, rates, vk, days)
+        data = parse_files(raw, {})
+        self.assertEqual(data.days, [d for d in days if d not in (days[10], days[20])])
+        self.assertEqual(quality['excluded_price_sessions'],
+                         {days[10]: ['005930'], days[20]: ['069500']})
+        self.assertEqual(quality['missing_price_dates']['005930'], [days[10]])
+        self.assertEqual((quality['krx_sessions'], quality['rows']), (len(days), len(days) - 2))
+
+    def test_later_listing_is_blank_before_its_first_price(self):
+        quotes, rates, vk, days = fixture()
+        for d in days[:5]:
+            del quotes['005930'][d]
         raw, quality = build_snapshot(quotes, rates, vk, days)
         data = parse_files(raw, {})
         self.assertEqual(data.days, days)
-        self.assertIsNone(data.prices[days[10]]['005930'])
-        self.assertEqual(quality['missing_price_dates']['005930'], [days[10]])
+        self.assertIsNone(data.prices[days[0]]['005930'])
+        self.assertEqual(quality['excluded_price_sessions'], {})
 
-    def test_missing_benchmark_latest_price_and_nonfinite_price_block_publication(self):
-        for ticker, offset, value in [('069500', 5, None), ('005930', -1, None),
-                                      ('005930', 10, float('nan'))]:
-            quotes, rates, vk, days = fixture()
-            if value is None:
-                del quotes[ticker][days[offset]]
-            else:
-                quotes[ticker][days[offset]] = value
-            with self.subTest(ticker=ticker, offset=offset), self.assertRaises(PortfolioError):
-                build_snapshot(quotes, rates, vk, days)
+    def test_latest_gap_too_many_gaps_and_nonfinite_price_block_publication(self):
+        quotes, rates, vk, days = fixture()
+        del quotes['005930'][days[-1]]
+        cases = [quotes]
+        quotes = fixture()[0]
+        for d in days[100:150]:
+            del quotes['069500'][d]
+        cases.append(quotes)
+        quotes = fixture()[0]
+        quotes['005930'][days[10]] = float('nan')
+        cases.append(quotes)
+        quotes = fixture()[0]
+        del quotes['069500'][days[0]]
+        cases.append(quotes)
+        for index, case in enumerate(cases):
+            with self.subTest(case=index), self.assertRaises(PortfolioError):
+                build_snapshot(case, rates, vk, days)
 
     def test_stale_or_insufficient_factors_and_duplicate_sessions_are_rejected(self):
         quotes, rates, vk, days = fixture()

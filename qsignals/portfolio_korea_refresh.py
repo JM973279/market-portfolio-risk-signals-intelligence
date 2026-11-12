@@ -118,27 +118,36 @@ def fetch_rates(start, end, key):
     return parse_ecos(payload)
 
 
-def build_snapshot(quotes, rates, volatility, sessions):
-    """Keep the KRX calendar and missing observations; never fill or remove sessions."""
-    if len(sessions) < 758 or sessions != sorted(set(sessions)):
+def build_snapshot(quotes, rates, volatility, krx_sessions):
+    """Never fill prices. The analysis needs every held asset priced on every day it uses,
+    so a KRX session where Yahoo lacks a listed asset's close is excluded from the price
+    table and recorded (date and tickers) in the collection quality report."""
+    if len(krx_sessions) < 758 or krx_sessions != sorted(set(krx_sessions)):
         raise PortfolioError('At least 758 ordered unique KRX sessions are required.', 'invalid_data')
-    for day in sessions:
+    for day in krx_sessions:
         valid_date(day)
     tickers = [u[0] for u in UNIVERSE]
-    missing = {}
+    first = {}
     for ticker in tickers:
         series = quotes.get(ticker, {})
+        if not series:
+            raise PortfolioError('No adjusted prices returned; publication blocked.', 'missing_price', ticker=ticker)
         for value in series.values():
             if not math.isfinite(value) or value <= 0:
                 raise PortfolioError('Nonpositive or nonfinite adjusted price.', 'invalid_data', ticker=ticker)
-        absent = [d for d in sessions if d not in series]
-        if sessions[-1] in absent or len(absent) > len(sessions) * .05:
-            raise PortfolioError('Incomplete adjusted-price history; publication blocked.',
-                                 'missing_price', ticker=ticker)
-        if ticker == MARKET and absent:
-            raise PortfolioError('KODEX 200 must cover every completed KRX session.', 'missing_price')
-        if absent:
-            missing[ticker] = absent
+        first[ticker] = min(series)
+    if first[MARKET] > krx_sessions[0]:
+        raise PortfolioError('KODEX 200 must be listed for the whole collection period.', 'missing_price')
+    excluded = {d: [t for t in tickers if d >= first[t] and d not in quotes[t]] for d in krx_sessions}
+    excluded = {d: v for d, v in excluded.items() if v}
+    if krx_sessions[-1] in excluded:
+        raise PortfolioError('Latest completed KRX session lacks adjusted prices; publication blocked.',
+                             'missing_price', tickers=excluded[krx_sessions[-1]])
+    if len(excluded) > len(krx_sessions) * .05:
+        raise PortfolioError('Too many KRX sessions lack adjusted prices; publication blocked.', 'missing_price')
+    sessions = [d for d in krx_sessions if d not in excluded]
+    missing = {t: [d for d in excluded if t in excluded[d]] for t in tickers}
+    missing = {t: v for t, v in missing.items() if v}
     for name, series in [('KTB10Y', rates), ('VKOSPI', volatility)]:
         if any(not math.isfinite(v) or (name == 'VKOSPI' and v <= 0) for v in series.values()):
             raise PortfolioError('Invalid factor observation.', 'invalid_data', factor=name)
@@ -186,7 +195,8 @@ def build_snapshot(quotes, rates, volatility, sessions):
     }
     parse_files(raw, {})
     return raw, {'price_as_of': end, 'risk_as_of': risk_end, 'factor_lag_sessions': lag,
-                 'rows': len(sessions), 'assets': len(tickers), 'missing_price_dates': missing,
+                 'krx_sessions': len(krx_sessions), 'rows': len(sessions), 'assets': len(tickers),
+                 'excluded_price_sessions': excluded, 'missing_price_dates': missing,
                  'missing_factor_dates': {k: [d for d in sessions if d not in v]
                                           for k, v in [('VKOSPI', volatility), ('KTB10Y', rates)]}}
 
@@ -206,13 +216,16 @@ def refresh(output=OUTPUT, *, cache=None, now=None, source_commit=None):
     volatility, vol_origin = fetch_vkospi(sessions, os.environ['KRX_API_KEY'], cache, output)
     rates = fetch_rates(sessions[0], sessions[-1], os.environ['ECOS_API_KEY'])
     raw, quality = build_snapshot(quotes, rates, volatility, sessions)
+    tickers = [u[0] for u in UNIVERSE]
     current = Path(output) / 'current.json'
     if current.exists():
         old = load_dataset(output)
         if quality['price_as_of'] < old.meta['as_of'] or quality['risk_as_of'] < old.meta['risk_as_of']:
             raise PortfolioError('Refusing to move published Korean observation dates backwards.', 'stale_data')
     receipts = {
-        'yahoo-adjusted-close.csv': raw['prices.csv'],
+        # Every KRX session as Yahoo returned it, including the excluded sessions' gaps.
+        'yahoo-adjusted-close.csv': csv_bytes(['Date', *tickers],
+            [[d, *(quotes[t].get(d, '') for t in tickers)] for d in sessions]),
         'krx-vkospi.csv': csv_bytes(['Date', 'Close'], [[d, volatility[d]] for d in sessions if d in volatility]),
         'ecos-ktb10y.csv': csv_bytes(['Date', 'KTB10Y'], [[d, rates[d]] for d in sorted(rates)]),
         'krx-sessions.csv': csv_bytes(['Date'], [[d] for d in sessions]),
@@ -223,7 +236,8 @@ def refresh(output=OUTPUT, *, cache=None, now=None, source_commit=None):
                   'providers': {'prices': 'Yahoo Finance adjusted close', 'volatility': vol_origin,
                                 'rates': 'Bank of Korea ECOS 817Y002/010210000'},
                   'calendar_sha256': hashlib.sha256((ROOT / 'data/calendar/xkrx_sessions.csv').read_bytes()).hexdigest(),
-                  'normalization': 'full adjusted-price vintage; KRX sessions retained; no filling', **quality}
+                  'normalization': ('full adjusted-price vintage; no filling; KRX sessions where Yahoo '
+                                    'lacks a listed asset are excluded and listed in excluded_price_sessions'), **quality}
     manifest = publish(raw, SOURCE_REPO, commit, output, collection=collection,
                        receipts=receipts, source_paths={})
     data = load_dataset(output)
