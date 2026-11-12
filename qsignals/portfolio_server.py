@@ -14,6 +14,7 @@ from qsignals.portfolio_data import DEFAULT_DATA, PortfolioError, load_dataset
 from qsignals.portfolio_i18n import request_lang, translate
 
 WEB = Path(__file__).resolve().parent / 'portfolio_web'
+KOREA_DATA = DEFAULT_DATA.parent / 'portfolio-kr'
 STATIC = {'/portfolio': ('index.html', 'text/html; charset=utf-8'),
           '/portfolio/': ('index.html', 'text/html; charset=utf-8'),
           '/portfolio/app.js': ('app.js', 'text/javascript; charset=utf-8'),
@@ -22,10 +23,22 @@ LOG = logging.getLogger(__name__)
 
 
 class Handler(BaseHTTPRequestHandler):
-    def __init__(self, *args, data_dir=DEFAULT_DATA, **kwargs):
+    def __init__(self, *args, data_dir=DEFAULT_DATA, korea_data_dir=KOREA_DATA, **kwargs):
         self.data_dir = data_dir
+        self.korea_data_dir = korea_data_dir
         self.lang = 'ko'
         super().__init__(*args, **kwargs)
+
+    def request_path(self, path):
+        """Serve both market APIs on the deployed server; never substitute US data for Korea."""
+        self.korea_request = path.startswith('/api/portfolio-kr/')
+        return path.replace('/api/portfolio-kr/', '/api/portfolio/', 1) if self.korea_request else path
+
+    def dataset(self):
+        data = load_dataset(self.korea_data_dir if self.korea_request else self.data_dir)
+        if self.korea_request and data.meta.get('market') != 'korea':
+            raise PortfolioError('한국 포트폴리오 입력이 필요합니다.', 'invalid_data')
+        return data
 
     def respond(self, code, content, kind='application/json; charset=utf-8'):
         if not isinstance(content, bytes):
@@ -46,8 +59,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         url = urlsplit(self.path)
-        path, self.lang = url.path, request_lang(url.query)
-        if path in ('/', '/portfolio', '/portfolio/'):
+        path, self.lang = self.request_path(url.path), request_lang(url.query)
+        if path in ('/', '/portfolio', '/portfolio/', '/portfolio-kr', '/portfolio-kr/'):
             filename, kind = STATIC['/portfolio']
             self.respond(200, (WEB / filename).read_bytes(), kind)
         elif path in STATIC:
@@ -55,7 +68,7 @@ class Handler(BaseHTTPRequestHandler):
             self.respond(200, (WEB / filename).read_bytes(), kind)
         elif path in ('/api/portfolio/meta', '/health'):
             try:
-                data = load_dataset(self.data_dir)
+                data = self.dataset()
                 self.respond(200, describe(data) if path.endswith('/meta') else {
                     'status': 'ok', 'price_as_of': data.meta['as_of'],
                     'source_commit': data.provenance['source_commit']})
@@ -66,7 +79,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         url = urlsplit(self.path)
-        path, self.lang = url.path, request_lang(url.query)
+        path, self.lang = self.request_path(url.path), request_lang(url.query)
         if path not in ('/api/portfolio/analyze', '/api/portfolio/compare'):
             self.respond(404, {'error': 'Not found'})
             return
@@ -96,7 +109,7 @@ class Handler(BaseHTTPRequestHandler):
                 raise PortfolioError('JSON 객체가 필요합니다.')
             if path.endswith('/compare') and 'proposed_holdings' not in payload:
                 raise PortfolioError('비교 포트폴리오가 필요합니다.')
-            data = load_dataset(self.data_dir)
+            data = self.dataset()
             result = analyze(data, payload)
             self.respond(200, result)
         except (json.JSONDecodeError, UnicodeDecodeError) as exc:
@@ -114,8 +127,8 @@ class Handler(BaseHTTPRequestHandler):
         LOG.info('%s', format % args)
 
 
-def serve(host='127.0.0.1', port=3108, data_dir=DEFAULT_DATA):
-    server = ThreadingHTTPServer((host, port), partial(Handler, data_dir=data_dir))
+def serve(host='127.0.0.1', port=3108, data_dir=DEFAULT_DATA, korea_data_dir=KOREA_DATA):
+    server = ThreadingHTTPServer((host, port), partial(Handler, data_dir=data_dir, korea_data_dir=korea_data_dir))
     print(f'Portfolio: http://{host}:{server.server_port}/portfolio', flush=True)
     try:
         server.serve_forever()
@@ -128,8 +141,9 @@ def main():
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--port', default=3108, type=int)
     parser.add_argument('--data-dir', default=DEFAULT_DATA, type=Path)
+    parser.add_argument('--korea-data-dir', default=KOREA_DATA, type=Path)
     args = parser.parse_args()
-    serve(args.host, args.port, args.data_dir)
+    serve(args.host, args.port, args.data_dir, args.korea_data_dir)
 
 
 if __name__ == '__main__':

@@ -17,3 +17,5 @@
 .embedded .hero{margin-top:0;padding-top:0}
 /* 단독 화면 언어 전환 (iframe 안에서는 header가 숨겨지고 사이트 토글을 따른다) */
 header>span{margin-left:auto}.lang-switch{margin-left:14px;font-size:12px;font-weight:700;color:var(--navy);border:1px solid var(--line);border-radius:4px;padding:3px 8px;text-decoration:none}
+
+.data-unavailable{max-width:780px;margin:24px 0;padding:28px}.data-unavailable h2{margin:0 0 12px}.data-unavailable p{line-height:1.7;color:var(--muted);margin-bottom:20px}

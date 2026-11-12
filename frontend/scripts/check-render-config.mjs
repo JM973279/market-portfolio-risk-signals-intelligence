@@ -19,5 +19,9 @@ const target = await config({ RENDER: 'true', PORTFOLIO_API_INTERNAL_URL: 'https
 assert.equal(target[0].destination, 'https://api.example/api/portfolio/:path*');
 const local = await config({}).rewrites();
 assert.equal(local[0].destination, 'http://127.0.0.1:3108/api/portfolio/:path*');
-assert.equal(local.find(r => r.source === '/api/portfolio-kr/:path*').destination, 'http://127.0.0.1:3110/api/portfolio/:path*');
+assert.equal(local.find(r => r.source === '/api/portfolio-kr/:path*').destination, 'http://127.0.0.1:3108/api/portfolio-kr/:path*');
 console.log('PASS: Render HTTPS origin required; localhost/path/credentials rejected; local fallback retained');
+
+assert.equal(target.find(r => r.source === '/portfolio-kr-lab').destination, 'https://api.example/portfolio-kr');
+const separate = await config({PORTFOLIO_KR_API_INTERNAL_URL: 'http://127.0.0.1:3110/'}).rewrites();
+assert.equal(separate.find(r => r.source === '/api/portfolio-kr/:path*').destination, 'http://127.0.0.1:3110/api/portfolio/:path*');

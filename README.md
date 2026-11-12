@@ -31,6 +31,14 @@ AWS Lightsail 배포는 `infra/aws/deploy_lightsail.sh`를 사용합니다(서�
 
 아래의 루트 `Dockerfile`·`docker-compose.yml`은 포트폴리오 서버(`/portfolio`)만 실행합니다.
 
+## 한국 포트폴리오 연결 상태
+
+배포 소스는 `JM973279/market-portfolio-risk-signals-intelligence`의 `main`입니다. 미국 포트폴리오의 GitHub 기준 원본은 기존 `tina77302/market-portfolio-risk-intelligence`의 `main`을 유지하고, Actions가 수집·검증한 스냅샷을 이 저장소의 `data/portfolio`에 저장해 이미지에 포함합니다.
+
+한국 포트폴리오 입력은 별도입니다. 한국 기능 추가 당시 `scripts/build_korea_portfolio.py`는 명시적 로컬 재현용으로 만들어졌고, 출력 `data/portfolio-kr`는 gitignore되어 GitHub·배포 이미지에 없습니다. 한국 시장 점수와 급락 시나리오는 개별 주식·ETF 포트폴리오 입력을 대신하지 않습니다. 검증된 한국 입력이 없으면 한국 탭에 **자료 연결 필요**를 표시하며, 미국 포트폴리오는 이용할 수 있습니다.
+
+한국·미국 API는 기본적으로 같은 배포 서버(`3108`)가 처리합니다. 한국 API `/api/portfolio-kr/*`는 한국 자료만 읽고, 별도 서버를 명시적으로 지정한 `PORTFOLIO_KR_API_INTERNAL_URL` 설정도 지원합니다. 서버에서 원천 제공처를 직접 수집하지 않습니다. GitHub 원본·ref·수신 경로를 바꾸려면 명시적인 연결 변경 지시가 필요합니다.
+
 ## 화면 언어 (KR / EN)
 
 사이트 왼쪽 아래 `KR`/`EN` 토글로 언어를 바꿉니다. 선택은 브라우저 탭(sessionStorage)에 기억됩니다.

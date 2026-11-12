@@ -1,6 +1,6 @@
 "use client";
 // mqs 포트폴리오 분석(qsignals.portfolio_server)을 사이트 안에 보여 준다. 한 메뉴 안에 시장별 탭 두 개:
-// - 한국: /portfolio-kr-lab, /api/portfolio-kr/* → 한국 포트폴리오 서버(--data-dir data/portfolio-kr)
+// - 한국: /portfolio-kr-lab, /api/portfolio-kr/* → 같은 서버의 한국 전용 데이터 경로
 // - 미국: /portfolio-lab, /api/portfolio/* → 미국 포트폴리오 서버
 //   (next.config.ts 가 넘긴다. 같은 출처라 iframe 높이를 내용에 맞출 수 있다.)
 // 탭 순서와 처음 열리는 탭은 화면 언어를 따른다(KR: 한국 → 미국, EN: US → Korea).
@@ -56,8 +56,8 @@ export default function MqsPortfolioFrame() {
   ? (ko ? "국내 상장 주식·ETF의 과거 가상성과, 수익 기여도, KODEX 200 대비 성과요인, 위험과 역사적 재현을 원화 기준으로 봅니다." : "Korean listed stocks and ETFs in KRW: hypothetical past performance, attribution against KODEX 200, risk and historical replay.")
   : (ko ? "미국 상장 주식·ETF의 과거 가상성과, 수익 기여도, 벤치마크 대비 성과요인, 위험과 역사적 재현을 달러 기준으로 봅니다." : "US listed stocks and ETFs in USD: hypothetical past performance, contribution, benchmark attribution, risk and historical replay.");
  const note = korea
-  ? (ko ? "팀 내부 시험용 화면입니다. 가격은 Yahoo Finance 수정종가, 변동성은 한국거래소 통계정보(VKOSPI), 금리는 한국은행 ECOS 국고채 10년이며, 각자 로컬에서 수집한 자료로 계산합니다. 원자료는 공유·게시하지 않습니다." : "Team-internal trial. Prices: Yahoo Finance adjusted close; volatility: KRX statistics (VKOSPI); rate: Bank of Korea ECOS 10Y KTB. Collected locally; raw data is not shared or published.")
-  : (ko ? "검증된 GitHub 포트폴리오 자료만 읽는 mqs 포트폴리오 서버(python3 -m qsignals.portfolio_server)가 켜져 있어야 합니다." : "Requires the mqs portfolio server (python3 -m qsignals.portfolio_server), which reads only verified GitHub portfolio data.");
+  ? (ko ? "한국 포트폴리오는 검증된 국내 주식·ETF 자료가 연결된 경우에 이용할 수 있습니다. 한국 시장 점수·시나리오와 포트폴리오 입력은 별도 자료입니다." : "Korean portfolio analysis requires verified Korean stock and ETF data. Korean market scores and scenarios use separate inputs.")
+  : (ko ? "GitHub에 저장된 검증 자료로 계산합니다. 가격과 위험 추정의 실제 관측일은 분석 결과에서 확인하세요." : "Calculations use verified data stored in GitHub. Check the actual price and risk observation dates in the analysis results.");
  const title = ko ? "포트폴리오 분석" : "Portfolio Analysis";
  return <main className="dashboard-content view-portfolio">
   <div className="page-hero compact-hero"><div className="hero-copy"><p className="eyebrow">{`${title} · Market Qualitative Signals`}</p><h1>{title}</h1><p className="hero-subtitle">{subtitle}</p></div></div>

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 EN = {
     # portfolio_server.py
+    '한국 포트폴리오 입력이 필요합니다.': 'Korean portfolio inputs are required.',
     '다른 출처의 요청은 허용하지 않습니다.': 'Requests from other origins are not allowed.',
     'application/json이 필요합니다.': 'Content-Type application/json is required.',
     '요청 크기가 잘못되었거나 너무 큽니다.': 'The request size is invalid or too large.',

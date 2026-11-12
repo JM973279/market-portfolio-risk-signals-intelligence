@@ -14,15 +14,15 @@ const nextConfig: NextConfig = {
       }
     }
     const base = api.replace(/\/$/, "");
-    // 한국 포트폴리오 서버(같은 코드, --data-dir data/portfolio-kr, 기본 3110).
-    const krBase = (process.env.PORTFOLIO_KR_API_INTERNAL_URL ?? "http://127.0.0.1:3110").replace(/\/$/, "");
+    // Both markets use the deployed API. An explicit Korea server remains optional.
+    const krBase = process.env.PORTFOLIO_KR_API_INTERNAL_URL?.replace(/\/$/, "");
     return [
       { source: "/api/portfolio/:path*", destination: `${base}/api/portfolio/:path*` },
       // mqs 포트폴리오 화면과 그 정적 파일 (iframe으로 사이트 안에 표시)
       { source: "/portfolio-lab", destination: `${base}/portfolio` },
       { source: "/portfolio/:file(app.js|style.css)", destination: `${base}/portfolio/:file` },
-      { source: "/api/portfolio-kr/:path*", destination: `${krBase}/api/portfolio/:path*` },
-      { source: "/portfolio-kr-lab", destination: `${krBase}/portfolio` },
+      { source: "/api/portfolio-kr/:path*", destination: krBase ? `${krBase}/api/portfolio/:path*` : `${base}/api/portfolio-kr/:path*` },
+      { source: "/portfolio-kr-lab", destination: krBase ? `${krBase}/portfolio` : `${base}/portfolio-kr` },
     ];
   },
   cacheComponents: true,
