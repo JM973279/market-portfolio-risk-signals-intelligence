@@ -1,0 +1,192 @@
+name: Deploy verified main to Lightsail
+
+# Rebuilds the site from main after the data workflows publish verified data, so the
+# deployed images always carry the newest GitHub data (the service never collects data).
+#
+# Safety:
+# - Automatic triggers deploy only when the repository variable LIGHTSAIL_AUTODEPLOY is 'true'.
+#   Without it, only a manual run (workflow_dispatch) deploys.
+# - The images are started and checked on the runner first; a failed check never reaches Lightsail.
+# - Lightsail keeps serving the previous deployment until the new one is healthy. If the live
+#   check fails after activation, the previous deployment's containers are redeployed.
+# - Deploys only when main changed something the images contain (unless forced).
+
+on:
+  workflow_run:
+    workflows:
+      - Daily V1 score refresh
+      - Validate and refresh portfolio analysis
+      - Refresh verified Korea portfolio data
+      - Refresh Korea event diagnostics
+      - Refresh overnight US prices
+    types: [completed]
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/**'
+      - 'qsignals/**'
+      - 'infra/aws/**'
+      - 'scripts/check_site.py'
+      - '.github/workflows/deploy-lightsail.yml'
+  schedule:
+    # Fallback once a day (10:40 KST) in case a workflow_run event was missed.
+    - cron: '40 1 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Deploy even if the images would be unchanged
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lightsail-deploy
+  cancel-in-progress: false
+
+env:
+  SERVICE: mpri
+  AWS_REGION: ap-northeast-2
+  # Everything the api and web images are built from.
+  IMAGE_PATHS: qsignals data/portfolio data/portfolio-kr frontend infra/aws
+
+jobs:
+  deploy:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' || vars.LIGHTSAIL_AUTODEPLOY == 'true') &&
+      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Compare main with the deployed commit
+        id: plan
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws lightsail get-container-services --service-name "$SERVICE" --output json \
+            --query 'containerServices[0]' > "$RUNNER_TEMP/service.json"
+          jq -e '.state == "RUNNING" and .currentDeployment.state == "ACTIVE"' "$RUNNER_TEMP/service.json" >/dev/null \
+            || { echo "::error::Service is not RUNNING with an ACTIVE deployment; not deploying."; exit 1; }
+          jq '.currentDeployment.containers' "$RUNNER_TEMP/service.json" > "$RUNNER_TEMP/previous-containers.json"
+          jq '.currentDeployment.publicEndpoint | {containerName, containerPort, healthCheck}' \
+            "$RUNNER_TEMP/service.json" > "$RUNNER_TEMP/endpoint.json"
+          echo "url=$(jq -r '.url' "$RUNNER_TEMP/service.json" | sed 's#/$##')" >> "$GITHUB_OUTPUT"
+          echo "previous=$(jq -r '.currentDeployment.version' "$RUNNER_TEMP/service.json")" >> "$GITHUB_OUTPUT"
+          deployed=$(jq -r '.currentDeployment.containers.api.environment.MPRI_COMMIT // empty' "$RUNNER_TEMP/service.json")
+          head=$(git rev-parse HEAD)
+          echo "head=$head" >> "$GITHUB_OUTPUT"
+          deploy=true
+          if [ "${{ inputs.force }}" != "true" ] && [ -n "$deployed" ] && git cat-file -e "$deployed^{commit}" 2>/dev/null \
+             && git diff --quiet "$deployed" "$head" -- $IMAGE_PATHS; then
+            deploy=false
+            echo "Deployed commit $deployed already has the same image contents as $head; nothing to deploy."
+          fi
+          echo "deploy=$deploy" >> "$GITHUB_OUTPUT"
+          echo "Deployed: ${deployed:-unknown} (version $(jq -r '.currentDeployment.version' "$RUNNER_TEMP/service.json")) -> main $head: deploy=$deploy"
+
+      - name: Run tests
+        if: steps.plan.outputs.deploy == 'true'
+        run: python3 -m unittest discover -s tests -t .
+
+      - name: Build and check the images on the runner
+        if: steps.plan.outputs.deploy == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker compose -f infra/aws/compose.yaml build
+          docker compose -f infra/aws/compose.yaml up -d --wait
+          trap 'docker compose -f infra/aws/compose.yaml logs --tail 50; docker compose -f infra/aws/compose.yaml down' EXIT
+          python3 scripts/check_site.py http://127.0.0.1:3300 --retries 6
+
+      - name: Push images to Lightsail
+        if: steps.plan.outputs.deploy == 'true'
+        id: push
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://s3.us-west-2.amazonaws.com/lightsailctl/latest/linux-amd64/lightsailctl -o "$RUNNER_TEMP/lightsailctl"
+          chmod +x "$RUNNER_TEMP/lightsailctl"
+          export PATH="$RUNNER_TEMP:$PATH"
+          for label in api web; do
+            out=$(aws lightsail push-container-image --service-name "$SERVICE" --label "$label" --image "mqs-$label:local")
+            image=$(printf '%s\n' "$out" | grep -o '":[^"]*"' | tr -d '"' | tail -1)
+            [ -n "$image" ] || { echo "::error::Could not read the pushed $label image name"; exit 1; }
+            echo "$label=$image" >> "$GITHUB_OUTPUT"
+            echo "$label image: $image"
+          done
+
+      - name: Deploy and wait until active
+        if: steps.plan.outputs.deploy == 'true'
+        id: deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          jq -n --arg api "${{ steps.push.outputs.api }}" --arg web "${{ steps.push.outputs.web }}" \
+                --arg commit "${{ steps.plan.outputs.head }}" '{
+            api: {image: $api, ports: {"3108": "HTTP"}, environment: {MPRI_COMMIT: $commit}},
+            web: {image: $web, ports: {"3000": "HTTP"}}}' > "$RUNNER_TEMP/containers.json"
+          version=$(aws lightsail create-container-service-deployment --service-name "$SERVICE" \
+            --containers "file://$RUNNER_TEMP/containers.json" --public-endpoint "file://$RUNNER_TEMP/endpoint.json" \
+            --query 'containerService.nextDeployment.version' --output text)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Deployment $version requested (previous ${{ steps.plan.outputs.previous }})."
+          for _ in $(seq 1 60); do
+            state=$(aws lightsail get-container-service-deployments --service-name "$SERVICE" \
+              --query "deployments[?version==\`$version\`].state | [0]" --output text)
+            echo "deployment $version: $state"
+            case "$state" in
+              ACTIVE) exit 0 ;;
+              FAILED) echo "::error::Deployment $version failed its health check; Lightsail kept the previous deployment."; exit 1 ;;
+            esac
+            sleep 20
+          done
+          echo "::error::Deployment $version did not become active in 20 minutes."
+          exit 1
+
+      - name: Check the live site
+        if: steps.plan.outputs.deploy == 'true'
+        id: live
+        run: python3 scripts/check_site.py "${{ steps.plan.outputs.url }}" --retries 10
+
+      - name: Roll back to the previous deployment
+        if: failure() && steps.deploy.outcome == 'success' && steps.live.outcome == 'failure'
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws lightsail create-container-service-deployment --service-name "$SERVICE" \
+            --containers "file://$RUNNER_TEMP/previous-containers.json" \
+            --public-endpoint "file://$RUNNER_TEMP/endpoint.json" \
+            --query 'containerService.nextDeployment.version' --output text
+          echo "::error::Live check failed; redeployed the containers of version ${{ steps.plan.outputs.previous }}."
+
+      - name: Remove old images (keep the newest six per label)
+        if: steps.plan.outputs.deploy == 'true' && success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          keep=$(jq -r '.[].image' "$RUNNER_TEMP/previous-containers.json" "$RUNNER_TEMP/containers.json" | sort -u)
+          aws lightsail get-container-images --service-name "$SERVICE" --output json \
+            | jq -r '.containerImages[].image' > "$RUNNER_TEMP/images.txt"
+          for label in api web; do
+            grep "^:$SERVICE\.$label\." "$RUNNER_TEMP/images.txt" | sort -t. -k3 -n -r | tail -n +7 | while read -r image; do
+              if ! grep -qxF "$image" <<< "$keep"; then
+                aws lightsail delete-container-image --service-name "$SERVICE" --image "$image" && echo "deleted $image"
+              fi
+            done
+          done

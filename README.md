@@ -39,7 +39,17 @@ docker compose -f infra/aws/compose.yaml up --build
 # http://localhost:3300
 ```
 
-AWS Lightsail 배포는 `infra/aws/deploy_lightsail.sh`를 사용합니다(서비스를 처음 만들 때는 `CREATE_SERVICE=yes`, 월 과금 시작). 데이터는 빌드할 때 이미지에 들어가므로, GitHub Actions가 갱신한 데이터를 배포 화면에 반영하려면 최신 `main`으로 다시 빌드·배포해야 합니다. 배포 후 다음이 보이면 최신 버전입니다.
+### 자동 배포 (GitHub Actions → Lightsail)
+
+[Deploy verified main to Lightsail](.github/workflows/deploy-lightsail.yml)이 데이터 workflow가 검증 자료를 `main`에 올린 뒤 이미지를 다시 빌드해 배포합니다. 서비스는 여전히 원천을 직접 수집하지 않고 GitHub `main`의 검증 자료만 이미지에 담습니다.
+
+- **켜기 전에는 수동 실행만 합니다.** Repository variable `LIGHTSAIL_AUTODEPLOY=true`일 때만 자동 실행합니다(데이터 workflow 완료·코드 push·하루 1회 10:40 KST).
+- **배포 전 검사:** runner에서 이미지를 띄워 `scripts/check_site.py`로 모든 화면 200, 운영 점수 JSON 일치, 한국·미국 포트폴리오 가격일과 분석 응답을 확인합니다. 실패하면 Lightsail에 올리지 않습니다.
+- **배포 후 검사·복구:** 새 배포가 health check에 실패하면 Lightsail이 이전 배포를 유지하고, 활성화 후 실서비스 검사가 실패하면 이전 배포 컨테이너로 즉시 되돌립니다.
+- **변경 없으면 건너뜀:** 배포된 커밋(`MPRI_COMMIT`)과 이미지 입력 경로가 같으면 배포하지 않습니다. 오래된 이미지는 종류별 최근 6개만 남깁니다.
+- **AWS 권한:** GitHub OIDC로 1시간짜리 자격증명을 받습니다(저장된 AWS 키 없음). `infra/aws/setup_github_deploy_role.sh`를 한 번 실행해 이 저장소 `main`만 쓸 수 있는 Lightsail 배포 전용 역할을 만들고, 출력된 ARN을 repository variable `AWS_DEPLOY_ROLE_ARN`에 넣습니다.
+
+수동 배포도 그대로 쓸 수 있습니다. AWS Lightsail 배포는 `infra/aws/deploy_lightsail.sh`를 사용합니다(서비스를 처음 만들 때는 `CREATE_SERVICE=yes`, 월 과금 시작). 데이터는 빌드할 때 이미지에 들어가므로, GitHub Actions가 갱신한 데이터를 배포 화면에 반영하려면 최신 `main`으로 다시 빌드·배포해야 합니다. 배포 후 다음이 보이면 최신 버전입니다.
 
 - 메뉴에 `백테스팅 테스트`와 `시나리오 분석`이 있습니다. 백테스팅 테스트에는 `10일 경고 백테스트`(미국·한국 탭, 경고 기준 조절, 연도별 성과, 스트레스 사건 목록)가, 시나리오 분석에는 한국·미국 탭이 있습니다.
 - 왼쪽 아래 `EN`을 누르면 포트폴리오 분석 화면까지 모든 글과 표시가 영어로 바뀝니다.
