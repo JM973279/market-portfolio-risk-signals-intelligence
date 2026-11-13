@@ -1,0 +1,29 @@
+ticker,name,type,sector,asset_class
+AAPL,Apple Inc.,stock,Information Technology,equity
+MSFT,Microsoft Corp.,stock,Information Technology,equity
+NVDA,NVIDIA Corp.,stock,Information Technology,equity
+GOOGL,Alphabet Inc. Class A,stock,Communication Services,equity
+META,Meta Platforms Inc.,stock,Communication Services,equity
+AMZN,Amazon.com Inc.,stock,Consumer Discretionary,equity
+JPM,JPMorgan Chase & Co.,stock,Financials,equity
+BAC,Bank of America Corp.,stock,Financials,equity
+XOM,Exxon Mobil Corp.,stock,Energy,equity
+CVX,Chevron Corp.,stock,Energy,equity
+JNJ,Johnson & Johnson,stock,Health Care,equity
+UNH,UnitedHealth Group Inc.,stock,Health Care,equity
+PG,Procter & Gamble Co.,stock,Consumer Staples,equity
+KO,Coca-Cola Co.,stock,Consumer Staples,equity
+WMT,Walmart Inc.,stock,Consumer Staples,equity
+CAT,Caterpillar Inc.,stock,Industrials,equity
+NEE,NextEra Energy Inc.,stock,Utilities,equity
+SPY,SPDR S&P 500 ETF Trust,etf,Broad Equity,equity
+QQQ,Invesco QQQ Trust,etf,Broad Equity,equity
+IWM,iShares Russell 2000 ETF,etf,Broad Equity,equity
+XLK,Technology Select Sector SPDR Fund,etf,Information Technology,equity
+XLF,Financial Select Sector SPDR Fund,etf,Financials,equity
+XLE,Energy Select Sector SPDR Fund,etf,Energy,equity
+XLV,Health Care Select Sector SPDR Fund,etf,Health Care,equity
+TLT,iShares 20+ Year Treasury Bond ETF,etf,Treasury,bond
+IEF,iShares 7-10 Year Treasury Bond ETF,etf,Treasury,bond
+HYG,iShares iBoxx $ High Yield Corporate Bond ETF,etf,Credit,bond
+GLD,SPDR Gold Shares,etf,Commodity,commodity
