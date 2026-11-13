@@ -4,17 +4,16 @@
 
 ## 입력
 
-- 점수: `market-portfolio-risk-intelligence` `main` @ `9bedc79`, 2016-09-13 ~ 2026-11-11 (2,490행)
+- 점수: `market-portfolio-risk-intelligence` `main` @ `9bedc79`, 2016-09-13 ~ 2026-11-12 (2,491행)
   - `frontend/public/data/global-markets.json` sha256 `21b2b6fab853…`
-  - `frontend/public/data/operational-markets.json` sha256 `24d1fc66fedf…`
-  - 기록 유형: walk-forward OOS 2,454행, 동결 모델 사후 추론 36행 (동결 모델 학습 기준일 2026-09-16)
-  - KOSPI200 가격은 2026-11-11까지만 있습니다.
-  - V1 점수 마지막 관측일: 2026-11-11; 한국 원천 생성: 2026-11-12T00:19:41.920170+00:00
-  - 가격 보충: [Naver Finance KPI200](https://fchart.stock.naver.com/sise.nhn?symbol=KPI200&timeframe=day&count=500&requestType=0), 원응답 sha256 `4404aa7d7fe3dd5501c65c26ea2c32211abd8fb91b8d54353907b4b322388b09`
-  - 동결 가격과 겹치는 473일 대조, 최대 절대 차이 0.000000. 가격은 사건 수익률에만 사용하며 점수·MSI는 바꾸지 않았습니다.
-  - 생성 CSV sha256 `a59e489a75eaccc3fc2142f8e01572bc0b65ecfad632d208d509a77cd1b6b21a`
+  - `frontend/public/data/operational-markets.json` sha256 `0d4126aca40a…`
+  - 기록 유형: walk-forward OOS 2,454행, 동결 모델 운영 추론 2행, 동결 모델 사후 추론 35행 (동결 모델 학습 기준일 2026-09-16)
+  - KOSPI200 가격은 2026-11-12까지만 있습니다.
+  - V1 점수 마지막 관측일: 2026-11-12; 한국 원천 생성: 2026-11-13T00:27:25.492991+00:00
+  - 가격 보충: [Naver Finance KPI200](https://fchart.stock.naver.com/sise.nhn?symbol=KPI200&timeframe=day&count=500&requestType=0), 원응답 sha256 `78f6da9830060ef19513ae3e51b316a0ddbffb0ded985d370435586337cf2272`
+  - 동결 가격과 겹치는 472일 대조, 최대 절대 차이 0.000000. 가격은 사건 수익률에만 사용하며 점수·MSI는 바꾸지 않았습니다.
+  - 생성 CSV sha256 `50d840592d4f646ad8163c71db0a35687c5f33d1d783af1827159596ef08107f`
   - 최신성 점검일: 2026-11-13 KST; 6시간 게시 여유를 적용한 기대 거래일 2026-11-12
-  - **갱신 지연**: 기대 거래일까지의 점수 또는 가격이 없습니다. 데이터 마지막 관측일 이후를 정상·무경보로 판정하지 않습니다.
   - KRX 거래일 누락: 0일
 - 이벤트: `data/events/kospi_2026_events.csv` (보도 기준 KOSPI 등락, 사후 정리)
 
@@ -59,7 +58,7 @@
 
 ## 뉴스 목록에 없는 급락일 (KOSPI200 -5% 이하)
 
-2026-01-01 이후 가격 데이터(2026-11-11까지)에서 종가 기준 -5% 이하 하락일은 26일이고, 그중 16일은 뉴스 목록에 없습니다. 급락 사례를 뉴스로 고르면 기사화된 날만 남으므로, 진단 대상은 가격 데이터로 고르는 편이 안전합니다.
+2026-01-01 이후 가격 데이터(2026-11-12까지)에서 종가 기준 -5% 이하 하락일은 26일이고, 그중 16일은 뉴스 목록에 없습니다. 급락 사례를 뉴스로 고르면 기사화된 날만 남으므로, 진단 대상은 가격 데이터로 고르는 편이 안전합니다.
 
 | 날짜 | 데이터 KOSPI200 | 전일 위험도 | 직전 10일 최고 | 경보일 | 당일 MSI / 기준 | 판정 |
 |---|---:|---:|---:|---:|---:|---|
