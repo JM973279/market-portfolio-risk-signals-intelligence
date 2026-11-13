@@ -6,7 +6,7 @@
   "source_git_ref": "HEAD",
   "source_git_commit": "9bedc79f3dd9b553d3cbb88502e84cae817b9d1d",
   "source_files_modified_locally": false,
-  "imported_at": "2026-11-13T00:27:53+00:00",
+  "imported_at": "2026-11-13T10:51:45+00:00",
   "files": {
     "global_markets": {
       "path": "frontend/public/data/global-markets.json",
@@ -15,14 +15,14 @@
     },
     "operational_markets": {
       "path": "frontend/public/data/operational-markets.json",
-      "bytes": 49858,
-      "sha256": "0d4126aca40aa3eaf282a092282a892222055d6cac8692a5101d62567ae75388"
+      "bytes": 49915,
+      "sha256": "da5b3b3a8161c23d570e109a839e7b906b08acf69723682b63c9b0e07102c503"
     }
   },
-  "operational_run_id": "20261113T002725Z-54159a96",
+  "operational_run_id": "20261113T105119Z-7ca364fe",
   "operational_model_sha256": "90c51c245ebe62b58f804098a7a7045b60fb64ef83da72d4c9a049cf8d5eeb0d",
   "training_cutoff": "2026-09-16",
-  "us_expected_date": "2026-11-11",
+  "us_expected_date": "2026-11-12",
   "us_source_status": "DELAYED",
   "rows": 5095,
   "record_type_counts": {
@@ -38,7 +38,7 @@
   "refresh": {
     "mode": "provider-refresh",
     "v1_commit": "e939dc358c3bca92fee4c318d4bb297fd80debd3",
-    "generated_at": "2026-11-13T00:27:25.492991+00:00",
+    "generated_at": "2026-11-13T10:51:19.004949+00:00",
     "korea_reference": {
       "rebuilt": true,
       "original_sha256": "9fad15f4d0c2d78f890aa479a2b77d0f83cff637c014061de72e4c1c21b61588",
@@ -81,14 +81,14 @@
     },
     "us": {
       "status": "DELAYED",
-      "expected_date": "2026-11-11",
+      "expected_date": "2026-11-12",
       "current_date": null,
       "last_valid_date": "2026-11-10",
       "fresh": false,
       "reason": "최신 필수 원천 관측 미확인. 과거 재현 추론을 현재 점수로 이월하지 않습니다.",
       "series": {
-        "SPY": "2026-11-11",
-        "VIX": "2026-11-11",
+        "SPY": "2026-11-12",
+        "VIX": "2026-11-12",
         "DBAA": "2026-11-10",
         "DGS10": "2026-11-10"
       },
@@ -99,7 +99,7 @@
           "SPY": {
             "overlapDates": 258,
             "scale": 1.0,
-            "maxRelativeDifference": 1.8692776737213206e-07
+            "maxRelativeDifference": 1.814972781306942e-07
           },
           "VIX": {
             "overlapDates": 260,
@@ -112,7 +112,7 @@
             "maxRelativeDifference": 2.453531546132943e-16
           }
         },
-        "appendedDates": 27
+        "appendedDates": 28
       }
     }
   },

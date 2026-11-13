@@ -1,7 +1,7 @@
 {
  "schema_version": 1,
- "runId": "korea:20261113T002725Z-54159a96 + us:20261113T002725Z-54159a96",
- "generatedAt": "2026-11-13T00:27:25.492991+00:00",
+ "runId": "korea:20261113T002725Z-54159a96 + us:20261113T105119Z-7ca364fe",
+ "generatedAt": "2026-11-13T10:51:19.004949+00:00",
  "mode": "qualitative-signals-import",
  "markets": {
   "korea": {
@@ -992,30 +992,30 @@
   },
   "us": {
    "status": "DELAYED",
-   "expectedDate": "2026-11-11",
+   "expectedDate": "2026-11-12",
    "series": [
     {
      "name": "SPY",
      "provider": "Yahoo Finance",
-     "retrievedAt": "2026-11-13T00:27:50.465491+00:00",
-     "observationDate": "2026-11-11",
+     "retrievedAt": "2026-11-13T10:51:41.890800+00:00",
+     "observationDate": "2026-11-12",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "f1a55ac37cec096b98c593bcb931594a64913cb3ce4efde2a391021a79610697"
+     "sha256": "cf21d2fa39e9c50bd6fd787af0e83f6a023ce034f058aa63c350bd79552d8a6e"
     },
     {
      "name": "VIX",
      "provider": "Yahoo Finance",
-     "retrievedAt": "2026-11-13T00:27:50.732637+00:00",
-     "observationDate": "2026-11-11",
+     "retrievedAt": "2026-11-13T10:51:42.081707+00:00",
+     "observationDate": "2026-11-12",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "07cdac0190d106dd12d40c40b83825684d2ce9423083e3e72344d678e443e006"
+     "sha256": "cf7093940da1fef4b9cdba7612380baa634211bc0972307fae6fa489d240d18f"
     },
     {
      "name": "DBAA",
      "provider": "FRED",
-     "retrievedAt": "2026-11-13T00:27:51.079381+00:00",
+     "retrievedAt": "2026-11-13T10:51:43.588970+00:00",
      "observationDate": "2026-11-10",
      "status": "OBSERVED",
      "reason": null,
@@ -1024,7 +1024,7 @@
     {
      "name": "DGS10",
      "provider": "FRED",
-     "retrievedAt": "2026-11-13T00:27:51.452766+00:00",
+     "retrievedAt": "2026-11-13T10:51:43.788569+00:00",
      "observationDate": "2026-11-10",
      "status": "OBSERVED",
      "reason": null,
@@ -1362,14 +1362,14 @@
     "Credit_252D_ZScore"
    ],
    "inferenceSucceeded": true,
-   "publicationDeadline": "2026-11-12T09:00:00+00:00",
+   "publicationDeadline": "2026-11-13T09:00:00+00:00",
    "providerRevision": {
     "cacheEnd": "2026-10-05",
     "channels": {
      "SPY": {
       "overlapDates": 258,
       "scale": 1.0,
-      "maxRelativeDifference": 1.8692776737213206e-07
+      "maxRelativeDifference": 1.814972781306942e-07
      },
      "VIX": {
       "overlapDates": 260,
@@ -1382,18 +1382,9 @@
       "maxRelativeDifference": 2.453531546132943e-16
      }
     },
-    "appendedDates": 27
+    "appendedDates": 28
    },
    "availability": [
-    {
-     "date": "2026-08-20",
-     "available": [
-      "SPY",
-      "VIX",
-      "BAA_Treasury_Spread"
-     ],
-     "missing": []
-    },
     {
      "date": "2026-08-21",
      "available": [
@@ -1928,11 +1919,21 @@
      "missing": [
       "BAA_Treasury_Spread"
      ]
+    },
+    {
+     "date": "2026-11-12",
+     "available": [
+      "SPY",
+      "VIX"
+     ],
+     "missing": [
+      "BAA_Treasury_Spread"
+     ]
     }
    ],
    "availabilityOrigin": "provider-refresh",
    "historicalParity": true,
-   "inferenceAt": "2026-11-13T00:27:52.158058+00:00"
+   "inferenceAt": "2026-11-13T10:51:44.286629+00:00"
   }
  },
  "sourceValuesIncluded": false
