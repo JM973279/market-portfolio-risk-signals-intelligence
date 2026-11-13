@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useDashboard } from "./dashboard-shell";
 import type { PreopenRange } from "@/lib/dashboard-types";
 
@@ -11,21 +12,36 @@ const ranges: Record<PreopenRange, [string, string]> = {
  "gt_3": ["above +3%", "+3% 초과"],
 };
 const tickerName = (t: string) => t === "^SOX" ? "SOX" : t;
+const pct = (x: number | null | undefined, digits = 2) => typeof x === "number" ? `${x > 0 ? "+" : x < 0 ? "−" : ""}${Math.abs(x * 100).toFixed(digits)}%` : "N/A";
+const share = (x: number | null | undefined) => typeof x === "number" ? `${(x * 100).toFixed(1)}%` : "N/A";
+const tone = (x: number | null | undefined) => typeof x === "number" && x <= -0.03 ? "negative" : undefined;
 
-// Pre-open reference: last US session before the KRX open. Display only, never part of the score.
+// One line inside the Korea card. The evidence lives on the validation page (#preopen).
+export function PreopenLine() {
+ const { preopen, language } = useDashboard();
+ if (!preopen) return null;
+ const ko = language === "ko";
+ const { latest, context } = preopen;
+ const bucket = context.buckets.find(b => b.key === latest.ewyRange);
+ return <p className="preopen-line">
+  <span className="preopen-line-label">{ko ? "전날 밤 미국" : "Overnight US"} <b>{latest.usDate} → {ko ? "한국" : "KRX"} {latest.krxDate}</b></span>
+  {preopen.tickers.map(t => <span key={t}>{tickerName(t)} <b className={tone(latest.returns[t])}>{pct(latest.returns[t])}</b></span>)}
+  {bucket && <span className="preopen-line-context">{ko ? `과거 이 구간 다음 날 ${pct(context.drop_threshold, 0)} 하락 ${share(bucket.drop_share)} (평균 ${share(context.all.drop_share)})` : `Past next-day ${pct(context.drop_threshold, 0)} share in this range ${share(bucket.drop_share)} (all ${share(context.all.drop_share)})`}</span>}
+  <span className="preopen-line-tag">{ko ? "점수 미반영" : "Not in score"} · <Link href="/validation#preopen">{ko ? "근거" : "Evidence"} →</Link></span>
+ </p>;
+}
+
+// Evidence for the pre-open line: last US session before the KRX open. Display only, never part of the score.
 export default function PreopenUs() {
  const { preopen, language } = useDashboard();
  const ko = language === "ko";
- const pct = (x: number | null | undefined, digits = 2) => typeof x === "number" ? `${x > 0 ? "+" : x < 0 ? "−" : ""}${Math.abs(x * 100).toFixed(digits)}%` : "N/A";
- const share = (x: number | null | undefined) => typeof x === "number" ? `${(x * 100).toFixed(1)}%` : "N/A";
- const tone = (x: number | null | undefined) => typeof x === "number" && x <= -0.03 ? "negative" : undefined;
- const header = <div className="panel-header"><h2>{ko ? "개장 전 참고 · 전날 밤 미국 시장" : "Pre-open reference · Overnight US session"}</h2><span className="tag">{ko ? "점수 미반영 · 참고용" : "Not in score · Reference only"}</span></div>;
- if (!preopen) return <section className="panel preopen-us">{header}<p>{ko ? "개장 전 미국 가격 자료를 불러오지 못했습니다." : "The pre-open US export is unavailable."}</p></section>;
+ const header = <div className="panel-header"><h2>{ko ? "개장 전 미국 가격 점검 · EWY·SOX" : "Pre-open US price check · EWY·SOX"}</h2><span className="tag">{ko ? "점수 미반영 · 참고용" : "Not in score · Reference only"}</span></div>;
+ if (!preopen) return <section className="panel preopen-us" id="preopen">{header}<p>{ko ? "개장 전 미국 가격 자료를 불러오지 못했습니다." : "The pre-open US export is unavailable."}</p></section>;
  const { latest, context, source } = preopen;
  const bucket = context.buckets.find(b => b.key === latest.ewyRange);
  const years = `${context.period.first.slice(0, 4)}~${context.period.last.slice(0, 4)}`;
  const drop = pct(context.drop_threshold, 0);
- return <section className="panel preopen-us" aria-label={ko ? "개장 전 미국 시장 참고" : "Pre-open US market reference"}>
+ return <section className="panel preopen-us" id="preopen" aria-label={ko ? "개장 전 미국 시장 참고" : "Pre-open US market reference"}>
   {header}
   <p>{ko ? "한국 장이 열리기 전에 끝난 미국 세션의 한국 ETF(EWY)와 미국 반도체 지수(SOX) 하루 수익률입니다. 사전 등록 실험에서 다음 거래일 −2% 이하 하락을 가려내는 데 도움이 된 신호지만, Risk Score·MSI에는 넣지 않습니다." : "One-session returns of the US-listed Korea ETF (EWY) and the US semiconductor index (SOX) from the US session that closed before the KRX open. A pre-registered check found they help flag −2% sessions, but they are not part of the Risk Score or MSI."}</p>
   <div className="selected-metrics">
