@@ -145,6 +145,14 @@ docker run -p 3108:3108 ghcr.io/jm973279/market-portfolio-risk-signals-intellige
 
 개장 전 가격은 외부 조회라 `Refresh overnight US prices` workflow의 격리 venv에서만 수집하고(`AGENTS.md`), 보고서·검사는 저장된 CSV와 sha256 provenance만 읽습니다. 제공처 결측 종가는 비워 두고 채우지 않습니다.
 
+### 한국 화면의 개장 전 참고 패널 (표시 전용)
+
+[한국 시장](https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/korea) 화면의 `개장 전 참고 · 전날 밤 미국 시장` 패널은 다음 KRX 거래일 개장 전에 끝난 미국 세션의 EWY·SOX 수익률과, EWY 구간별 다음 한국 거래일 KOSPI200 −2% 이하 하락 비율(2016~2025 설계 구간만, 2026 홀드아웃 제외)을 보여 줍니다.
+
+- 입력: `frontend/public/data/korea-preopen.json`. `python3 -m qsignals.preopen_export`가 저장된 `data/input/overnight_us.csv`(sha256 검증)로 만들며, `Refresh overnight US prices` workflow가 가격과 같은 커밋에 올립니다. 웹은 외부 제공처를 호출하지 않습니다.
+- 수익률만 내보내고 가격은 내보내지 않습니다. Risk Score·MSI와 모델은 바뀌지 않습니다.
+- 과거 빈도이며 예측 확률이 아닙니다. 사전 등록 실험은 −2% 라벨에서만 통과했고 −3% 라벨에서는 개선이 없었습니다.
+
 ## 진단 결과와 데이터 갱신
 
 전체 표: [reports/event_diagnostics.md](reports/event_diagnostics.md)

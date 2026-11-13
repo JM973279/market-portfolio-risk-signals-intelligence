@@ -31,6 +31,16 @@ export type ScenarioLibraryData = {
  sources?: Record<string, { path: string; sha256: string }>;
  categories: Record<string, string>; summary: ScenarioSummary[]; episodes: ScenarioEpisode[];
 };
-export type DashboardData = { monitor: MonitorData | null; global: GlobalData | null; operational?: OperationalData | null; scenarios?: ScenarioLibraryData | null; usScenarios?: ScenarioLibraryData | null };
+export type PreopenRange = "le_-3" | "-3_-1" | "-1_1" | "1_3" | "gt_3";
+export type PreopenPoint = { krxDate: string; usDate: string; returns: Record<string, number | null>; ewyRange: PreopenRange | null };
+export type PreopenStats = { sessions: number; drop_share: number | null; median_return: number | null };
+export type PreopenData = {
+ schema_version: 1; is_forecast: false; use: string; tickers: string[];
+ source: { path: string; sha256: string; provider: string | null; retrievedAt: string | null; lastUsSession: string; nextUsSession: string };
+ latest: PreopenPoint; history: PreopenPoint[];
+ context: { period: { first: string; last: string }; drop_threshold: number; all: PreopenStats; buckets: (PreopenStats & { key: PreopenRange; low: number | null; high: number | null })[] };
+ report: string;
+};
+export type DashboardData = { monitor: MonitorData | null; global: GlobalData | null; operational?: OperationalData | null; scenarios?: ScenarioLibraryData | null; usScenarios?: ScenarioLibraryData | null; preopen?: PreopenData | null };
 export const views = ["us", "korea", "breadth", "validation", "cases", "sources", "methodology"] as const;
 export type View = "dashboard" | typeof views[number];

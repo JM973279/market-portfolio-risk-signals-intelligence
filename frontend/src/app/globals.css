@@ -214,3 +214,4 @@ small,.tag,.panel-subheader,.source-date,.source-date b,.country-meta,.country-m
 @media(max-width:760px) { .backtest-kpis {grid-template-columns:repeat(2,minmax(0,1fr))}.backtest-kpis article:last-child {grid-column:1/-1}.backtest-kpis strong {font-size:21px}.backtest-cut input {width:120px} }
 .scenario-market {margin:10px 0 6px}
 @media(max-width:760px) { .page-hero {flex-direction:column}.hero-status {position:static;order:-1;align-self:flex-end;margin-bottom:-14px}.hero-copy {padding-top:0} }
+.preopen-us .preopen-current th,.preopen-us .preopen-current td {background:#fff8eb}.preopen-us .preopen-current small {color:var(--amber)}.preopen-us caption {caption-side:top;text-align:left;font-size:11px;color:var(--muted);padding:6px 0}

@@ -4,7 +4,8 @@
     python3 scripts/check_site.py https://<lightsail>.amazonlightsail.com --retries 10
 
 The site passes when every page answers 200 and it serves exactly the data committed here:
-- operational-markets.json (Korea/US V1 scores) is byte-identical to frontend/public/data,
+- operational-markets.json (Korea/US V1 scores) and korea-preopen.json (overnight US
+  reference) are byte-identical to frontend/public/data,
 - the Korean and US portfolio APIs report the price dates in data/portfolio-kr and data/portfolio,
 - both portfolio analyses return a result in their own currency.
 """
@@ -43,13 +44,14 @@ def check(base):
                 problems.append(f'{page}: HTTP {status}')
         except (urllib.error.URLError, OSError) as exc:
             problems.append(f'{page}: {exc}')
-    expected = (ROOT / 'frontend/public/data/operational-markets.json').read_bytes()
-    try:
-        _, served = fetch(base, '/data/operational-markets.json')
-        if served != expected:
-            problems.append('operational-markets.json differs from this checkout')
-    except (urllib.error.URLError, OSError) as exc:
-        problems.append(f'operational-markets.json: {exc}')
+    for name in ('operational-markets.json', 'korea-preopen.json'):
+        expected = (ROOT / 'frontend/public/data' / name).read_bytes()
+        try:
+            _, served = fetch(base, '/data/' + name)
+            if served != expected:
+                problems.append(f'{name} differs from this checkout')
+        except (urllib.error.URLError, OSError) as exc:
+            problems.append(f'{name}: {exc}')
     dates = {}
     for market, (api, folder, currency, ticker) in ANALYSES.items():
         current = ROOT / folder / 'current.json'
