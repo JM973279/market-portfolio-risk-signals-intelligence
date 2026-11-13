@@ -12,8 +12,9 @@ import urllib.error
 from unittest.mock import patch
 
 from qsignals import refresh
-from qsignals.refresh import (RefreshError, archive, check_ecos_key, check_krx_key, check_provider_keys, find_v1_commit,
-                              freshness, install_reference, key_fingerprint, load_env, prune_runs, run_logged, us_importable)
+from qsignals.refresh import (RefreshError, align_korea_fallback, archive, check_ecos_key, check_krx_key,
+                              check_provider_keys, extend_ecos_cache, find_v1_commit, freshness, install_reference,
+                              key_fingerprint, load_env, prune_runs, run_logged, us_importable)
 
 
 def sha(text):
@@ -65,6 +66,71 @@ class V1CommitTest(unittest.TestCase):
         self.assertEqual(archive(self.repo, rev, dest), rev)
         self.assertEqual((dest / "src/a.py").read_text(encoding="utf-8"), "a1\n")
         self.assertEqual((self.repo / "src/a.py").read_text(encoding="utf-8"), "local edit\n")
+
+
+ECOS_HEAD = "\ufeffDate,Korea_Treasury_3Y,Korea_Corporate_AAminus_3Y,Korea_Credit_Spread,Korea_Credit_Spread_bp\n"
+
+
+def write_korea(folder, krx_last, vkospi_last, ecos_rows):
+    folder = Path(folder)
+    days = ["2026-11-06", "2026-11-09", "2026-11-10", "2026-11-11"]
+    (folder / "krx_indices.csv").write_text("Date,Index,Close\n" + "".join(
+        f"{d},{i},1.0\n" for d in days if d <= krx_last for i in ("KOSPI", "KOSPI200")), encoding="utf-8")
+    (folder / "vkospi.csv").write_text("Date,Index,Close\n" + "".join(
+        f"{d},VKOSPI,20.0\n" for d in days if d <= vkospi_last), encoding="utf-8")
+    (folder / "ecos_credit.csv").write_text(ECOS_HEAD + "".join(ecos_rows), encoding="utf-8")
+
+
+class KoreaFallbackTest(unittest.TestCase):
+    def test_snapshot_copies_end_on_the_last_date_every_channel_has(self):
+        # 11-13 05:43 KST: KRX through 11-11, ECOS cache only through 11-09 -> run.py blocked Korea.
+        with tempfile.TemporaryDirectory() as tmp:
+            write_korea(tmp, "2026-11-11", "2026-11-11", ["2026-11-06,3.6,4.3,0.7,70.0\n", "2026-11-09,3.6,4.3,0.7,70.0\n",
+                                                          "2026-11-10,3.6,,,\n"])
+            ecos = (Path(tmp) / "ecos_credit.csv").read_bytes()
+            self.assertEqual(align_korea_fallback(tmp), "2026-11-09")
+            for name in ("krx_indices.csv", "vkospi.csv"):
+                last = (Path(tmp) / name).read_text().splitlines()[-1]
+                self.assertTrue(last.startswith("2026-11-09,"), name)
+            self.assertEqual((Path(tmp) / "ecos_credit.csv").read_bytes(), ecos[:ecos.index(b"2026-11-10")])
+            self.assertEqual(align_korea_fallback(tmp), "2026-11-09")  # idempotent
+
+    def test_aligned_history_is_left_byte_identical(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            write_korea(tmp, "2026-11-11", "2026-11-11", [f"{d},3.6,4.3,0.7,70.0\n" for d in
+                                                          ("2026-11-06", "2026-11-09", "2026-11-10", "2026-11-11")])
+            before = {p.name: p.read_bytes() for p in Path(tmp).iterdir()}
+            self.assertEqual(align_korea_fallback(tmp), "2026-11-11")
+            self.assertEqual({p.name: p.read_bytes() for p in Path(tmp).iterdir()}, before)
+
+
+class EcosCacheTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.cache, self.collected = Path(self.tmp.name) / "cache.csv", Path(self.tmp.name) / "run.csv"
+        self.cache.write_text(ECOS_HEAD + "2026-11-06,3.6,4.3,0.7,70.0\n2026-11-09,3.7,4.4,0.7,70.0\n", encoding="utf-8")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def collect(self, rows):
+        self.collected.write_text(ECOS_HEAD.lstrip("\ufeff") + "".join(rows), encoding="utf-8")
+
+    def test_appends_only_new_verified_rows_and_keeps_the_original_bytes(self):
+        before = self.cache.read_bytes()
+        self.collect(["2026-11-06,3.6,4.3,0.7,70.0\n", "2026-11-09,3.7,4.4,0.7,70.0\n", "2026-11-10,3.8,4.5,0.7,70.0\n"])
+        self.assertEqual(extend_ecos_cache(self.collected, self.cache), 1)
+        self.assertEqual(self.cache.read_bytes(), before + b"2026-11-10,3.8,4.5,0.7,70.0\n")
+        self.assertEqual(extend_ecos_cache(self.collected, self.cache), 0)
+
+    def test_revised_or_missing_history_and_absent_files_change_nothing(self):
+        before = self.cache.read_bytes()
+        for rows in (["2026-11-06,3.6,4.3,0.7,70.0\n", "2026-11-09,3.9,4.4,0.5,50.0\n", "2026-11-10,3.8,4.5,0.7,70.0\n"],
+                     ["2026-11-09,3.7,4.4,0.7,70.0\n", "2026-11-10,3.8,4.5,0.7,70.0\n"]):
+            self.collect(rows)
+            self.assertEqual(extend_ecos_cache(self.collected, self.cache), 0)
+        self.assertEqual(extend_ecos_cache(Path(self.tmp.name) / "none.csv", self.cache), 0)
+        self.assertEqual(self.cache.read_bytes(), before)
 
 
 class PruneTest(unittest.TestCase):

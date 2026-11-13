@@ -12,6 +12,9 @@ throwaway snapshots, and then imports the Korea and US series:
 2. Top up the Korea raw history (KRX KOSPI200, VKOSPI, ECOS credit) with the V1
    downloaders into --v1-data. These files are gitignored in V1, so the first
    run downloads the full history from 2010; later runs fetch only new days.
+   ECOS is downloaded only to bootstrap and then extended from run.py's verified
+   rows. The snapshot copies end on the last date every channel has, so a late
+   provider makes run.py report Korea as delayed instead of blocked.
 3. Run run.py --collect inside the snapshot.
 4. Write korea_scores.csv only if Korea is CURRENT for its expected session,
    and us_scores.csv when US history was reproduced (CURRENT or DELAYED).
@@ -32,6 +35,7 @@ and provider receipts stay in --work-root (outside this repo).
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import io
 import json
@@ -62,6 +66,7 @@ REFERENCE_END = "2026-10-02"
 CONTRACT = "market_engine/operations/contract.json"
 RUNNER = "market_engine/operations/run.py"
 KOREA_RAW = ("krx_indices.csv", "vkospi.csv", "ecos_credit.csv")
+ECOS_CHANNELS = ("Korea_Treasury_3Y", "Korea_Corporate_AAminus_3Y")
 DOWNLOADERS = ("download_krx_indices", "download_vkospi", "download_ecos_credit")
 # Endpoints the V1 KRX downloaders call (same AUTH_KEY header). Service access is
 # granted per endpoint in KRX Open API, so both are checked.
@@ -251,6 +256,80 @@ def top_up_korea_raw(python, v1_tree, v1_data, env, log):
         if not (raw / name).exists():
             raise RefreshError(f"Korea raw history missing after download: {raw / name}")
         shutil.copy2(raw / name, target / name)
+    common = align_korea_fallback(target)
+    with log.open("a", encoding="utf-8") as out:
+        out.write(f"\nKorea fallback history in the snapshot aligned to {common}\n")
+
+
+def _csv_last_date(path, keep=lambda row: True):
+    with path.open(encoding="utf-8-sig", newline="") as f:
+        dates = [row["Date"] for row in csv.DictReader(f) if keep(row)]
+    if not dates:
+        raise RefreshError(f"Korea raw history has no rows: {path}")
+    return max(dates)
+
+
+def _trim_csv(path, last):
+    """Drop rows after `last` (ISO date in the first column), keeping every other byte."""
+    lines = path.read_bytes().splitlines(keepends=True)
+    kept = lines[:1] + [line for line in lines[1:] if line.split(b",", 1)[0].strip() <= last.encode()]
+    if len(kept) != len(lines):
+        path.write_bytes(b"".join(kept))
+
+
+def align_korea_fallback(korea_dir):
+    """Trim the snapshot's Korea history to the last date every channel has.
+
+    run.py falls back to this history when a provider fetch fails (KRX has not posted the
+    due session yet). KRX is topped up every run but ECOS only through run.py, so the
+    copies can end on different dates, and run.py then blocks the market ('Missing Korea
+    equity-date channel; no imputation') instead of reporting it as delayed. Only the
+    snapshot copies are trimmed; the cache keeps everything (run.py refetches KRX from 14
+    days before this date). Returns the common date.
+    """
+    korea_dir = Path(korea_dir)
+    common = min(
+        _csv_last_date(korea_dir / "krx_indices.csv", lambda r: r["Index"] == "KOSPI200"),
+        _csv_last_date(korea_dir / "vkospi.csv", lambda r: (r.get("Close") or "").strip() != ""),
+        _csv_last_date(korea_dir / "ecos_credit.csv",
+                       lambda r: all((r.get(c) or "").strip() for c in ECOS_CHANNELS)))
+    for name in KOREA_RAW:
+        _trim_csv(korea_dir / name, common)
+    return common
+
+
+def extend_ecos_cache(collected, cache):
+    """Append the run's verified ECOS rows past the cache's last date.
+
+    `collected` is run.py's korea/ecos_credit.csv (provider data on KOSPI200 sessions, every
+    channel present). It is used only when it agrees exactly with every cached row, so a
+    provider revision never rewrites history silently. Returns the number of rows added.
+    """
+    collected, cache = Path(collected), Path(cache)
+    if not collected.exists() or not cache.exists():
+        return 0
+
+    def rows(path):
+        with path.open(encoding="utf-8-sig", newline="") as f:
+            reader = csv.reader(f)
+            return next(reader), [row for row in reader if row]
+
+    head_new, new = rows(collected)
+    head_old, old = rows(cache)
+    if head_new != head_old:
+        return 0
+    by_date = {row[0]: row for row in new}
+    if any(by_date.get(row[0]) != row for row in old):
+        return 0
+    last = max(row[0] for row in old) if old else ""
+    added = [row for row in new if row[0] > last]
+    if not added:
+        return 0
+    body = cache.read_bytes()
+    stream = io.StringIO(newline="")
+    csv.writer(stream, lineterminator="\n").writerows(added)
+    cache.write_bytes(body + (b"" if body.endswith(b"\n") else b"\n") + stream.getvalue().encode())
+    return len(added)
 
 
 def prune_runs(work_root, keep):
@@ -396,6 +475,11 @@ def main(argv=None):
     if code != 0:
         raise SystemExit(f"Frozen pipeline failed (exit {code}); see {log}")
     operational = json.loads((work / "mpri/frontend/public/data/operational-markets.json").read_text(encoding="utf-8"))
+    # The ECOS downloader runs only to bootstrap, so the cache follows run.py's verified rows.
+    added = extend_ecos_cache(work / "mpri/data/operations" / str(operational.get("runId")) / "korea/ecos_credit.csv",
+                              args.v1_data / "raw/korea/ecos_credit.csv")
+    if added:
+        print(f"ECOS credit cache extended by {added} verified rows.", file=sys.stderr)
     status = {m: freshness(v) for m, v in operational["markets"].items()}
     summary = {"run_id": operational.get("runId"), "work_dir": str(work), "korea_reference": reference or {"rebuilt": False}, "markets": status}
 
