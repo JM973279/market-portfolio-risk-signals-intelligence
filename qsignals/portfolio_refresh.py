@@ -12,6 +12,7 @@ from datetime import datetime, timedelta, timezone
 from importlib.metadata import version
 from pathlib import Path
 
+from qsignals.deferral import deferral, warn
 from qsignals.import_scores import DEFAULT_REPO
 from qsignals.portfolio_data import DEFAULT_DATA, FILES, PortfolioError, parse_files
 from qsignals.portfolio_import import fetch_upstream, publish
@@ -233,10 +234,19 @@ def main():
     try:
         refresh(args.source_repo, args.source_ref, args.output_dir, replay=args.replay)
     except PortfolioError as exc:
-        if exc.code != 'provider_withheld':
+        # Provider late/unreachable: keep the published snapshot and retry (qsignals.deferral).
+        message = None if args.replay else deferral(exc, *_published_position(args.output_dir))
+        if not message:
             raise
-        # Not a failure of the published data: the run keeps it and the next schedule retries.
-        print(f'::warning::{exc}')
+        warn(message)
+
+
+def _published_position(output):
+    """(completed XNYS sessions of the last two months, published price date or None)."""
+    now = datetime.now(timezone.utc)
+    current = Path(output) / 'current.json'
+    published = json.loads(current.read_text())['price_as_of'] if current.exists() else None
+    return completed_sessions((now - timedelta(days=60)).strftime('%Y-%m-%d'), now), published
 
 
 if __name__ == '__main__':

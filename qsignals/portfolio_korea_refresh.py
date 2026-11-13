@@ -16,6 +16,7 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from qsignals.deferral import deferral, warn
 from qsignals.calendar import latest_closed_session, load_sessions, require_coverage, valid_date
 from qsignals.portfolio_data import PortfolioError, load_dataset, parse_files
 from qsignals.portfolio_import import publish
@@ -45,7 +46,7 @@ def request_json(url, *, headers=None):
         except urllib.error.HTTPError as exc:
             exc.close()
             if exc.code in (401, 403):
-                raise PortfolioError('Provider rejected the Actions API key.', 'collection_failed') from None
+                raise PortfolioError('Provider rejected the Actions API key.', 'config_error') from None
         except (OSError, ValueError):
             pass
         if attempt < 2:
@@ -205,7 +206,7 @@ def refresh(output=OUTPUT, *, cache=None, now=None, source_commit=None):
     now = now or datetime.now(timezone.utc)
     for key in ['KRX_API_KEY', 'ECOS_API_KEY']:
         if not os.environ.get(key, '').strip():
-            raise PortfolioError('Required Actions secret is missing: ' + key, 'collection_failed')
+            raise PortfolioError('Required Actions secret is missing: ' + key, 'config_error')
     sessions = completed_sessions(now)
     commit = source_commit or os.environ.get('GITHUB_SHA') or subprocess.check_output(
         ['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
@@ -254,7 +255,16 @@ def main():
     args = parser.parse_args()
     try:
         if not args.validate_only:
-            refresh(args.output_dir, cache=args.vkospi_cache)
+            try:
+                refresh(args.output_dir, cache=args.vkospi_cache)
+            except PortfolioError as exc:
+                # Provider late/unreachable: keep the published snapshot and retry (qsignals.deferral).
+                current = Path(args.output_dir) / 'current.json'
+                published = json.loads(current.read_text())['price_as_of'] if current.exists() else None
+                message = deferral(exc, completed_sessions(datetime.now(timezone.utc)), published)
+                if not message:
+                    raise
+                warn(message)
         data = load_dataset(args.output_dir)
         assert data.meta['market'] == 'korea' and data.provenance['currency'] == 'KRW'
         print(json.dumps({'snapshot': data.provenance['snapshot_id'], 'market': 'korea',

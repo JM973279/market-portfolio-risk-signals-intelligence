@@ -14,6 +14,7 @@ import os
 import re
 import subprocess
 import tempfile
+import time
 import urllib.parse
 import urllib.request
 from collections import Counter
@@ -21,6 +22,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from qsignals.calendar import latest_closed_session, load_sessions, require_coverage
+from qsignals.deferral import transient_network_error, warn
 from qsignals.prices import fetch_prices, parse_prices
 from qsignals.scores import build_rows, read_scores, write_scores
 
@@ -41,10 +43,17 @@ def _git(source_root, *args):
     return out.stdout.strip()
 
 
-def _download(url):
+def _download(url, attempts=3):
     request = urllib.request.Request(url, headers={"User-Agent": "market-qualitative-signals"})
-    with urllib.request.urlopen(request, timeout=30) as response:
-        raw = response.read(8_000_001)
+    for attempt in range(1, attempts + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                raw = response.read(8_000_001)
+            break
+        except Exception as exc:  # noqa: BLE001 - retried only when transient
+            if attempt == attempts or not transient_network_error(exc):
+                raise
+            time.sleep(2 * attempt)
     if len(raw) > 8_000_000:
         raise ValueError("Source export exceeds size limit")
     return raw
@@ -255,6 +264,17 @@ def import_us(payloads, files, source, output_dir, *, extra=None):
 
 
 def main(argv=None):
+    try:
+        _main(argv)
+    except Exception as exc:  # noqa: BLE001 - only provider outages are deferred
+        if not transient_network_error(exc):
+            raise
+        # The published files stay as they are; the next 4-hourly run collects again. A long
+        # gap is caught by the daily V1 refresh's lag check (qsignals.deferral.MAX_BEHIND).
+        warn(f"원본 점수·가격 조회 실패 ({type(exc).__name__}); 게시본 유지, 다음 일정에서 다시 수집합니다.")
+
+
+def _main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source-root", type=Path)
     parser.add_argument("--source-repo", default=DEFAULT_REPO)

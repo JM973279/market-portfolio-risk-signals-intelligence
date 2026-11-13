@@ -20,8 +20,10 @@ throwaway snapshots, and then imports the Korea and US series:
    and us_scores.csv when US history was reproduced (CURRENT or DELAYED).
    A market that does not qualify keeps its previous file. Scores older than
    (or relabeled against) the published CSV are never written. Exit 0 = all
-   imported, 3 = partial (a market's data is late), 2 = nothing new,
-   1 = verification failure (BLOCKED, nothing written).
+   imported, 3 = partial (a market's data is late), 2 = nothing new (also when
+   the providers do not answer), 1 = verification failure (BLOCKED, nothing
+   written). The summary lists each market's lag; the workflow fails once one is
+   more than qsignals.deferral.MAX_BEHIND sessions behind.
 
 API keys are read from the V1 .env into the child environment only; they are
 never printed or written (only a length + SHA-256 prefix fingerprint, so a
@@ -47,9 +49,11 @@ import tarfile
 import time
 import urllib.error
 import urllib.request
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
+from qsignals.calendar import latest_closed_session, load_sessions
+from qsignals.deferral import MAX_BEHIND, sessions_behind
 from qsignals.import_scores import SOURCE_FILES, import_data, import_us
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -68,6 +72,11 @@ RUNNER = "market_engine/operations/run.py"
 KOREA_RAW = ("krx_indices.csv", "vkospi.csv", "ecos_credit.csv")
 ECOS_CHANNELS = ("Korea_Treasury_3Y", "Korea_Corporate_AAminus_3Y")
 DOWNLOADERS = ("download_krx_indices", "download_vkospi", "download_ecos_credit")
+DOWNLOADER_FILES = {"download_krx_indices": "krx_indices.csv", "download_vkospi": "vkospi.csv",
+                    "download_ecos_credit": "ecos_credit.csv"}
+# A top-up of an existing cache takes minutes; an unreachable KRX makes the downloaders retry for hours.
+TOP_UP_TIMEOUT = 45 * 60
+NO_RESPONSE = "no response"
 # Endpoints the V1 KRX downloaders call (same AUTH_KEY header). Service access is
 # granted per endpoint in KRX Open API, so both are checked.
 KRX_ENDPOINTS = {
@@ -77,6 +86,10 @@ KRX_ENDPOINTS = {
 KRX_CHECK_DATE = "20100104"  # first session the V1 downloaders request
 # One ECOS row of the V1 credit series (817Y002 / Treasury 3Y).
 ECOS_CHECK_URL = "https://ecos.bok.or.kr/api/StatisticSearch/{key}/json/kr/1/1/817Y002/D/20100104/20100108/010200000"
+
+
+class ProvidersUnreachable(RuntimeError):
+    """The key check got no response at all (network/provider outage, not a rejected key)."""
 
 
 class RefreshError(RuntimeError):
@@ -185,7 +198,7 @@ def check_krx_key(key):
             message = data.get("respMsg") or "response without OutBlock_1"
         else:
             message = body[:120].decode(errors="replace").strip()
-        problems.append(f"{url.rsplit('/', 1)[-1]} ({module}): {'HTTP ' + str(status) if status else 'no response'} {message}")
+        problems.append(f"{url.rsplit('/', 1)[-1]} ({module}): {'HTTP ' + str(status) if status else NO_RESPONSE} {message}")
     return problems
 
 
@@ -197,7 +210,7 @@ def check_ecos_key(key):
     if isinstance(data, dict) and "RESULT" in data:
         result = data["RESULT"]
         return [f"StatisticSearch: {result.get('CODE')} {result.get('MESSAGE')}"]
-    return [f"StatisticSearch: {'HTTP ' + str(status) if status else 'no response'} {body[:120].decode(errors='replace').strip()}"]
+    return [f"StatisticSearch: {'HTTP ' + str(status) if status else NO_RESPONSE} {body[:120].decode(errors='replace').strip()}"]
 
 
 def check_provider_keys(env, ecos):
@@ -211,6 +224,9 @@ def check_provider_keys(env, ecos):
     if not failed:
         return
     lines = [f"- {name} {key_fingerprint(env[name])}: {problem}" for name, problem in failed]
+    if all(f"): {NO_RESPONSE} " in problem or problem.startswith(f"StatisticSearch: {NO_RESPONSE}") for _, problem in failed):
+        # Nothing answered: an outage, not a rejected key. The caller keeps the published data.
+        raise ProvidersUnreachable("; ".join(problem for _, problem in failed))
     names = sorted({name for name, _ in failed})
     message = "\n".join([
         f"Provider rejected {', '.join(names)}; nothing was collected or published.",
@@ -227,13 +243,17 @@ def check_provider_keys(env, ecos):
     raise SystemExit(message)
 
 
-def run_logged(cmd, cwd, env, log_path):
+def run_logged(cmd, cwd, env, log_path, timeout=None):
     # Unbuffered children: a cancelled or timed-out run keeps its full log.
     env = {**env, "PYTHONUNBUFFERED": "1"}
     with log_path.open("ab") as log:
         log.write(f"\n$ {' '.join(map(str, cmd))}\n".encode())
         log.flush()
-        out = subprocess.run(cmd, cwd=cwd, env=env, stdout=log, stderr=subprocess.STDOUT)
+        try:
+            out = subprocess.run(cmd, cwd=cwd, env=env, stdout=log, stderr=subprocess.STDOUT, timeout=timeout)
+        except subprocess.TimeoutExpired:
+            log.write(f"\n(stopped after {timeout} s)\n".encode())
+            return 124
     return out.returncode
 
 
@@ -245,11 +265,18 @@ def top_up_korea_raw(python, v1_tree, v1_data, env, log):
     modules = list(DOWNLOADERS)
     if (v1_data / "raw" / "korea" / "ecos_credit.csv").exists():
         modules.remove("download_ecos_credit")
-    for module in modules:
-        code = run_logged([python, "-m", f"src.korea.{module}", "--data-root", str(v1_data)], v1_tree, env, log)
-        if code != 0:
-            raise RefreshError(f"V1 downloader {module} failed (exit {code}); see {log}")
     raw = v1_data / "raw" / "korea"
+    for module in modules:
+        cached = (raw / DOWNLOADER_FILES[module]).exists()
+        code = run_logged([python, "-m", f"src.korea.{module}", "--data-root", str(v1_data)], v1_tree, env, log,
+                          timeout=TOP_UP_TIMEOUT if cached else None)
+        if code != 0 and not cached:
+            raise RefreshError(f"V1 downloader {module} failed (exit {code}); see {log}")
+        if code != 0:
+            # run.py refetches KRX itself from 14 days before the cached history, so a failed
+            # top-up only means the cache advances on a later run.
+            print(f"::warning::V1 downloader {module} failed (exit {code}); continuing with the cached history.",
+                  file=sys.stderr)
     target = v1_tree / "data" / "raw" / "korea"
     target.mkdir(parents=True, exist_ok=True)
     for name in KOREA_RAW:
@@ -389,6 +416,47 @@ def install_reference(work, contract, reference_dir):
     }
 
 
+def expected_session(market, now):
+    """The session run.py expects at `now`: Korea close + 6 h; US close (21:00 UTC) + 12 h.
+
+    US holidays are not in this calendar, so they count as sessions: in a holiday week the
+    US lag alert can come a day early, never late.
+    """
+    if market == "korea":
+        return latest_closed_session(now, publication_lag_hours=6)
+    day = (now.astimezone(timezone.utc) - timedelta(hours=33)).date()
+    while day.weekday() >= 5:
+        day -= timedelta(days=1)
+    return day.isoformat()
+
+
+def score_lag(output_dir, now):
+    """{market: {published, expected, behind}} for the published data/input score files."""
+    lag = {}
+    for market in ("korea", "us"):
+        path = Path(output_dir) / f"{market}_scores.csv"
+        rows = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
+        published = rows[-1].split(",", 1)[0] if len(rows) > 1 else None
+        expected = expected_session(market, now)
+        if market == "korea":
+            days = [d for d in load_sessions() if d <= expected]
+        else:
+            first = date.fromisoformat(published or expected) - timedelta(days=1)
+            days = [(first + timedelta(days=i)).isoformat() for i in range((date.fromisoformat(expected) - first).days + 1)]
+            days = [d for d in days if date.fromisoformat(d).weekday() < 5]
+        lag[market] = {"published": published, "expected": expected,
+                       "behind": sessions_behind(days, published) if published else None}
+    return lag
+
+
+def with_lag(summary, output_dir, now=None):
+    """Adds lag and the markets too far behind ('stale'): the workflow fails on those after publishing."""
+    lag = score_lag(output_dir, now or datetime.now(timezone.utc))
+    summary["lag"] = lag
+    summary["stale"] = [m for m, v in lag.items() if v["behind"] is None or v["behind"] > MAX_BEHIND]
+    return summary
+
+
 def freshness(market):
     """CURRENT only when the frozen pipeline verified its expected session."""
     current = market.get("current") or {}
@@ -443,7 +511,14 @@ def main(argv=None):
     # KRX only on a refresh: its downloaders retry each session for hours on a
     # rejected key, while ECOS fails within seconds by itself, and an extra ECOS
     # call shortly before the real fetch can get that fetch rejected.
-    check_provider_keys(env, ecos=args.check_keys)
+    try:
+        check_provider_keys(env, ecos=args.check_keys)
+    except ProvidersUnreachable as exc:
+        if args.check_keys:
+            raise SystemExit(f"Providers unreachable: {exc}") from None
+        print(json.dumps(with_lag({"unreachable": str(exc)}, args.output_dir), indent=2, ensure_ascii=False))
+        print(f"::warning::Providers unreachable ({exc}); kept the published files.", file=sys.stderr)
+        return 2
     if args.check_keys:
         return 0
 
@@ -510,7 +585,7 @@ def main(argv=None):
                                     ("us", us_importable(operational["markets"]["us"]))) if ok)
     summary["delayed"] = [m for m in ("korea", "us") if m not in markets]
     if not markets:
-        print(json.dumps(summary, indent=2, ensure_ascii=False))
+        print(json.dumps(with_lag(summary, args.output_dir), indent=2, ensure_ascii=False))
         print("No market has new verified data yet; data/input/ left unchanged.", file=sys.stderr)
         return 2
     # Same import as qsignals.import_scores (calendar coverage, KOSPI200 price
@@ -546,7 +621,7 @@ def main(argv=None):
             summary["skipped"][market] = result["publication"]
         else:
             summary["imported"].append(market)
-    print(json.dumps(summary, indent=2, ensure_ascii=False))
+    print(json.dumps(with_lag(summary, args.output_dir), indent=2, ensure_ascii=False))
     if summary["delayed"]:
         print(f"Late data for {', '.join(summary['delayed'])}; kept the published files for it.", file=sys.stderr)
         return 3

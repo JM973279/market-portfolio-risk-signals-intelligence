@@ -62,7 +62,7 @@ docker compose -f infra/aws/compose.yaml up --build
 
 ## 한국 포트폴리오 GitHub 데이터 연결
 
-한국 포트폴리오의 운영 입력은 이 저장소 `main`의 `data/portfolio-kr`입니다. [Refresh verified Korea portfolio data](https://github.com/JM973279/market-portfolio-risk-signals-intelligence/actions/workflows/refresh-korea-portfolio.yml)가 평일 **11:47·23:47 KST**와 수동 실행 시 기존 23개 국내 상장 주식·ETF의 Yahoo 수정종가, KRX VKOSPI, 한국은행 ECOS 국고채 10년 금리를 수집합니다. `KRX_API_KEY`·`ECOS_API_KEY`는 기존 Repository secrets를 재사용하고, 한국 V1 Actions 캐시의 VKOSPI 이력을 검증해 재사용합니다.
+한국 포트폴리오의 운영 입력은 이 저장소 `main`의 `data/portfolio-kr`입니다. [Refresh verified Korea portfolio data](https://github.com/JM973279/market-portfolio-risk-signals-intelligence/actions/workflows/refresh-korea-portfolio.yml)가 평일 **11:47·14:47(재시도)·23:47 KST**와 수동 실행 시 기존 23개 국내 상장 주식·ETF의 Yahoo 수정종가, KRX VKOSPI, 한국은행 ECOS 국고채 10년 금리를 수집합니다. `KRX_API_KEY`·`ECOS_API_KEY`는 기존 Repository secrets를 재사용하고, 한국 V1 Actions 캐시의 VKOSPI 이력을 검증해 재사용합니다.
 
 검증을 통과한 스냅샷과 수집 기록만 GitHub에 저장합니다. `current.json`은 불변 스냅샷 경로·파일 SHA-256·코드 커밋·Actions 실행 ID·실제 가격일·위험 추정일을 기록합니다. 수집 실패나 관측일 역행 시 마지막 검증본을 유지합니다. 가격은 과거 값으로 채우지 않습니다. 분석은 보유 종목 가격이 모든 날짜에 있어야 하므로, Yahoo 수정종가가 일부 상장 종목에서 빠진 KRX 거래일은 가격표에서 제외하고 그 날짜와 종목을 `current.json`의 `collection.excluded_price_sessions`에 기록합니다(제외 거래일이 5%를 넘거나 최신 거래일이 비면 게시 중단). 한국 시장 점수·급락 시나리오와 개별 종목 포트폴리오는 서로 다른 입력입니다.
 
@@ -213,11 +213,20 @@ python3 -m qsignals.diagnose
 - **두 배치는 동시에 돌지 않습니다.** 같은 concurrency group(`korea-data-<ref>`)을 쓰고, 저장은 둘 다 `scripts/push_data_commit.sh`로 합니다.
 - **4시간 배치도 화면 export를 같이 갱신합니다.** import 뒤 `export_frontend`와 시나리오 빌더를 실행해 CSV와 화면 자료가 어긋나지 않습니다.
 - **시장별로 게시합니다.** `qsignals.refresh` 종료 코드: 0 모두 갱신, 3 일부 시장 지연(검증된 다른 시장은 게시), 2 새 자료 없음(게시 없음, 오류 아님), 1 검증 실패(BLOCKED, 아무것도 쓰지 않음). 일일 workflow는 0·3일 때만 저장하고, 1과 파이프라인 오류는 실패로 끝납니다.
+- **제공처 지연·장애는 실패가 아닙니다.** 아래 기준은 모든 데이터 배치(V1 점수, 미국·한국 포트폴리오, 미국 야간 가격)에 같고 `qsignals/deferral.py`에 있습니다.
+
+  | 상황 | 결과 |
+  |---|---|
+  | 제공처 무응답, 최신 거래일 미게시, 이미 검증한 날을 비우거나 되돌림, 요인 지연 | 경고로 끝남. 게시본 유지, 다음 예약 실행에서 다시 수집 |
+  | 위 상황이 이어져 게시본이 완료 거래일 **3개**보다 더 뒤처짐 | 실패 (사람이 확인할 때) |
+  | 아직 게시본이 없음, 키 누락·거부, 해시·검증 불일치, 비정상 값 | 실패 (재시도로 해결되지 않음) |
+
+  어느 경우든 검증하지 못한 자료는 쓰지 않으므로 서비스는 마지막 검증본을 계속 제공합니다. V1 실행 요약의 `lag`에 시장별 게시일·기대일·지연 세션 수가 남습니다. KRX 다운로더가 실패하거나 45분을 넘기면 캐시로 계속하며(`run.py`가 KRX를 직접 다시 받음), 캐시가 아예 없을 때만 실패합니다.
 - 커밋 메시지의 시장별 날짜는 `scripts/published_dates.py`가 `provenance.json`(한국)과 `us_provenance.json`(미국)에서 읽습니다.
 
 ## GitHub Actions 갱신 오류 해결
 
-`Daily V1 score refresh`(`.github/workflows/daily-refresh.yml`)는 `main`에 있으며 평일 22:00(KST)에 예약 실행됩니다. `Refresh Korea event diagnostics`와는 별도 작업입니다.
+`Daily V1 score refresh`(`.github/workflows/daily-refresh.yml`)는 `main`에 있으며 **화~토 09:07·12:07(KST)**에 예약 실행됩니다. KRX·ECOS는 한 거래일 자료를 다음 날 아침에 게시하므로 전날 22:00 실행으로는 당일 자료를 받을 수 없었습니다. 12:07은 재시도입니다. `Refresh Korea event diagnostics`와는 별도 작업입니다.
 
 `KRX_API_KEY is not set (V1 .env or environment)` 오류는 실행에 필요한 Secret이 전달되지 않았다는 뜻입니다. 실패 실행에서는 `KRX_API_KEY`와 `ECOS_API_KEY`가 모두 빈 값이었습니다.
 

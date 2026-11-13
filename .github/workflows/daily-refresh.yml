@@ -11,7 +11,12 @@ name: Daily V1 score refresh
 
 on:
   schedule:
-    - cron: "0 13 * * 1-5"   # 22:00 KST, after the pipeline's Korea publication deadline
+    # 09:07 and 12:07 KST, Tue-Sat: KRX and ECOS post a session the next morning (a 22:00 KST
+    # run never found the same day's data), FRED posts the previous US day by ~06:00 KST, and
+    # both markets keep the same expected session until 18:00 KST. The second run is a retry
+    # (a late or dropped GitHub schedule, a provider outage); with nothing new it is a no-op.
+    # Minute 07 is used by no other workflow.
+    - cron: "7 0,3 * * 2-6"
   workflow_dispatch:
 
 permissions:
@@ -167,3 +172,16 @@ jobs:
           last=$(python scripts/published_dates.py)
           git commit -m "data: refresh V1 scores ($last)"
           bash scripts/push_data_commit.sh
+
+      - name: Fail only when a market's published score is too far behind
+        if: steps.refresh.outcome == 'success'
+        run: |
+          # Late or unreachable providers end as warnings and the next run retries; this
+          # step turns the run red once a market is more than qsignals.deferral.MAX_BEHIND
+          # sessions behind (after the other market was published).
+          jq -r '.lag // {} | to_entries[] | "\(.key): published \(.value.published), expected \(.value.expected), \(.value.behind) behind"' "$RUNNER_TEMP/summary.json"
+          stale=$(jq -r '(.stale // []) | join(", ")' "$RUNNER_TEMP/summary.json")
+          if [ -n "$stale" ]; then
+            echo "::error title=Published score too far behind::$stale: no verified new score within the allowed sessions; see the lag above and the refresh logs."
+            exit 1
+          fi

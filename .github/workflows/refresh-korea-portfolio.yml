@@ -2,7 +2,9 @@ name: Refresh verified Korea portfolio data
 
 on:
   schedule:
-    - cron: '47 2,14 * * 1-5'
+    # 11:47 and 23:47 KST, plus a 14:47 KST retry of the morning run (a dropped schedule or a
+    # provider outage keeps the published snapshot; see qsignals.deferral).
+    - cron: '47 2,5,14 * * 1-5'
   workflow_dispatch:
   push:
     branches: [main]
