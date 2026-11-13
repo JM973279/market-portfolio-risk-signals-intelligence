@@ -1,0 +1,263 @@
+{
+ "schema_version": 1,
+ "is_forecast": false,
+ "use": "display only; frozen V1 Risk Score and MSI unchanged",
+ "tickers": [
+  "EWY",
+  "^SOX"
+ ],
+ "source": {
+  "path": "data/input/overnight_us.csv",
+  "sha256": "c2c6bb382625e0313e92a3a244aba91cbaa86db9bd927e414eb8f881260378af",
+  "provider": "Yahoo Finance adjusted close (yfinance auto_adjust=True)",
+  "retrievedAt": "2026-11-12T22:28:15+00:00",
+  "lastUsSession": "2026-11-11",
+  "nextUsSession": "2026-11-12"
+ },
+ "latest": {
+  "krxDate": "2026-11-12",
+  "usDate": "2026-11-11",
+  "returns": {
+   "EWY": 0.062006,
+   "^SOX": 0.056587
+  },
+  "ewyRange": "gt_3"
+ },
+ "history": [
+  {
+   "krxDate": "2026-11-12",
+   "usDate": "2026-11-11",
+   "returns": {
+    "EWY": 0.062006,
+    "^SOX": 0.056587
+   },
+   "ewyRange": "gt_3"
+  },
+  {
+   "krxDate": "2026-11-11",
+   "usDate": "2026-11-10",
+   "returns": {
+    "EWY": -0.020549,
+    "^SOX": -0.003548
+   },
+   "ewyRange": "-3_-1"
+  },
+  {
+   "krxDate": "2026-11-10",
+   "usDate": "2026-11-09",
+   "returns": {
+    "EWY": 0.037151,
+    "^SOX": 0.068548
+   },
+   "ewyRange": "gt_3"
+  },
+  {
+   "krxDate": "2026-11-09",
+   "usDate": "2026-11-06",
+   "returns": {
+    "EWY": 0.040714,
+    "^SOX": 0.042071
+   },
+   "ewyRange": "gt_3"
+  },
+  {
+   "krxDate": "2026-11-06",
+   "usDate": "2026-11-05",
+   "returns": {
+    "EWY": -0.134565,
+    "^SOX": -0.122461
+   },
+   "ewyRange": "le_-3"
+  },
+  {
+   "krxDate": "2026-11-05",
+   "usDate": "2026-11-04",
+   "returns": {
+    "EWY": -0.01896,
+    "^SOX": -0.031296
+   },
+   "ewyRange": "-3_-1"
+  },
+  {
+   "krxDate": "2026-11-04",
+   "usDate": "2026-11-03",
+   "returns": {
+    "EWY": 0.022688,
+    "^SOX": 0.026342
+   },
+   "ewyRange": "1_3"
+  },
+  {
+   "krxDate": "2026-11-03",
+   "usDate": "2026-11-02",
+   "returns": {
+    "EWY": -0.008307,
+    "^SOX": -0.033724
+   },
+   "ewyRange": "-1_1"
+  },
+  {
+   "krxDate": "2026-11-02",
+   "usDate": "2026-10-30",
+   "returns": {
+    "EWY": -0.055243,
+    "^SOX": -0.072008
+   },
+   "ewyRange": "le_-3"
+  },
+  {
+   "krxDate": "2026-10-30",
+   "usDate": "2026-10-29",
+   "returns": {
+    "EWY": -0.024592,
+    "^SOX": -0.01419
+   },
+   "ewyRange": "-3_-1"
+  },
+  {
+   "krxDate": "2026-10-29",
+   "usDate": "2026-10-28",
+   "returns": {
+    "EWY": 0.053664,
+    "^SOX": 0.017548
+   },
+   "ewyRange": "gt_3"
+  },
+  {
+   "krxDate": "2026-10-28",
+   "usDate": "2026-10-27",
+   "returns": {
+    "EWY": 0.031037,
+    "^SOX": 0.036002
+   },
+   "ewyRange": "gt_3"
+  },
+  {
+   "krxDate": "2026-10-27",
+   "usDate": "2026-10-26",
+   "returns": {
+    "EWY": 0.009652,
+    "^SOX": 0.028203
+   },
+   "ewyRange": "-1_1"
+  },
+  {
+   "krxDate": "2026-10-26",
+   "usDate": "2026-10-23",
+   "returns": {
+    "EWY": 0.014759,
+    "^SOX": 0.004424
+   },
+   "ewyRange": "1_3"
+  },
+  {
+   "krxDate": "2026-10-23",
+   "usDate": "2026-10-22",
+   "returns": {
+    "EWY": -0.049847,
+    "^SOX": -0.067235
+   },
+   "ewyRange": "le_-3"
+  },
+  {
+   "krxDate": "2026-10-22",
+   "usDate": "2026-10-21",
+   "returns": {
+    "EWY": 0.018767,
+    "^SOX": 0.019652
+   },
+   "ewyRange": "1_3"
+  },
+  {
+   "krxDate": "2026-10-21",
+   "usDate": "2026-10-20",
+   "returns": {
+    "EWY": -0.016541,
+    "^SOX": -0.002875
+   },
+   "ewyRange": "-3_-1"
+  },
+  {
+   "krxDate": "2026-10-20",
+   "usDate": "2026-10-19",
+   "returns": {
+    "EWY": 0.040814,
+    "^SOX": 0.016077
+   },
+   "ewyRange": "gt_3"
+  },
+  {
+   "krxDate": "2026-10-19",
+   "usDate": "2026-10-16",
+   "returns": {
+    "EWY": -0.036999,
+    "^SOX": -0.038331
+   },
+   "ewyRange": "le_-3"
+  },
+  {
+   "krxDate": "2026-10-16",
+   "usDate": "2026-10-15",
+   "returns": {
+    "EWY": -0.022587,
+    "^SOX": -0.00883
+   },
+   "ewyRange": "-3_-1"
+  }
+ ],
+ "context": {
+  "period": {
+   "first": "2016-09-19",
+   "last": "2025-12-30"
+  },
+  "drop_threshold": -0.02,
+  "all": {
+   "sessions": 2279,
+   "drop_share": 0.039052,
+   "median_return": 0.000792
+  },
+  "buckets": [
+   {
+    "key": "le_-3",
+    "low": null,
+    "high": -0.03,
+    "sessions": 60,
+    "drop_share": 0.266667,
+    "median_return": -0.009199
+   },
+   {
+    "key": "-3_-1",
+    "low": -0.03,
+    "high": -0.01,
+    "sessions": 444,
+    "drop_share": 0.078829,
+    "median_return": -0.002784
+   },
+   {
+    "key": "-1_1",
+    "low": -0.01,
+    "high": 0.01,
+    "sessions": 1223,
+    "drop_share": 0.017171,
+    "median_return": 0.000637
+   },
+   {
+    "key": "1_3",
+    "low": 0.01,
+    "high": 0.03,
+    "sessions": 495,
+    "drop_share": 0.020202,
+    "median_return": 0.004128
+   },
+   {
+    "key": "gt_3",
+    "low": 0.03,
+    "high": null,
+    "sessions": 57,
+    "drop_share": 0.122807,
+    "median_return": 0.004189
+   }
+  ]
+ },
+ "report": "reports/signal_checks.md"
+}
