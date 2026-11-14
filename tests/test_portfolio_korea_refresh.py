@@ -1,9 +1,11 @@
 """Korea collection validation uses synthetic observations, never live provider calls."""
+import io
 import json
 import os
 import tempfile
 import unittest
 import urllib.error
+from contextlib import redirect_stderr, redirect_stdout
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
@@ -11,7 +13,8 @@ from unittest.mock import patch
 from qsignals.portfolio_data import PortfolioError, load_dataset, parse_files
 from qsignals.portfolio_import import publish
 from qsignals.portfolio_korea_refresh import (
-    UNIVERSE, build_snapshot, completed_sessions, parse_ecos, parse_vkospi, refresh, request_json)
+    KRX_PROBE_DAY, UNIVERSE, ProviderRejected, build_snapshot, completed_sessions, fetch_vkospi, main,
+    parse_ecos, parse_vkospi, refresh, request_json)
 
 
 def fixture():
@@ -148,6 +151,75 @@ class KoreaRefreshTest(unittest.TestCase):
             with self.assertRaises(PortfolioError) as caught:
                 request_json(url)
             self.assertNotIn('private-key', str(caught.exception))
+
+    def test_krx_rejection_names_provider_status_and_message_without_url(self):
+        url = 'http://data-dbg.krx.co.kr/svc/apis/idx/drvprod_dd_trd?basDd=20261113'
+        body = io.BytesIO(b'{"respMsg":"Unauthorized Key","respCode":"401"}')
+        with patch('urllib.request.urlopen', side_effect=urllib.error.HTTPError(url, 401, 'Unauthorized', {}, body)):
+            with self.assertRaises(ProviderRejected) as caught:
+                request_json(url, provider='KRX')
+        self.assertEqual(caught.exception.code, 'config_error')
+        self.assertIn('KRX rejected the request (HTTP 401: Unauthorized Key)', str(caught.exception))
+        self.assertNotIn('basDd', str(caught.exception))
+
+    def test_krx_refusing_only_a_new_day_keeps_history_and_collects_later(self):
+        sessions = ['2026-11-12', '2026-11-13']
+        def provider(url, headers=None, provider=None):
+            if url.endswith('20261112'):
+                return {'OutBlock_1': [{'IDX_NM': '코스피 200 변동성지수', 'BAS_DD': '20261112', 'CLSPRC_IDX': '30.5'}]}
+            if url.endswith(KRX_PROBE_DAY):
+                return {'OutBlock_1': []}
+            raise ProviderRejected('KRX', 401, 'Unauthorized Key')
+        alerts = []
+        with patch('qsignals.portfolio_korea_refresh.request_json', side_effect=provider), \
+             patch('qsignals.portfolio_korea_refresh.time.sleep'):
+            values, _ = fetch_vkospi(sessions, 'key', alerts=alerts)
+        self.assertEqual(values, {'2026-11-12': 30.5})
+        self.assertEqual(alerts, [])
+
+    def test_refused_krx_key_alerts_without_dropping_the_verified_history(self):
+        def refused(url, headers=None, provider=None):
+            raise ProviderRejected('KRX', 401, 'Unauthorized Key')
+        with patch('qsignals.portfolio_korea_refresh.request_json', side_effect=refused):
+            alerts = []
+            values, _ = fetch_vkospi(['2026-11-13'], 'secret-key', alerts=alerts)
+            self.assertEqual(values, {})
+            self.assertEqual(len(alerts), 1)
+            self.assertIn('HTTP 401: Unauthorized Key', alerts[0])
+            self.assertIn('1년간 유효', alerts[0])
+            self.assertNotIn('secret-key', alerts[0])
+            with self.assertRaises(PortfolioError) as caught:
+                fetch_vkospi(['2026-11-13'], 'secret-key')
+            self.assertEqual(caught.exception.code, 'config_error')
+
+    def test_refused_key_publishes_prices_then_fails_and_is_never_deferred(self):
+        quotes, rates, vk, days = fixture()
+        lagging = {d: v for d, v in vk.items() if d < days[-1]}
+        def keep_history(sessions, key, cache=None, previous=None, alerts=None):
+            alerts.append('KRX rejected the request (HTTP 401: Unauthorized Key).')
+            return lagging, 'test'
+        env = {'KRX_API_KEY': 'test', 'ECOS_API_KEY': 'test', 'GITHUB_SHA': 'c' * 40}
+        with tempfile.TemporaryDirectory() as directory:
+            alert_file = Path(directory) / 'alerts.txt'
+            argv = ['prog', '--output-dir', directory, '--alert-file', str(alert_file)]
+            with patch.dict(os.environ, env), patch('sys.argv', argv), \
+                 patch('qsignals.portfolio_korea_refresh.completed_sessions', return_value=days), \
+                 patch('qsignals.portfolio_korea_refresh.fetch_quotes',
+                       return_value={t+'.KS': v for t, v in quotes.items()}), \
+                 patch('qsignals.portfolio_korea_refresh.fetch_rates', return_value=rates), \
+                 patch('qsignals.portfolio_korea_refresh.fetch_vkospi', side_effect=keep_history), \
+                 redirect_stdout(io.StringIO()):
+                self.assertEqual(main(), 0)
+                data = load_dataset(directory)
+                self.assertEqual((data.meta['as_of'], data.meta['risk_as_of']), (days[-1], days[-2]))
+                self.assertIn('Unauthorized Key', alert_file.read_text())
+                # Even a deferrable error must not hide a refused key behind a warning.
+                alert_file.unlink()
+                with patch('qsignals.portfolio_korea_refresh.build_snapshot',
+                           side_effect=PortfolioError('late', 'stale_data')), \
+                     redirect_stderr(io.StringIO()):
+                    self.assertEqual(main(), 1)
+                self.assertTrue(alert_file.exists())
 
     def test_calendar_waits_until_two_hours_after_korean_close(self):
         before = datetime(2026, 11, 10, 7, 0, tzinfo=timezone.utc)
