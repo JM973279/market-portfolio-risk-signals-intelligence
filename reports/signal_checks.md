@@ -16,7 +16,7 @@
 - **판정:** 다음 거래일 −2% 이하 라벨에서 ③의 개선폭 95% 구간이 전부 0보다 크면 '후보'
 - 2026-01-01 이후는 홀드아웃: 보고만 하고 어떤 선택에도 쓰지 않음
 
-- 입력: Yahoo Finance adjusted close (yfinance auto_adjust=True), EWY, ^SOX, 2016-01-04 ~ 2026-11-12 (2,732세션), sha256 `10b74ede36d2…`
+- 입력: Yahoo Finance adjusted close (yfinance auto_adjust=True), EWY, ^SOX, 2016-01-04 ~ 2026-11-12 (2,732세션), sha256 `d6a965af3a86…`
 - 제공처 결측 세션: 없음 (채우지 않고 표본에서 제외)
 
 판정: **후보 통과** — 이 결과는 배포 저장소에서 17개 피처 ablation으로 다시 검증해야 하는 후보 여부일 뿐이며, 모델을 바꾸지 않습니다.
