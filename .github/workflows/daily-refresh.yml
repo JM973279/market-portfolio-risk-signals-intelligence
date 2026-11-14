@@ -7,8 +7,10 @@ name: Daily V1 score refresh
 # about 90 minutes); later runs restore it from the Actions cache.
 # qsignals.refresh checks KRX_API_KEY with KRX before downloading. If KRX refuses
 # it, the KRX downloaders are skipped (they would retry every session until the
-# 300-minute timeout), Korea keeps its published scores, US is refreshed as usual,
-# and the run fails after publishing. Data is published only from main.
+# 300-minute timeout). Korea and US are independent: when one market fails (refused
+# key, Korea preparation, BLOCKED verification) it keeps its published scores, the
+# other market is published as usual, and the run fails after publishing.
+# Data is published only from main.
 
 on:
   schedule:
@@ -181,9 +183,11 @@ jobs:
           # step turns the run red once a market is more than qsignals.deferral.MAX_BEHIND
           # sessions behind (after the other market was published).
           jq -r '.lag // {} | to_entries[] | "\(.key): published \(.value.published), expected \(.value.expected), \(.value.behind) behind"' "$RUNNER_TEMP/summary.json"
-          rejected=$(jq -r '.key_rejected // empty' "$RUNNER_TEMP/summary.json")
-          if [ -n "$rejected" ]; then
-            echo "::error title=KRX API key rejected::$rejected Korea kept its published scores; US was refreshed."
+          # A failure on one market (refused KRX key, Korea preparation, BLOCKED verification)
+          # never stops the other market's publication above, but still turns the run red here.
+          alerts=$(jq -r '(.alerts // [])[]' "$RUNNER_TEMP/summary.json")
+          if [ -n "$alerts" ]; then
+            while IFS= read -r line; do echo "::error title=One market failed (the other was published)::$line"; done <<< "$alerts"
             exit 1
           fi
           stale=$(jq -r '(.stale // []) | join(", ")' "$RUNNER_TEMP/summary.json")

@@ -575,13 +575,21 @@ def main(argv=None):
 
     env["PYTHONPATH"] = str(work / "v1")
 
+    # Korea and US are independent: a failure on one market's side never stops the other.
+    # run.py scores each market in its own try block (a market that fails is BLOCKED alone),
+    # so a Korea preparation failure is recorded and run.py still scores US.
+    alerts = [key_alert] if key_alert else []
+    reference = None
     args.v1_data.mkdir(parents=True, exist_ok=True)
-    top_up_korea_raw(args.python, work / "v1", args.v1_data, env, log, download=key_alert is None)
-
-    original_reference = (work / "mpri" / contract["markets"]["korea"]["reference"]).exists()
-    if not original_reference and (args.rebuild_reference or not (args.reference_dir / "verification.json").exists()):
-        rebuild_reference(args.python, work, args.v1_data, args.reference_dir, args.reference_end, log)
-    reference = install_reference(work, contract, args.reference_dir)
+    try:
+        top_up_korea_raw(args.python, work / "v1", args.v1_data, env, log, download=key_alert is None)
+        original_reference = (work / "mpri" / contract["markets"]["korea"]["reference"]).exists()
+        if not original_reference and (args.rebuild_reference or not (args.reference_dir / "verification.json").exists()):
+            rebuild_reference(args.python, work, args.v1_data, args.reference_dir, args.reference_end, log)
+        reference = install_reference(work, contract, args.reference_dir)
+    except RefreshError as exc:
+        alerts.append(f"Korea preparation failed: {exc}")
+        print(f"::warning::Korea preparation failed ({exc}); US is refreshed as usual.", file=sys.stderr)
 
     env.pop("PYTHONPATH")
     code = run_logged([args.python, RUNNER, "--collect", "--original-v1-root", str(work / "v1")], work / "mpri", env, log)
@@ -595,8 +603,7 @@ def main(argv=None):
         print(f"ECOS credit cache extended by {added} verified rows.", file=sys.stderr)
     status = {m: freshness(v) for m, v in operational["markets"].items()}
     summary = {"run_id": operational.get("runId"), "work_dir": str(work), "korea_reference": reference or {"rebuilt": False}, "markets": status}
-    if key_alert:
-        summary["key_rejected"] = key_alert  # the workflow fails on this after publishing
+    summary["alerts"] = alerts  # the workflow fails on any alert after publishing the other market
 
     try:
         remote = git(args.source_root, "remote", "get-url", "origin")
@@ -612,18 +619,22 @@ def main(argv=None):
     #   3  partial: a market's data is late (Korea not CURRENT / US DELAYED without
     #      new verified rows) but the other market was imported -> publish it
     #   2  nothing new: every market late, nothing written
-    #   1  verification failure (BLOCKED: historical reproduction failed) -> nothing
-    #      written, nothing published. Pipeline errors exit non-zero via SystemExit.
+    #   1  every market failed verification (BLOCKED: historical reproduction failed)
+    #      -> nothing written. A BLOCKED market never stops the other one: it is kept
+    #      as published, listed in `alerts`, and the workflow fails after publishing.
+    #      Pipeline errors exit non-zero via SystemExit.
     blocked = sorted(m for m, v in operational["markets"].items() if v.get("status") == "BLOCKED")
     if blocked:
         summary["blocked"] = blocked
-        print(json.dumps(summary, indent=2, ensure_ascii=False))
+        alerts.append(f"Verification failed (BLOCKED: {', '.join(blocked)}); its published scores were kept.")
+    # Korea is written only when CURRENT; US whenever its history was verified.
+    markets = tuple(m for m, ok in (("korea", status["korea"]["fresh"] and "korea" not in blocked),
+                                    ("us", us_importable(operational["markets"]["us"]) and "us" not in blocked)) if ok)
+    summary["delayed"] = [m for m in ("korea", "us") if m not in markets and m not in blocked]
+    if not markets and blocked:
+        print(json.dumps(with_lag(summary, args.output_dir), indent=2, ensure_ascii=False))
         print(f"Verification failed (BLOCKED: {', '.join(blocked)}); data/input/ left unchanged.", file=sys.stderr)
         return 1
-    # Korea is written only when CURRENT; US whenever its history was verified.
-    markets = tuple(m for m, ok in (("korea", status["korea"]["fresh"]),
-                                    ("us", us_importable(operational["markets"]["us"]))) if ok)
-    summary["delayed"] = [m for m in ("korea", "us") if m not in markets]
     if not markets:
         print(json.dumps(with_lag(summary, args.output_dir), indent=2, ensure_ascii=False))
         print("No market has new verified data yet; data/input/ left unchanged.", file=sys.stderr)
@@ -662,8 +673,9 @@ def main(argv=None):
         else:
             summary["imported"].append(market)
     print(json.dumps(with_lag(summary, args.output_dir), indent=2, ensure_ascii=False))
-    if summary["delayed"]:
-        print(f"Late data for {', '.join(summary['delayed'])}; kept the published files for it.", file=sys.stderr)
+    if summary["delayed"] or blocked:
+        late = summary["delayed"] + blocked
+        print(f"Late or failed: {', '.join(late)}; kept the published files for it.", file=sys.stderr)
         return 3
     return 0
 

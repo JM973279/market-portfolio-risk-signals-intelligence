@@ -321,6 +321,73 @@ class KeyCheckTest(unittest.TestCase):
             self.assertEqual(log.read_text(encoding="utf-8").splitlines()[-1], "1")
 
 
+class MarketIndependenceTest(unittest.TestCase):
+    """A Korea failure must never stop US publication (and the run still fails afterwards)."""
+
+    def run_main(self, tmp, korea_status, prepare=None):
+        tmp = Path(tmp)
+        python = tmp / "python"
+        python.write_text("", encoding="utf-8")
+        env_file = tmp / ".env"
+        env_file.write_text("KRX_API_KEY=k\nECOS_API_KEY=e\n", encoding="utf-8")
+        markets = {
+            "korea": {"status": korea_status, "expectedDate": "2026-11-13", "current": None,
+                      "lastValid": None, "reason": "x", "series": []},
+            "us": {"status": "DELAYED", "expectedDate": "2026-11-13", "current": None, "historicalParity": True,
+                   "lastValid": {"date": "2026-11-12"}, "history": [{"date": "2026-11-12"}], "series": []},
+        }
+
+        def fake_archive(repo, ref, dest):
+            (dest / "market_engine/operations").mkdir(parents=True)
+            (dest / refresh.CONTRACT).write_text(json.dumps({"original_sources": {}, "markets": {"korea": {"reference": "ref.csv"}}}))
+            return "c" * 40
+
+        def fake_run(cmd, cwd, env, log, timeout=None):
+            data = Path(cwd) / "frontend/public/data"
+            data.mkdir(parents=True, exist_ok=True)
+            (data / "operational-markets.json").write_text(json.dumps({"runId": "r", "markets": markets}))
+            (data / "global-markets.json").write_text("{}")
+            return 0
+
+        imported = []
+        argv = ["--env-file", str(env_file), "--python", str(python), "--work-root", str(tmp / "runs"),
+                "--v1-data", str(tmp / "v1-data"), "--output-dir", str(tmp / "out"),
+                "--source-root", str(tmp), "--v1-repo", str(tmp)]
+        with patch("qsignals.refresh.check_provider_keys"), \
+             patch("qsignals.refresh.archive", side_effect=fake_archive), \
+             patch("qsignals.refresh.find_v1_commit", return_value="v" * 40), \
+             patch("qsignals.refresh.top_up_korea_raw", side_effect=prepare), \
+             patch("qsignals.refresh.install_reference", return_value=None), \
+             patch("qsignals.refresh.run_logged", side_effect=fake_run), \
+             patch("qsignals.refresh.extend_ecos_cache", return_value=0), \
+             patch("qsignals.refresh.git", side_effect=refresh.RefreshError("no repo")), \
+             patch("qsignals.refresh.import_us", side_effect=lambda *a, **k: imported.append("us") or {"last_risk_date": "2026-11-12"}), \
+             patch("qsignals.refresh.import_data", side_effect=AssertionError("korea imported")), \
+             patch("qsignals.refresh.score_lag", return_value={}), \
+             patch("sys.stdout", new_callable=io.StringIO) as out, patch("sys.stderr", new_callable=io.StringIO):
+            code = refresh.main(argv)
+        return code, json.loads(out.getvalue()), imported
+
+    def test_blocked_korea_still_publishes_us_and_raises_an_alert(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, summary, imported = self.run_main(tmp, "BLOCKED")
+        self.assertEqual((code, imported, summary["blocked"]), (3, ["us"], ["korea"]))
+        self.assertIn("BLOCKED: korea", summary["alerts"][0])
+
+    def test_failed_korea_preparation_still_publishes_us(self):
+        def broken(*args, **kwargs):
+            raise refresh.RefreshError("V1 downloader download_vkospi failed (exit 1)")
+        with tempfile.TemporaryDirectory() as tmp:
+            code, summary, imported = self.run_main(tmp, "BLOCKED", prepare=broken)
+        self.assertEqual((code, imported), (3, ["us"]))
+        self.assertIn("Korea preparation failed", summary["alerts"][0])
+
+    def test_delayed_korea_is_not_an_alert(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, summary, imported = self.run_main(tmp, "DELAYED")
+        self.assertEqual((code, imported, summary["alerts"], summary["delayed"]), (3, ["us"], [], ["korea"]))
+
+
 class FreshnessTest(unittest.TestCase):
     def market(self, **changes):
         m = {"status": "CURRENT", "expectedDate": "2026-11-09", "current": {"date": "2026-11-09"},
