@@ -18,6 +18,7 @@ VKOSPI history, warns, and collects the day on a later schedule. If that is refu
 itself is refused: prices still publish while VKOSPI lags at most three sessions, and the run
 fails after publishing with the provider's status and message and the key fingerprint. KRX's
 message names the fix: `Unauthorized Key` means KRX does not know the value (replace the secret);
-`Unauthorized API Call` means KRX knows the key but it lacks the service approval (re-apply for
-the service on openapi.krx.co.kr; the secret stays). Set the repository variable
+`Unauthorized API Call` means KRX knows the key but refuses the service (check the approval on
+openapi.krx.co.kr; the secret stays). KRX supplies only indices here (VKOSPI, and KOSPI200 for the
+V1 score); prices come from Yahoo. Set the repository variable
 `KRX_API_KEY_EXPIRES` (YYYY-MM-DD, from openapi.krx.co.kr) to fail the run 14 days before expiry.

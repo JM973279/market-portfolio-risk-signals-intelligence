@@ -160,9 +160,10 @@ def key_fingerprint(value):
 # KRX answers 401 with different messages (checked 2026-11-14): a value it does not know gets
 # "Unauthorized Key"; a key it knows but may not call that service with gets "Unauthorized API Call".
 KRX_SERVICE_HINT = ("KRX knows this key but refuses the service (Unauthorized API Call): replacing the secret "
-                    "will not help. On openapi.krx.co.kr check the service approvals for this key "
-                    "(KOSPI 시리즈 일별시세정보 = kospi_dd_trd, 파생상품지수 시세정보 = drvprod_dd_trd), "
-                    "apply again if they are missing, then re-run.")
+                    "will not help. KRX supplies indices only (prices come from Yahoo): the V1 score's KOSPI200 "
+                    "index (kospi_dd_trd) and the VKOSPI risk factor (drvprod_dd_trd). On openapi.krx.co.kr, "
+                    "signed in as the account that issued this key, check both services' approval for it; apply "
+                    "again if missing, or ask KRX if they show as approved, then re-run.")
 UPDATE_HINT = "Update the value (repository secret on GitHub Actions, V1 .env locally) and run again."
 
 
