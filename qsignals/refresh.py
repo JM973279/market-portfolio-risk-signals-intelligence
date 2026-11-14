@@ -157,6 +157,20 @@ def key_fingerprint(value):
     return f"len {len(value)}, sha256 {hashlib.sha256(value.encode()).hexdigest()[:8]}"
 
 
+# KRX answers 401 with different messages (checked 2026-11-14): a value it does not know gets
+# "Unauthorized Key"; a key it knows but may not call that service with gets "Unauthorized API Call".
+KRX_SERVICE_HINT = ("KRX knows this key but refuses the service (Unauthorized API Call): replacing the secret "
+                    "will not help. On openapi.krx.co.kr check the service approvals for this key "
+                    "(KOSPI 시리즈 일별시세정보 = kospi_dd_trd, 파생상품지수 시세정보 = drvprod_dd_trd), "
+                    "apply again if they are missing, then re-run.")
+UPDATE_HINT = "Update the value (repository secret on GitHub Actions, V1 .env locally) and run again."
+
+
+def krx_rejection_hint(text):
+    """The fix a provider's rejection message points to."""
+    return KRX_SERVICE_HINT if "Unauthorized API Call" in text else UPDATE_HINT
+
+
 def _http_get(url, headers=None, timeout=30):
     """(status, body); HTTP errors are returned, network errors raised."""
     request = urllib.request.Request(url, headers=headers or {})
@@ -231,7 +245,7 @@ def check_provider_keys(env, ecos):
     message = "\n".join([
         f"Provider rejected {', '.join(names)}; nothing was collected or published.",
         *lines,
-        "Update the value (repository secret on GitHub Actions, V1 .env locally) and run again.",
+        *dict.fromkeys(krx_rejection_hint(problem) for _, problem in failed),
         "Compare fingerprints with `python3 -m qsignals.refresh --check-keys` on a machine where the keys work.",
     ])
     if os.environ.get("GITHUB_ACTIONS") == "true":

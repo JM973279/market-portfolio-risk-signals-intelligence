@@ -226,6 +226,17 @@ class KeyCheckTest(unittest.TestCase):
         self.assertIn("Provider rejected KRX_API_KEY", message)
         self.assertIn(key_fingerprint(self.KRX), message)
         self.assertNotIn(self.KRX, message)
+        self.assertIn("Update the value", message)
+
+    def test_known_key_without_service_approval_does_not_blame_the_secret(self):
+        refused = (401, b'{"respMsg":"Unauthorized API Call","respCode":"401"}')
+        with patch("qsignals.refresh._http_get", return_value=refused), \
+             patch.dict(os.environ, {"GITHUB_ACTIONS": "", "GITHUB_STEP_SUMMARY": ""}), \
+             self.assertRaises(SystemExit) as stop:
+            check_provider_keys({"KRX_API_KEY": self.KRX, "ECOS_API_KEY": self.ECOS}, ecos=False)
+        message = str(stop.exception.code)
+        self.assertIn("replacing the secret will not help", message)
+        self.assertNotIn("Update the value", message)
 
     def test_step_summary_on_actions(self):
         with tempfile.TemporaryDirectory() as tmp:

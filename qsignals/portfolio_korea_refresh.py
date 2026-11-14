@@ -21,7 +21,7 @@ from qsignals.calendar import latest_closed_session, load_sessions, require_cove
 from qsignals.portfolio_data import PortfolioError, load_dataset, parse_files
 from qsignals.portfolio_import import publish
 from qsignals.portfolio_refresh import csv_bytes, fetch_quotes
-from qsignals.refresh import key_fingerprint
+from qsignals.refresh import key_fingerprint, krx_rejection_hint
 from scripts.build_korea_portfolio import MARKET, UNIVERSE, window_extreme
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -33,10 +33,6 @@ KRX_VKOSPI_URL = 'http://data-dbg.krx.co.kr/svc/apis/idx/drvprod_dd_trd'
 # A session KRX has always served (the first one the V1 downloaders request). When KRX refuses
 # a new day but answers this one, the key works and only that day is refused.
 KRX_PROBE_DAY = '20100104'
-KRX_KEY_HELP = ('KRX Open API 키는 발급일부터 1년간 유효(만료 전 연장 신청)하고, 키당 하루(0~24시 KST) '
-                '10,000회까지 호출할 수 있으며, 파생상품지수 시세정보 서비스 이용 승인이 필요합니다. '
-                'openapi.krx.co.kr 마이페이지에서 키 상태를 확인하고, 키를 새로 받았다면 저장소 secret '
-                'KRX_API_KEY와 로컬 .env를 함께 바꾼 뒤 workflow를 다시 실행하세요.')
 
 
 class ProviderRejected(PortfolioError):
@@ -139,7 +135,8 @@ def fetch_vkospi(sessions, key, cache=None, previous=None, alerts=None):
             if krx_key_works(key):
                 warn(f'{exc} KRX가 {day} 세션만 거부했고 키는 정상입니다; 이 날짜부터는 다음 일정에서 다시 수집합니다.')
                 break
-            message = f'{exc} 기준일 {KRX_PROBE_DAY}도 거부되어 키 문제로 판단합니다 ({key_fingerprint(key)}). {KRX_KEY_HELP}'
+            message = (f'{exc} KRX also refused {KRX_PROBE_DAY}, so the key or its service approval is refused, '
+                       f'not the day ({key_fingerprint(key)}). {krx_rejection_hint(str(exc))}')
             if alerts is None:
                 raise PortfolioError(message, 'config_error') from None
             alerts.append(message)

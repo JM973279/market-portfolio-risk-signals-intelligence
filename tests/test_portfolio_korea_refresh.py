@@ -186,11 +186,20 @@ class KoreaRefreshTest(unittest.TestCase):
             self.assertEqual(values, {})
             self.assertEqual(len(alerts), 1)
             self.assertIn('HTTP 401: Unauthorized Key', alerts[0])
-            self.assertIn('1년간 유효', alerts[0])
+            self.assertIn('Update the value', alerts[0])
             self.assertNotIn('secret-key', alerts[0])
             with self.assertRaises(PortfolioError) as caught:
                 fetch_vkospi(['2026-11-13'], 'secret-key')
             self.assertEqual(caught.exception.code, 'config_error')
+
+    def test_known_key_without_service_approval_points_to_approval_not_the_secret(self):
+        def no_service(url, headers=None, provider=None):
+            raise ProviderRejected('KRX', 401, 'Unauthorized API Call')
+        alerts = []
+        with patch('qsignals.portfolio_korea_refresh.request_json', side_effect=no_service):
+            fetch_vkospi(['2026-11-13'], 'secret-key', alerts=alerts)
+        self.assertIn('replacing the secret will not help', alerts[0])
+        self.assertIn('drvprod_dd_trd', alerts[0])
 
     def test_refused_key_publishes_prices_then_fails_and_is_never_deferred(self):
         quotes, rates, vk, days = fixture()
