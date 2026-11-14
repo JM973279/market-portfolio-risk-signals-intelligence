@@ -10,6 +10,9 @@ name: Deploy verified main to Lightsail
 # - Lightsail keeps serving the previous deployment until the new one is healthy. If the live
 #   check fails after activation, the previous deployment's containers are redeployed.
 # - Deploys only when main changed something the images contain (unless forced).
+# - A data run that ends red after publishing one market (the other market failed) still
+#   triggers a deploy, so the published market reaches the site; a red run that published
+#   nothing changes no image input and is skipped.
 
 on:
   workflow_run:
@@ -30,8 +33,9 @@ on:
       - 'scripts/check_site.py'
       - '.github/workflows/deploy-lightsail.yml'
   schedule:
-    # Fallback once a day (10:40 KST) in case a workflow_run event was missed.
-    - cron: '40 1 * * *'
+    # Fallback every 6 hours (10:40, 16:40, 22:40, 04:40 KST) in case a workflow_run event was
+    # missed or the schedule was dropped; with nothing new to deploy a run ends after the plan step.
+    - cron: '40 1,7,13,19 * * *'
   workflow_dispatch:
     inputs:
       force:
@@ -57,7 +61,7 @@ jobs:
     if: >-
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'workflow_dispatch' || vars.LIGHTSAIL_AUTODEPLOY == 'true') &&
-      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
+      (github.event_name != 'workflow_run' || contains(fromJSON('["success","failure"]'), github.event.workflow_run.conclusion))
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:
@@ -103,6 +107,11 @@ jobs:
       - name: Run tests
         if: steps.plan.outputs.deploy == 'true'
         run: python3 -m unittest discover -s tests -t .
+
+      - name: Keep only the published snapshots in the images
+        if: steps.plan.outputs.deploy == 'true'
+        # The API reads only the snapshot current.json points to; older ones stay in git history.
+        run: python3 scripts/trim_snapshots.py data/portfolio data/portfolio-kr
 
       - name: Build and check the images on the runner
         if: steps.plan.outputs.deploy == 'true'

@@ -34,6 +34,9 @@ jobs:
       KRX_API_KEY: ${{ secrets.KRX_API_KEY }}
       ECOS_API_KEY: ${{ secrets.ECOS_API_KEY }}
       V1_DATA: /home/runner/.cache/qsignals/v1-data
+      # Optional repository variable (YYYY-MM-DD): the KRX key's expiry shown on openapi.krx.co.kr.
+      # KRX keys last one year and are extended only on request before they lapse.
+      KRX_API_KEY_EXPIRES: ${{ vars.KRX_API_KEY_EXPIRES }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -68,7 +71,7 @@ jobs:
       - name: Collect and validate Korean prices and risk factors
         run: |
           "$RUNNER_TEMP/korea-portfolio-collector/bin/python" -m qsignals.portfolio_korea_refresh \
-            --vkospi-cache "$V1_DATA/raw/korea/vkospi.csv"
+            --vkospi-cache "$V1_DATA/raw/korea/vkospi.csv" --alert-file "$RUNNER_TEMP/provider-alerts.txt"
       - name: Verify published snapshot and portfolio behavior
         run: |
           python3 -m qsignals.portfolio_korea_refresh --validate-only
@@ -82,3 +85,17 @@ jobs:
           last=$(python3 -c 'from qsignals.portfolio_data import load_dataset; print(load_dataset("data/portfolio-kr").meta["as_of"])')
           git commit -m "data: refresh verified Korea portfolio ($last)"
           bash scripts/push_data_commit.sh
+      - name: Fail after publishing when a provider key needs attention
+        # A refused KRX key keeps prices publishing (VKOSPI may lag up to three sessions), but the
+        # run must still fail so someone renews the key before the factor lag blocks publication.
+        run: |
+          if [ -n "${KRX_API_KEY_EXPIRES:-}" ]; then
+            left=$(( ( $(date -ud "$KRX_API_KEY_EXPIRES" +%s) - $(date -u +%s) ) / 86400 ))
+            if [ "$left" -le 14 ]; then
+              echo "KRX_API_KEY expires on $KRX_API_KEY_EXPIRES ($left days left). Extend it on openapi.krx.co.kr (마이페이지), then update the variable KRX_API_KEY_EXPIRES." >> "$RUNNER_TEMP/provider-alerts.txt"
+            fi
+          fi
+          if [ -s "$RUNNER_TEMP/provider-alerts.txt" ]; then
+            while IFS= read -r line; do echo "::error title=Provider key needs attention::$line"; done < "$RUNNER_TEMP/provider-alerts.txt"
+            exit 1
+          fi

@@ -126,14 +126,19 @@ class V1RefreshTest(unittest.TestCase):
         with patch.object(refresh, "_fetch", return_value=rejected), self.assertRaises(SystemExit):
             captured(refresh.check_provider_keys, {"KRX_API_KEY": "k"}, False)
 
-    def test_outage_exits_as_nothing_new_with_the_published_lag(self):
-        with patch.object(refresh, "load_env", return_value={"KRX_API_KEY": "k", "ECOS_API_KEY": "e"}), \
-             patch.object(refresh, "check_provider_keys", side_effect=refresh.ProvidersUnreachable("down")):
-            code, out = captured(refresh.main, ["--output-dir", str(ROOT / "data/input")])
-        self.assertEqual(code, 2)
-        summary = json.loads(out[:out.rindex("}") + 1])
-        self.assertEqual(set(summary["lag"]), {"korea", "us"})
-        self.assertIn("stale", summary)
+    def test_krx_outage_does_not_stop_the_us_refresh(self):
+        # KRX feeds Korea only: an outage keeps Korea late (no alert) and US still runs.
+        # The full flow is covered by tests.test_live_refresh.MarketIndependenceTest.
+        err = io.StringIO()
+        with tempfile.TemporaryDirectory() as tmp, \
+             patch.object(refresh, "load_env", return_value={"KRX_API_KEY": "k", "ECOS_API_KEY": "e"}), \
+             patch.object(refresh, "check_provider_keys", side_effect=refresh.ProvidersUnreachable("down")), \
+             patch.object(refresh, "archive", side_effect=AssertionError("snapshot started")), \
+             contextlib.redirect_stderr(err), self.assertRaisesRegex(AssertionError, "snapshot started"):
+            # Never the default ~/.cache work root: main prunes older run folders there.
+            refresh.main(["--python", sys.executable, "--output-dir", str(ROOT / "data/input"),
+                          "--work-root", str(Path(tmp) / "runs"), "--v1-data", str(Path(tmp) / "v1-data")])
+        self.assertIn("US is refreshed as usual", err.getvalue())
 
     def test_lag_marks_a_market_stale_only_past_the_limit(self):
         now = datetime(2026, 11, 13, 1, 0, tzinfo=timezone.utc)  # 10:00 KST Friday
