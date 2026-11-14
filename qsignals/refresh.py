@@ -29,8 +29,10 @@ API keys are read from the V1 .env into the child environment only; they are
 never printed or written (only a length + SHA-256 prefix fingerprint, so a
 runner secret can be compared with a local .env). Before any download the KRX
 key is checked with one request per KRX endpoint: a rejected key makes the V1
-KRX downloaders retry every session since 2010 for hours, so the refresh stops
-at once instead. `--check-keys` runs only the checks (KRX and ECOS). Run logs
+KRX downloaders retry every session since 2010 for hours, so they are skipped.
+KRX feeds Korea only, so Korea is then reported as delayed from its cached
+history while US is refreshed as usual; the summary's `key_rejected` makes the
+workflow fail after publishing. `--check-keys` runs only the checks (KRX and ECOS). Run logs
 and provider receipts stay in --work-root (outside this repo).
 """
 
@@ -94,6 +96,14 @@ class ProvidersUnreachable(RuntimeError):
 
 class RefreshError(RuntimeError):
     pass
+
+
+class KeysRejected(SystemExit):
+    """A provider refused a key; `names` lists the refused keys and `code` holds the report."""
+
+    def __init__(self, message, names):
+        super().__init__(message)
+        self.names = names
 
 
 def git(repo, *args, binary=False):
@@ -244,7 +254,7 @@ def check_provider_keys(env, ecos):
         raise ProvidersUnreachable("; ".join(problem for _, problem in failed))
     names = sorted({name for name, _ in failed})
     message = "\n".join([
-        f"Provider rejected {', '.join(names)}; nothing was collected or published.",
+        f"Provider rejected {', '.join(names)}.",
         *lines,
         *dict.fromkeys(krx_rejection_hint(problem) for _, problem in failed),
         "Compare fingerprints with `python3 -m qsignals.refresh --check-keys` on a machine where the keys work.",
@@ -254,8 +264,8 @@ def check_provider_keys(env, ecos):
         summary = os.environ.get("GITHUB_STEP_SUMMARY")
         if summary:
             with open(summary, "a", encoding="utf-8") as fh:
-                fh.write(f"### Score refresh stopped: API key rejected\n\n{message}\n")
-    raise SystemExit(message)
+                fh.write(f"### API key rejected\n\n{message}\n")
+    raise KeysRejected(message, names)
 
 
 def run_logged(cmd, cwd, env, log_path, timeout=None):
@@ -272,7 +282,7 @@ def run_logged(cmd, cwd, env, log_path, timeout=None):
     return out.returncode
 
 
-def top_up_korea_raw(python, v1_tree, v1_data, env, log):
+def top_up_korea_raw(python, v1_tree, v1_data, env, log, download=True):
     # KRX must be topped up: run.py only fetches the last 14 days on top of
     # this history and refuses gaps over 90 days. ECOS is fetched in full by
     # run.py itself, and calling it twice within seconds gets the second
@@ -281,6 +291,11 @@ def top_up_korea_raw(python, v1_tree, v1_data, env, log):
     if (v1_data / "raw" / "korea" / "ecos_credit.csv").exists():
         modules.remove("download_ecos_credit")
     raw = v1_data / "raw" / "korea"
+    if not download:
+        # KRX refused the key: its downloaders would retry every session for hours. run.py's own
+        # KRX request fails at once (HTTP 401 is not retried), so Korea falls back to this cached
+        # history and is reported as delayed while US is refreshed as usual.
+        modules = []
     for module in modules:
         cached = (raw / DOWNLOADER_FILES[module]).exists()
         code = run_logged([python, "-m", f"src.korea.{module}", "--data-root", str(v1_data)], v1_tree, env, log,
@@ -526,8 +541,16 @@ def main(argv=None):
     # KRX only on a refresh: its downloaders retry each session for hours on a
     # rejected key, while ECOS fails within seconds by itself, and an extra ECOS
     # call shortly before the real fetch can get that fetch rejected.
+    key_alert = None
     try:
         check_provider_keys(env, ecos=args.check_keys)
+    except KeysRejected as exc:
+        if args.check_keys or exc.names != ["KRX_API_KEY"]:
+            raise SystemExit(f"{exc.code}\nNothing was collected or published.") from None
+        # KRX feeds Korea only. US needs no KRX data, so a refused KRX key must not stop US.
+        key_alert = " ".join(exc.code.splitlines())
+        print("::warning::KRX refused the key: Korea keeps its published scores; US is refreshed as usual "
+              "and the run fails after publishing.", file=sys.stderr)
     except ProvidersUnreachable as exc:
         if args.check_keys:
             raise SystemExit(f"Providers unreachable: {exc}") from None
@@ -553,7 +576,7 @@ def main(argv=None):
     env["PYTHONPATH"] = str(work / "v1")
 
     args.v1_data.mkdir(parents=True, exist_ok=True)
-    top_up_korea_raw(args.python, work / "v1", args.v1_data, env, log)
+    top_up_korea_raw(args.python, work / "v1", args.v1_data, env, log, download=key_alert is None)
 
     original_reference = (work / "mpri" / contract["markets"]["korea"]["reference"]).exists()
     if not original_reference and (args.rebuild_reference or not (args.reference_dir / "verification.json").exists()):
@@ -572,6 +595,8 @@ def main(argv=None):
         print(f"ECOS credit cache extended by {added} verified rows.", file=sys.stderr)
     status = {m: freshness(v) for m, v in operational["markets"].items()}
     summary = {"run_id": operational.get("runId"), "work_dir": str(work), "korea_reference": reference or {"rebuilt": False}, "markets": status}
+    if key_alert:
+        summary["key_rejected"] = key_alert  # the workflow fails on this after publishing
 
     try:
         remote = git(args.source_root, "remote", "get-url", "origin")

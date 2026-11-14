@@ -5,9 +5,10 @@ name: Daily V1 score refresh
 # Required repository secrets: KRX_API_KEY, ECOS_API_KEY.
 # The first run rebuilds the Korea raw history from 2010 (~8,800 KRX calls,
 # about 90 minutes); later runs restore it from the Actions cache.
-# qsignals.refresh checks KRX_API_KEY with KRX before downloading and stops at
-# once if KRX rejects it (otherwise the downloaders retry every session until
-# the 300-minute timeout). Data is published only from main.
+# qsignals.refresh checks KRX_API_KEY with KRX before downloading. If KRX refuses
+# it, the KRX downloaders are skipped (they would retry every session until the
+# 300-minute timeout), Korea keeps its published scores, US is refreshed as usual,
+# and the run fails after publishing. Data is published only from main.
 
 on:
   schedule:
@@ -180,6 +181,11 @@ jobs:
           # step turns the run red once a market is more than qsignals.deferral.MAX_BEHIND
           # sessions behind (after the other market was published).
           jq -r '.lag // {} | to_entries[] | "\(.key): published \(.value.published), expected \(.value.expected), \(.value.behind) behind"' "$RUNNER_TEMP/summary.json"
+          rejected=$(jq -r '.key_rejected // empty' "$RUNNER_TEMP/summary.json")
+          if [ -n "$rejected" ]; then
+            echo "::error title=KRX API key rejected::$rejected Korea kept its published scores; US was refreshed."
+            exit 1
+          fi
           stale=$(jq -r '(.stale // []) | join(", ")' "$RUNNER_TEMP/summary.json")
           if [ -n "$stale" ]; then
             echo "::error title=Published score too far behind::$stale: no verified new score within the allowed sessions; see the lag above and the refresh logs."

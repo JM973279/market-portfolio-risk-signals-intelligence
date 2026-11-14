@@ -266,19 +266,42 @@ class KeyCheckTest(unittest.TestCase):
         with patch("qsignals.refresh._http_get", return_value=(200, b'{"StatisticSearch": {"row": []}}')):
             self.assertEqual(check_ecos_key(self.ECOS), [])
 
-    def test_refresh_stops_before_any_snapshot_or_download(self):
+    def test_refused_krx_key_does_not_stop_the_us_refresh(self):
         with tempfile.TemporaryDirectory() as tmp:
             env_file = Path(tmp) / ".env"
             env_file.write_text(f"KRX_API_KEY={self.KRX}\nECOS_API_KEY={self.ECOS}\n", encoding="utf-8")
             argv = ["--env-file", str(env_file), "--python", str(Path(tmp) / "missing-python"),
                     "--work-root", str(Path(tmp) / "runs"), "--v1-data", str(Path(tmp) / "v1-data")]
             with patch("qsignals.refresh._http_get", return_value=self.REJECTED) as get, \
-                 patch("qsignals.refresh.archive", side_effect=AssertionError("snapshot started")), \
                  patch.dict(os.environ, {"GITHUB_ACTIONS": ""}), self.assertRaises(SystemExit) as stop:
                 refresh.main(argv)
-            self.assertIn("Provider rejected KRX_API_KEY", str(stop.exception.code))
+            # It got past the key check (KRX feeds Korea only) and stopped on the next requirement.
+            self.assertIn("Inference Python not found", str(stop.exception.code))
             self.assertEqual(get.call_count, 2)  # KRX only; ECOS is checked by --check-keys
-            self.assertFalse((Path(tmp) / "runs").exists())
+            self.assertIn("US is refreshed as usual", self.stderr.getvalue())
+
+    def test_check_keys_mode_still_stops_on_a_refused_key(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            env_file = Path(tmp) / ".env"
+            env_file.write_text(f"KRX_API_KEY={self.KRX}\nECOS_API_KEY={self.ECOS}\n", encoding="utf-8")
+            responses = [self.REJECTED, self.REJECTED, (200, b'{"StatisticSearch": {}}')]
+            with patch("qsignals.refresh._http_get", side_effect=responses), \
+                 patch.dict(os.environ, {"GITHUB_ACTIONS": ""}), self.assertRaises(SystemExit) as stop:
+                refresh.main(["--check-keys", "--env-file", str(env_file)])
+            self.assertIn("Provider rejected KRX_API_KEY", str(stop.exception.code))
+            self.assertIn("Nothing was collected or published", str(stop.exception.code))
+
+    def test_refused_krx_key_skips_the_downloaders_but_installs_the_cached_history(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            v1_data, v1_tree = Path(tmp) / "data", Path(tmp) / "v1"
+            raw = v1_data / "raw" / "korea"
+            raw.mkdir(parents=True)
+            for name in refresh.KOREA_RAW:
+                (raw / name).write_text("Date\n", encoding="utf-8")
+            with patch("qsignals.refresh.run_logged", side_effect=AssertionError("downloader started")), \
+                 patch("qsignals.refresh.align_korea_fallback", return_value="2026-11-12"):
+                refresh.top_up_korea_raw(Path("python"), v1_tree, v1_data, {}, Path(tmp) / "log", download=False)
+            self.assertTrue(all((v1_tree / "data/raw/korea" / name).exists() for name in refresh.KOREA_RAW))
 
     def test_check_keys_mode_checks_both_and_exits(self):
         with tempfile.TemporaryDirectory() as tmp:
