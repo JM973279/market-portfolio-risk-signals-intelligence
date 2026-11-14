@@ -1,0 +1,38 @@
+name: Restart dropped data schedules
+
+# GitHub starts `schedule` runs best effort: here they started up to 17.6 h late or not at all.
+# Every hour this starts (workflow_dispatch, which starts at once) any data workflow that has no
+# run since its latest scheduled slot older than 45 minutes; see qsignals/watchdog.py. The data
+# workflows are idempotent, so a late scheduled run arriving afterwards changes nothing.
+
+on:
+  schedule:
+    - cron: '29 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: schedule-watchdog
+  cancel-in-progress: true
+
+jobs:
+  watch:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          sparse-checkout: |
+            .github/workflows
+            qsignals
+      - name: Start workflows whose scheduled run did not start
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m qsignals.watchdog
