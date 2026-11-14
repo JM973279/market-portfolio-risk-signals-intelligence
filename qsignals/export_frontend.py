@@ -48,13 +48,33 @@ def check_block(market, block, rows):
 
 
 def build(input_dir=INPUT):
-    saved = {}
+    export, errors = build_markets(input_dir)
+    if errors:
+        raise ValueError("; ".join(errors.values()))
+    return export
+
+
+def build_markets(input_dir=INPUT, previous=None):
+    """Export each market on its own. A market whose saved block is missing or fails its check
+    keeps its block from `previous` (the last export), so the other market is still exported.
+    Returns (export or None when a failed market has no previous block, {market: error})."""
+    saved, errors = {}, {}
     for market in MARKETS:
         path = Path(input_dir) / "operational" / f"{market}.json"
-        if not path.exists():
-            raise FileNotFoundError(f"{path} missing: run python3 -m qsignals.refresh first")
-        saved[market] = json.loads(path.read_text(encoding="utf-8"))
-        check_block(market, saved[market]["block"], read_scores(Path(input_dir) / f"{market}_scores.csv", market))
+        try:
+            if not path.exists():
+                raise FileNotFoundError(f"{path} missing: run python3 -m qsignals.refresh first")
+            saved[market] = json.loads(path.read_text(encoding="utf-8"))
+            check_block(market, saved[market]["block"], read_scores(Path(input_dir) / f"{market}_scores.csv", market))
+        except (OSError, ValueError, KeyError) as exc:
+            errors[market] = f"{market}: {exc}"
+            old = (previous or {}).get("markets", {}).get(market)
+            if old is None:
+                saved.pop(market, None)
+                continue
+            saved[market] = {"runId": "previous-export", "generatedAt": previous.get("generatedAt", ""), "block": old}
+    if len(saved) != len(MARKETS):
+        return None, errors
     return {
         "schema_version": 1,
         "runId": " + ".join(f"{m}:{saved[m]['runId']}" for m in MARKETS),
@@ -62,7 +82,7 @@ def build(input_dir=INPUT):
         "mode": "qualitative-signals-import",
         "markets": {m: saved[m]["block"] for m in MARKETS},
         "sourceValuesIncluded": False,
-    }
+    }, errors
 
 
 def render(export):
@@ -73,17 +93,27 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--check", action="store_true", help="fail if the frontend export is stale")
     args = parser.parse_args(argv)
-    text = render(build())
     if args.check:
+        text = render(build())
         current = OUTPUT.read_text(encoding="utf-8") if OUTPUT.exists() else ""
         if current != text:
             print(f"{OUTPUT.relative_to(PROJECT_ROOT)} is stale; run python3 -m qsignals.export_frontend", file=sys.stderr)
             return 1
         print(f"{OUTPUT.relative_to(PROJECT_ROOT)} is current.")
         return 0
-    OUTPUT.write_text(text, encoding="utf-8")
+    try:
+        previous = json.loads(OUTPUT.read_text(encoding="utf-8")) if OUTPUT.exists() else None
+    except ValueError:
+        previous = None
+    export, errors = build_markets(previous=previous)
+    for message in errors.values():
+        print(f"::error::Frontend export kept the previous block for {message}", file=sys.stderr)
+    if export is None:
+        return 1
+    OUTPUT.write_text(render(export), encoding="utf-8")
     print(f"wrote {OUTPUT.relative_to(PROJECT_ROOT)}")
-    return 0
+    # 3: written, but a market kept its previous block (the workflow keeps the file and fails later).
+    return 3 if errors else 0
 
 
 if __name__ == "__main__":

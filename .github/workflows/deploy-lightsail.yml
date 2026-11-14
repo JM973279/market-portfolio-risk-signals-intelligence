@@ -10,6 +10,9 @@ name: Deploy verified main to Lightsail
 # - Lightsail keeps serving the previous deployment until the new one is healthy. If the live
 #   check fails after activation, the previous deployment's containers are redeployed.
 # - Deploys only when main changed something the images contain (unless forced).
+# - A data run that ends red after publishing one market (the other market failed) still
+#   triggers a deploy, so the published market reaches the site; a red run that published
+#   nothing changes no image input and is skipped.
 
 on:
   workflow_run:
@@ -57,7 +60,7 @@ jobs:
     if: >-
       github.ref == 'refs/heads/main' &&
       (github.event_name == 'workflow_dispatch' || vars.LIGHTSAIL_AUTODEPLOY == 'true') &&
-      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
+      (github.event_name != 'workflow_run' || contains(fromJSON('["success","failure"]'), github.event.workflow_run.conclusion))
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     permissions:

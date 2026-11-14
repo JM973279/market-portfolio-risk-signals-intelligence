@@ -535,28 +535,32 @@ def main(argv=None):
 
     env = dict(os.environ)
     env.update(load_env(args.env_file or args.v1_repo / ".env"))
-    for key in ("KRX_API_KEY", "ECOS_API_KEY"):
-        if not env.get(key):
-            raise SystemExit(f"{key} is not set (V1 .env or environment)")
+    # Both keys feed Korea only. A missing key never stops US: Korea is skipped and alerted.
+    missing = [key for key in ("KRX_API_KEY", "ECOS_API_KEY") if not env.get(key)]
+    if missing and args.check_keys:
+        raise SystemExit(f"{', '.join(missing)} is not set (V1 .env or environment)")
+    key_alert = f"{', '.join(missing)} is not set (repository secret or V1 .env); Korea was not refreshed." if missing else None
+    skip_krx = bool(missing)
     # KRX only on a refresh: its downloaders retry each session for hours on a
     # rejected key, while ECOS fails within seconds by itself, and an extra ECOS
     # call shortly before the real fetch can get that fetch rejected.
-    key_alert = None
     try:
-        check_provider_keys(env, ecos=args.check_keys)
+        if not missing:
+            check_provider_keys(env, ecos=args.check_keys)
     except KeysRejected as exc:
         if args.check_keys or exc.names != ["KRX_API_KEY"]:
             raise SystemExit(f"{exc.code}\nNothing was collected or published.") from None
         # KRX feeds Korea only. US needs no KRX data, so a refused KRX key must not stop US.
-        key_alert = " ".join(exc.code.splitlines())
+        key_alert, skip_krx = " ".join(exc.code.splitlines()), True
         print("::warning::KRX refused the key: Korea keeps its published scores; US is refreshed as usual "
               "and the run fails after publishing.", file=sys.stderr)
     except ProvidersUnreachable as exc:
         if args.check_keys:
             raise SystemExit(f"Providers unreachable: {exc}") from None
-        print(json.dumps(with_lag({"unreachable": str(exc)}, args.output_dir), indent=2, ensure_ascii=False))
-        print(f"::warning::Providers unreachable ({exc}); kept the published files.", file=sys.stderr)
-        return 2
+        # An outage, not a person's problem: Korea is reported late (no alert) and retried next run.
+        skip_krx = True
+        print(f"::warning::KRX unreachable ({exc}); Korea keeps its published scores, US is refreshed as usual.",
+              file=sys.stderr)
     if args.check_keys:
         return 0
 
@@ -582,12 +586,12 @@ def main(argv=None):
     reference = None
     args.v1_data.mkdir(parents=True, exist_ok=True)
     try:
-        top_up_korea_raw(args.python, work / "v1", args.v1_data, env, log, download=key_alert is None)
+        top_up_korea_raw(args.python, work / "v1", args.v1_data, env, log, download=not skip_krx)
         original_reference = (work / "mpri" / contract["markets"]["korea"]["reference"]).exists()
         if not original_reference and (args.rebuild_reference or not (args.reference_dir / "verification.json").exists()):
             rebuild_reference(args.python, work, args.v1_data, args.reference_dir, args.reference_end, log)
         reference = install_reference(work, contract, args.reference_dir)
-    except RefreshError as exc:
+    except Exception as exc:  # noqa: BLE001 - any Korea-side failure must leave US running
         alerts.append(f"Korea preparation failed: {exc}")
         print(f"::warning::Korea preparation failed ({exc}); US is refreshed as usual.", file=sys.stderr)
 
@@ -597,8 +601,12 @@ def main(argv=None):
         raise SystemExit(f"Frozen pipeline failed (exit {code}); see {log}")
     operational = json.loads((work / "mpri/frontend/public/data/operational-markets.json").read_text(encoding="utf-8"))
     # The ECOS downloader runs only to bootstrap, so the cache follows run.py's verified rows.
-    added = extend_ecos_cache(work / "mpri/data/operations" / str(operational.get("runId")) / "korea/ecos_credit.csv",
-                              args.v1_data / "raw/korea/ecos_credit.csv")
+    try:
+        added = extend_ecos_cache(work / "mpri/data/operations" / str(operational.get("runId")) / "korea/ecos_credit.csv",
+                                  args.v1_data / "raw/korea/ecos_credit.csv")
+    except Exception as exc:  # noqa: BLE001 - a Korea cache problem must not stop US
+        alerts.append(f"Korea ECOS cache not extended: {type(exc).__name__}: {exc}")
+        added = 0
     if added:
         print(f"ECOS credit cache extended by {added} verified rows.", file=sys.stderr)
     status = {m: freshness(v) for m, v in operational["markets"].items()}
@@ -665,7 +673,12 @@ def main(argv=None):
     summary["imported"], summary["skipped"], summary["last_risk_date"] = [], {}, {}
     for market in markets:
         importer = import_data if market == "korea" else import_us
-        result = importer(payloads, files, source, args.output_dir, extra={"refresh": refresh})
+        try:
+            result = importer(payloads, files, source, args.output_dir, extra={"refresh": refresh})
+        except Exception as exc:  # noqa: BLE001 - one market's import never stops the other's
+            alerts.append(f"{market} import failed ({type(exc).__name__}: {exc}); its published scores were kept.")
+            summary["skipped"][market] = {"status": "failed", "error": type(exc).__name__}
+            continue
         summary["last_risk_date"][market] = result.get("last_risk_date")
         if result.get("publication", {}).get("status") == "skipped":
             # Older or relabeled scores never replace what is already published.

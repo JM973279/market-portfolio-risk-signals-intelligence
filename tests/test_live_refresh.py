@@ -324,15 +324,17 @@ class KeyCheckTest(unittest.TestCase):
 class MarketIndependenceTest(unittest.TestCase):
     """A Korea failure must never stop US publication (and the run still fails afterwards)."""
 
-    def run_main(self, tmp, korea_status, prepare=None):
+    def run_main(self, tmp, korea_status, prepare=None, keys="KRX_API_KEY=k\nECOS_API_KEY=e\n",
+                 check=None, import_korea=None):
         tmp = Path(tmp)
         python = tmp / "python"
         python.write_text("", encoding="utf-8")
         env_file = tmp / ".env"
-        env_file.write_text("KRX_API_KEY=k\nECOS_API_KEY=e\n", encoding="utf-8")
+        env_file.write_text(keys, encoding="utf-8")
+        current = {"date": "2026-11-13"} if korea_status == "CURRENT" else None
         markets = {
-            "korea": {"status": korea_status, "expectedDate": "2026-11-13", "current": None,
-                      "lastValid": None, "reason": "x", "series": []},
+            "korea": {"status": korea_status, "expectedDate": "2026-11-13", "current": current,
+                      "lastValid": current, "reason": "x", "series": []},
             "us": {"status": "DELAYED", "expectedDate": "2026-11-13", "current": None, "historicalParity": True,
                    "lastValid": {"date": "2026-11-12"}, "history": [{"date": "2026-11-12"}], "series": []},
         }
@@ -349,11 +351,13 @@ class MarketIndependenceTest(unittest.TestCase):
             (data / "global-markets.json").write_text("{}")
             return 0
 
-        imported = []
+        imported, self.downloads = [], []
+        prepare = prepare or (lambda *a, download=True: self.downloads.append(download))
         argv = ["--env-file", str(env_file), "--python", str(python), "--work-root", str(tmp / "runs"),
                 "--v1-data", str(tmp / "v1-data"), "--output-dir", str(tmp / "out"),
                 "--source-root", str(tmp), "--v1-repo", str(tmp)]
-        with patch("qsignals.refresh.check_provider_keys"), \
+        with patch.dict(os.environ, {"KRX_API_KEY": "", "ECOS_API_KEY": ""}), \
+             patch("qsignals.refresh.check_provider_keys", side_effect=check), \
              patch("qsignals.refresh.archive", side_effect=fake_archive), \
              patch("qsignals.refresh.find_v1_commit", return_value="v" * 40), \
              patch("qsignals.refresh.top_up_korea_raw", side_effect=prepare), \
@@ -362,7 +366,7 @@ class MarketIndependenceTest(unittest.TestCase):
              patch("qsignals.refresh.extend_ecos_cache", return_value=0), \
              patch("qsignals.refresh.git", side_effect=refresh.RefreshError("no repo")), \
              patch("qsignals.refresh.import_us", side_effect=lambda *a, **k: imported.append("us") or {"last_risk_date": "2026-11-12"}), \
-             patch("qsignals.refresh.import_data", side_effect=AssertionError("korea imported")), \
+             patch("qsignals.refresh.import_data", side_effect=import_korea or AssertionError("korea imported")), \
              patch("qsignals.refresh.score_lag", return_value={}), \
              patch("sys.stdout", new_callable=io.StringIO) as out, patch("sys.stderr", new_callable=io.StringIO):
             code = refresh.main(argv)
@@ -381,6 +385,27 @@ class MarketIndependenceTest(unittest.TestCase):
             code, summary, imported = self.run_main(tmp, "BLOCKED", prepare=broken)
         self.assertEqual((code, imported), (3, ["us"]))
         self.assertIn("Korea preparation failed", summary["alerts"][0])
+
+    def test_failed_korea_import_still_publishes_us(self):
+        def broken(*args, **kwargs):
+            raise ValueError("KOSPI200 price check failed")
+        with tempfile.TemporaryDirectory() as tmp:
+            code, summary, imported = self.run_main(tmp, "CURRENT", import_korea=broken)
+        self.assertEqual((code, imported), (0, ["us"]))
+        self.assertIn("korea import failed", summary["alerts"][0])
+
+    def test_missing_korea_keys_still_refresh_us(self):
+        no_check = AssertionError("keys checked without a value")
+        with tempfile.TemporaryDirectory() as tmp:
+            code, summary, imported = self.run_main(tmp, "DELAYED", keys="ECOS_API_KEY=e\n", check=no_check)
+        self.assertEqual((code, imported, self.downloads), (3, ["us"], [False]))
+        self.assertIn("KRX_API_KEY is not set", summary["alerts"][0])
+
+    def test_unreachable_krx_keeps_korea_late_without_an_alert(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, summary, imported = self.run_main(
+                tmp, "DELAYED", check=refresh.ProvidersUnreachable("kospi_dd_trd: no response"))
+        self.assertEqual((code, imported, summary["alerts"], self.downloads), (3, ["us"], [], [False]))
 
     def test_delayed_korea_is_not_an_alert(self):
         with tempfile.TemporaryDirectory() as tmp:
