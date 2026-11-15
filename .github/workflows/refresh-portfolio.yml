@@ -55,6 +55,9 @@ jobs:
           /tmp/portfolio-collector/bin/pip install -r requirements.portfolio-refresh.txt
       - name: Collect and validate a full provider vintage using the pinned GitHub seed
         run: /tmp/portfolio-collector/bin/python -m qsignals.portfolio_refresh
+        env:
+          # Authenticated GitHub API reads (anonymous runner IPs hit the 60/hour limit).
+          GITHUB_TOKEN: ${{ github.token }}
       - name: Check imported data and existing diagnostics
         run: python3 -m unittest discover -s tests -t .
       - name: Commit only validated portfolio data

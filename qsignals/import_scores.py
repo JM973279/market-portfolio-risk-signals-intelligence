@@ -43,8 +43,22 @@ def _git(source_root, *args):
     return out.stdout.strip()
 
 
+def _github_headers(url):
+    """Authenticate GitHub API reads when Actions provides a token.
+
+    Anonymous api.github.com calls share a 60-per-hour limit per IP, and Actions runners share
+    IPs, so an anonymous call can fail with 403 'rate limit exceeded' (2026-11-15). A token is
+    sent only to api.github.com, never to other hosts.
+    """
+    headers = {"User-Agent": "market-qualitative-signals"}
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if token and url.startswith("https://api.github.com/"):
+        headers["Authorization"] = f"Bearer {token}"
+    return headers
+
+
 def _download(url, attempts=3):
-    request = urllib.request.Request(url, headers={"User-Agent": "market-qualitative-signals"})
+    request = urllib.request.Request(url, headers=_github_headers(url))
     for attempt in range(1, attempts + 1):
         try:
             with urllib.request.urlopen(request, timeout=30) as response:
