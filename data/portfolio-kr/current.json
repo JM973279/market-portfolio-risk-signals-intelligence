@@ -1,54 +1,54 @@
 {
   "schema_version": 2,
   "source_repo": "JM973279/market-portfolio-risk-signals-intelligence",
-  "source_commit": "a40fe062d3fc7365a20104a7113de0308b10d4ee",
+  "source_commit": "840b0852c9dbedfab1dd4a016d1f170f6fef4bef",
   "files": {
     "universe.csv": {
-      "path": "snapshots/8c24a81aaaeb94c3d58f5f97ee21afa0c3c07028/universe.csv",
+      "path": "snapshots/395ebee14c0505c8d3e1e346f0a452251d36f175/universe.csv",
       "source_path": null,
       "sha256": "e6adbdd04f855f21afea48f210e79fcac5c69cf1ee93d65e0de8f51f159827e1",
       "bytes": 1096
     },
     "prices.csv": {
-      "path": "snapshots/8c24a81aaaeb94c3d58f5f97ee21afa0c3c07028/prices.csv",
+      "path": "snapshots/395ebee14c0505c8d3e1e346f0a452251d36f175/prices.csv",
       "source_path": null,
-      "sha256": "2aab1724accd917a0d6ca24cbde1f33ddb0ff2a51d9bd88806451d68a23b23cd",
-      "bytes": 667719
+      "sha256": "389ba5ae35e348406a9d6a8f82b08ef87b90ec5f8d261963c9dd1cdb7d5f3503",
+      "bytes": 668234
     },
     "factors.csv": {
-      "path": "snapshots/8c24a81aaaeb94c3d58f5f97ee21afa0c3c07028/factors.csv",
+      "path": "snapshots/395ebee14c0505c8d3e1e346f0a452251d36f175/factors.csv",
       "source_path": null,
       "sha256": "613610c04a8870d2f542e0ae69b5c6558c4b4d56fc38c4c706881644fa93d6b7",
       "bytes": 48869
     },
     "snapshot_meta.json": {
-      "path": "snapshots/8c24a81aaaeb94c3d58f5f97ee21afa0c3c07028/snapshot_meta.json",
+      "path": "snapshots/395ebee14c0505c8d3e1e346f0a452251d36f175/snapshot_meta.json",
       "source_path": null,
       "sha256": "18e6af11ce30e8142e75207a057780c700b5ebba9bcf890b53363ce7561822fc",
       "bytes": 542
     },
     "scenarios.json": {
-      "path": "snapshots/8c24a81aaaeb94c3d58f5f97ee21afa0c3c07028/scenarios.json",
+      "path": "snapshots/395ebee14c0505c8d3e1e346f0a452251d36f175/scenarios.json",
       "source_path": null,
-      "sha256": "32d41b0691a52f1fbc2e5c78622b83eb7d502b5c8f284bdab2af3d6beb781bbf",
+      "sha256": "a0842c2359972708d74b498db88ebe037f80be245550142ccccdbdcad5141aad",
       "bytes": 1315
     }
   },
-  "imported_at": "2026-11-15T01:36:23+00:00",
+  "imported_at": "2026-11-15T03:02:02+00:00",
   "price_basis": "dividend_split_adjusted_close",
   "currency": "KRW",
   "sector_attribution": {
     "status": "unavailable",
     "reason": "과거 벤치마크 섹터 구성·수익률 및 시점별 분류 자료가 연결되지 않았습니다."
   },
-  "snapshot_id": "8c24a81aaaeb94c3d58f5f97ee21afa0c3c07028",
+  "snapshot_id": "395ebee14c0505c8d3e1e346f0a452251d36f175",
   "collection": {
     "policy": "korea-portfolio-github-actions-v1",
-    "retrieved_at": "2026-11-15T01:36:11+00:00",
+    "retrieved_at": "2026-11-15T03:01:53+00:00",
     "code_repo": "JM973279/market-portfolio-risk-signals-intelligence",
     "code_ref": "main",
-    "code_commit": "a40fe062d3fc7365a20104a7113de0308b10d4ee",
-    "github_run_id": "43663812372",
+    "code_commit": "840b0852c9dbedfab1dd4a016d1f170f6fef4bef",
+    "github_run_id": "43670421811",
     "providers": {
       "prices": "Yahoo Finance adjusted close",
       "volatility": "GitHub Actions V1 raw-history cache + KRX Open API",
@@ -630,22 +630,22 @@
     },
     "receipts": {
       "yahoo-adjusted-close.csv": {
-        "path": "snapshots/8c24a81aaaeb94c3d58f5f97ee21afa0c3c07028/receipts/yahoo-adjusted-close.csv",
-        "sha256": "055003ae9351a383d446f5d74b96e9b7a667c430f733d1375e263688017648ef",
-        "bytes": 674765
+        "path": "snapshots/395ebee14c0505c8d3e1e346f0a452251d36f175/receipts/yahoo-adjusted-close.csv",
+        "sha256": "c43ecf16e1138a130bb42de70e6573024fb760501ab8960b8912b9912f689132",
+        "bytes": 675286
       },
       "krx-vkospi.csv": {
-        "path": "snapshots/8c24a81aaaeb94c3d58f5f97ee21afa0c3c07028/receipts/krx-vkospi.csv",
+        "path": "snapshots/395ebee14c0505c8d3e1e346f0a452251d36f175/receipts/krx-vkospi.csv",
         "sha256": "7f2f5964c95f148712dd4cbcfeded8b97444f232fa7dffe8dcf5349f0988d75f",
         "bytes": 36741
       },
       "ecos-ktb10y.csv": {
-        "path": "snapshots/8c24a81aaaeb94c3d58f5f97ee21afa0c3c07028/receipts/ecos-ktb10y.csv",
+        "path": "snapshots/395ebee14c0505c8d3e1e346f0a452251d36f175/receipts/ecos-ktb10y.csv",
         "sha256": "801891590a1fd9183ddfa209341da31bd9db14f555d0d14f9bbb59e49c10095a",
         "bytes": 36887
       },
       "krx-sessions.csv": {
-        "path": "snapshots/8c24a81aaaeb94c3d58f5f97ee21afa0c3c07028/receipts/krx-sessions.csv",
+        "path": "snapshots/395ebee14c0505c8d3e1e346f0a452251d36f175/receipts/krx-sessions.csv",
         "sha256": "e0cf2e4c0391e15fc96b2bfd62055933cb771d60ce8c62eadcde5c4d41efc9d2",
         "bytes": 23930
       }

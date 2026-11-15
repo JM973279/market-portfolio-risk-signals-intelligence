@@ -1,0 +1,24 @@
+ticker,name,type,sector,asset_class
+005930,삼성전자,stock,반도체,equity
+000660,SK하이닉스,stock,반도체,equity
+005380,현대차,stock,자동차,equity
+000270,기아,stock,자동차,equity
+012330,현대모비스,stock,자동차,equity
+035420,NAVER,stock,인터넷,equity
+035720,카카오,stock,인터넷,equity
+051910,LG화학,stock,화학·2차전지,equity
+006400,삼성SDI,stock,화학·2차전지,equity
+068270,셀트리온,stock,바이오,equity
+207940,삼성바이오로직스,stock,바이오,equity
+105560,KB금융,stock,금융,equity
+055550,신한지주,stock,금융,equity
+005490,POSCO홀딩스,stock,철강,equity
+066570,LG전자,stock,전자,equity
+017670,SK텔레콤,stock,통신,equity
+033780,KT&G,stock,필수소비재,equity
+069500,KODEX 200,etf,국내 대형주 지수,equity
+229200,KODEX 코스닥150,etf,국내 중소형주 지수,equity
+133690,TIGER 미국나스닥100,etf,해외주식 (원화),equity
+148070,KOSEF 국고채10년,etf,국고채 10년,bond
+114260,KODEX 국고채3년,etf,국고채 3년,bond
+132030,KODEX 골드선물(H),etf,금 (환헤지),commodity
