@@ -1,7 +1,7 @@
 import "server-only";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import type { DashboardData, GlobalData, MonitorData, OperationalData, ScenarioLibraryData } from "./dashboard-types";
+import type { DashboardData, GlobalData, MonitorData, OperationalData, PreopenData, ScenarioLibraryData } from "./dashboard-types";
 export async function getDashboardData(): Promise<DashboardData> {
  "use cache";
  let monitor: MonitorData | null = null;
@@ -29,5 +29,10 @@ export async function getDashboardData(): Promise<DashboardData> {
   const parsed = JSON.parse(await readFile(path.join(process.cwd(), "public/data/us-scenarios.json"), "utf8"));
   if (parsed.schema_version === 1 && parsed.is_forecast === false && Array.isArray(parsed.episodes) && Array.isArray(parsed.summary) && parsed.categories) usScenarios = parsed;
  } catch { /* The US library is optional; the Korea library still renders. */ }
- return { monitor, global, operational, scenarios, usScenarios };
+ let preopen: PreopenData | null = null;
+ try {
+  const parsed = JSON.parse(await readFile(path.join(process.cwd(), "public/data/korea-preopen.json"), "utf8"));
+  if (parsed.schema_version === 1 && parsed.is_forecast === false && parsed.latest?.krxDate && Array.isArray(parsed.history) && Array.isArray(parsed.context?.buckets)) preopen = parsed;
+ } catch { /* Pre-open reference is display only; the Korea page renders without it. */ }
+ return { monitor, global, operational, scenarios, usScenarios, preopen };
 }

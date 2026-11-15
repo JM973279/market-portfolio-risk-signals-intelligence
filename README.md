@@ -42,6 +42,7 @@ AWS Lightsail 컨테이너 서비스 `mpri`(서울, `ap-northeast-2`)의 공개 
 
 - **성과와 위험** — 과거 수정종가를 사용한 가상 포트폴리오입니다. 성과요인 합계는 벤치마크 대비 초과수익과 대사합니다. 실제 섹터별 성과요인에는 별도의 과거 벤치마크 구성·분류 자료가 필요합니다. [포트폴리오 계산 방법](docs/portfolio.md)
 - **경보와 급락 사례** — 표본 외 백테스트와 동결 V1 모델의 사후·운영 추론을 구분합니다. 사후 뉴스 주석은 급락 해석에 사용합니다. [급락 진단 결과](reports/event_diagnostics.md) · [신호 실험](reports/signal_checks.md)
+- **개장 전 미국 가격 (표시 전용)** — [한국 시장](https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/korea) 화면에 다음 KRX 거래일 전에 끝난 미국 세션의 EWY·SOX 수익률을 참고로 보여 줍니다. Risk Score·MSI와 모델은 바뀌지 않으며, 과거 빈도이지 예측 확률이 아닙니다. 근거는 [백테스트 화면의 개장 전 점검](https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/validation#preopen)에 있습니다.
 - **데이터 기준일** — 가격 관측일과 위험 추정일을 따로 표시합니다. GitHub Actions가 수집·검증한 스냅샷을 사용하고, 검증에 실패하면 마지막 검증본을 제공합니다. [데이터와 방법론](https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/sources)
 
 ## English overview
@@ -59,6 +60,7 @@ AWS Lightsail 컨테이너 서비스 `mpri`(서울, `ap-northeast-2`)의 공개 
 
 - **Performance and risk** — A hypothetical portfolio built from historical adjusted closes. The attribution effects add up to the excess return over the benchmark. True sector attribution would need separate historical benchmark constituents and classifications. [Portfolio methodology (Korean)](docs/portfolio.md)
 - **Alerts and sell-off cases** — Out-of-sample backtests are kept apart from the frozen V1 model's after-the-fact and operational inference. Post-hoc news annotations are used only to interpret sell-offs. [Sell-off diagnostics](reports/event_diagnostics.md) · [Signal experiments](reports/signal_checks.md)
+- **US pre-open reference (display only)** — The [Korea market](https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/korea) page shows EWY and SOX returns from the US session that closed before the next KRX session. The Risk Score, MSI and model are unchanged; the figures are historical frequencies, not forecast probabilities. See the [pre-open check on the backtest page](https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/validation#preopen).
 - **Data dates** — Price observation dates and risk estimation dates are shown separately. The site uses snapshots that GitHub Actions collected and verified; when verification fails, it keeps serving the last verified snapshot. [Data and methodology](https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/sources)
 
 ### Related repositories
