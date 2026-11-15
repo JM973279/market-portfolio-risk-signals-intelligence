@@ -114,7 +114,7 @@ def fetch_vkospi(sessions, key, cache=None, previous=None, alerts=None):
     """New sessions from KRX on top of the verified history. A KRX rejection stops collection
     with the history kept, so prices can still publish while the factor lag stays within
     build_snapshot's limit: a refused day (key still works) is a warning, a refused key is
-    appended to `alerts` (the caller must fail the run) or raised when `alerts` is None."""
+    appended to `alerts` (the caller reports it) or raised when `alerts` is None."""
     values, origin = {}, 'KRX Open API'
     if cache and Path(cache).exists():
         values = parse_vkospi(Path(cache).read_bytes())
@@ -306,17 +306,15 @@ def main():
     parser.add_argument('--output-dir', type=Path, default=OUTPUT)
     parser.add_argument('--vkospi-cache', type=Path)
     parser.add_argument('--validate-only', action='store_true')
-    parser.add_argument('--alert-file', type=Path,
-                        help='Write provider-key alerts here; the workflow fails after publishing when it is non-empty.')
     args = parser.parse_args()
-    alerts = []
+    alerts, failed = [], False
     try:
         if not args.validate_only:
             try:
                 refresh(args.output_dir, cache=args.vkospi_cache, alerts=alerts)
             except PortfolioError as exc:
                 # Provider late/unreachable: keep the published snapshot and retry (qsignals.deferral).
-                # A refused key is never deferred: retrying cannot fix it.
+                # With a refused key nothing is deferred: the run fails with the key message.
                 current = Path(args.output_dir) / 'current.json'
                 published = json.loads(current.read_text())['price_as_of'] if current.exists() else None
                 message = None if alerts else deferral(
@@ -332,25 +330,28 @@ def main():
     except Exception as exc:
         # Provider exceptions may contain private URLs. Publish only our own sanitized messages.
         print(str(exc) if isinstance(exc, PortfolioError) else type(exc).__name__, file=sys.stderr)
+        failed = True
         return 1
     finally:
-        report_alerts(alerts, args.alert_file)
+        report_alerts(alerts, failed)
     return 0
 
 
-def report_alerts(alerts, alert_file=None):
-    """Annotate, summarize and hand alerts to the workflow's final step (which fails the run)."""
-    for message in alerts:
-        print(f'::error title=KRX API key rejected::{message}', flush=True)
+def report_alerts(alerts, failed):
+    """A refused KRX key is a warning while prices still publish (VKOSPI may lag up to three
+    sessions, like any late provider) and an error once the run fails: past that lag
+    build_snapshot blocks publication, so the run turns red exactly when data stops."""
     if not alerts:
         return
+    level = 'error' if failed else 'warning'
+    title = 'KRX API key rejected' if failed else 'KRX refused the key; prices published, VKOSPI kept (up to 3 sessions late)'
+    for message in alerts:
+        print(f'::{level} title={title}::{message}', flush=True)
     summary = os.environ.get('GITHUB_STEP_SUMMARY')
     if summary:
         with open(summary, 'a', encoding='utf-8') as fh:
             fh.write('### Korea portfolio: KRX API key needs attention\n\n' +
                      '\n'.join(f'- {m}' for m in alerts) + '\n')
-    if alert_file:
-        Path(alert_file).write_text('\n'.join(alerts) + '\n', encoding='utf-8')
 
 
 if __name__ == '__main__':
