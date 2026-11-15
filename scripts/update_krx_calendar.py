@@ -26,7 +26,9 @@ PROVENANCE = ROOT / "data/calendar/provenance.json"
 def library_sessions(start, end):
     import exchange_calendars as xcals
     cal = xcals.get_calendar("XKRX", start=start, end=end)
-    return [day.strftime("%Y-%m-%d") for day in cal.sessions_in_range(start, end)], xcals.__version__
+    # Not sessions_in_range: it refuses bounds that are not sessions (2016-01-01 is a holiday).
+    days = [day.strftime("%Y-%m-%d") for day in cal.sessions]
+    return [day for day in days if start <= day <= end], xcals.__version__
 
 
 def render(sessions):

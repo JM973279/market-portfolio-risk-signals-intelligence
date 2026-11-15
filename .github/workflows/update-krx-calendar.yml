@@ -18,6 +18,12 @@ on:
       - '.github/workflows/update-krx-calendar.yml'
       - 'scripts/update_krx_calendar.py'
       - 'data/calendar/provenance.json'
+  # A pull request runs the same check and extension with the real library but commits nothing.
+  pull_request:
+    paths:
+      - '.github/workflows/update-krx-calendar.yml'
+      - 'scripts/update_krx_calendar.py'
+      - 'data/calendar/**'
 
 permissions:
   contents: read
@@ -28,7 +34,7 @@ concurrency:
 
 jobs:
   extend:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
@@ -36,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: main
+          ref: ${{ github.event_name != 'pull_request' && 'main' || '' }}
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
@@ -51,6 +57,7 @@ jobs:
       - name: Verify code against the calendar
         run: python3 -m unittest discover -s tests -t .
       - name: Commit the extended calendar
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
