@@ -171,11 +171,14 @@ class KoreaRefreshTest(unittest.TestCase):
                 return {'OutBlock_1': []}
             raise ProviderRejected('KRX', 401, 'Unauthorized Key')
         alerts = []
+        # warn is patched: a printed "::warning::" would become an annotation on the CI run.
         with patch('qsignals.portfolio_korea_refresh.request_json', side_effect=provider), \
-             patch('qsignals.portfolio_korea_refresh.time.sleep'):
+             patch('qsignals.portfolio_korea_refresh.time.sleep'), \
+             patch('qsignals.portfolio_korea_refresh.warn') as warned:
             values, _ = fetch_vkospi(sessions, 'key', alerts=alerts)
         self.assertEqual(values, {'2026-11-12': 30.5})
         self.assertEqual(alerts, [])
+        self.assertIn('2026-11-13', warned.call_args.args[0])
 
     def test_refused_krx_key_alerts_without_dropping_the_verified_history(self):
         def refused(url, headers=None, provider=None):
@@ -201,34 +204,35 @@ class KoreaRefreshTest(unittest.TestCase):
         self.assertIn('replacing the secret will not help', alerts[0])
         self.assertIn('drvprod_dd_trd', alerts[0])
 
-    def test_refused_key_publishes_prices_then_fails_and_is_never_deferred(self):
+    def test_refused_key_is_a_warning_while_prices_publish_and_an_error_once_data_stops(self):
         quotes, rates, vk, days = fixture()
         lagging = {d: v for d, v in vk.items() if d < days[-1]}
         def keep_history(sessions, key, cache=None, previous=None, alerts=None):
             alerts.append('KRX rejected the request (HTTP 401: Unauthorized Key).')
             return lagging, 'test'
         env = {'KRX_API_KEY': 'test', 'ECOS_API_KEY': 'test', 'GITHUB_SHA': 'c' * 40}
+        out = io.StringIO()
         with tempfile.TemporaryDirectory() as directory:
-            alert_file = Path(directory) / 'alerts.txt'
-            argv = ['prog', '--output-dir', directory, '--alert-file', str(alert_file)]
+            argv = ['prog', '--output-dir', directory]
             with patch.dict(os.environ, env), patch('sys.argv', argv), \
                  patch('qsignals.portfolio_korea_refresh.completed_sessions', return_value=days), \
                  patch('qsignals.portfolio_korea_refresh.fetch_quotes',
                        return_value={t+'.KS': v for t, v in quotes.items()}), \
                  patch('qsignals.portfolio_korea_refresh.fetch_rates', return_value=rates), \
                  patch('qsignals.portfolio_korea_refresh.fetch_vkospi', side_effect=keep_history), \
-                 redirect_stdout(io.StringIO()):
+                 redirect_stdout(out):
                 self.assertEqual(main(), 0)
                 data = load_dataset(directory)
                 self.assertEqual((data.meta['as_of'], data.meta['risk_as_of']), (days[-1], days[-2]))
-                self.assertIn('Unauthorized Key', alert_file.read_text())
-                # Even a deferrable error must not hide a refused key behind a warning.
-                alert_file.unlink()
+                self.assertIn('::warning title=KRX refused the key', out.getvalue())
+                self.assertNotIn('::error', out.getvalue())
+                # Past the allowed factor lag publication stops: the run fails with the key message
+                # (never deferred as a mere provider delay).
                 with patch('qsignals.portfolio_korea_refresh.build_snapshot',
                            side_effect=PortfolioError('late', 'stale_data')), \
                      redirect_stderr(io.StringIO()):
                     self.assertEqual(main(), 1)
-                self.assertTrue(alert_file.exists())
+                self.assertIn('::error title=KRX API key rejected::KRX rejected the request', out.getvalue())
 
     def test_calendar_waits_until_two_hours_after_korean_close(self):
         before = datetime(2026, 11, 10, 7, 0, tzinfo=timezone.utc)

@@ -7,9 +7,10 @@ name: Daily V1 score refresh
 # about 90 minutes); later runs restore it from the Actions cache.
 # qsignals.refresh checks KRX_API_KEY with KRX before downloading. If KRX refuses
 # it, the KRX downloaders are skipped (they would retry every session until the
-# 300-minute timeout). Korea and US are independent: when one market fails (refused
-# key, Korea preparation, BLOCKED verification) it keeps its published scores, the
-# other market is published as usual, and the run fails after publishing.
+# 300-minute timeout) and Korea keeps its published scores with a warning until it is
+# more than three sessions behind. Korea and US are independent: when one market fails
+# (Korea preparation, BLOCKED verification) it keeps its published scores, the other
+# market is published as usual, and the run fails after publishing.
 # Data is published only from main.
 
 on:
@@ -203,8 +204,9 @@ jobs:
           # step turns the run red once a market is more than qsignals.deferral.MAX_BEHIND
           # sessions behind (after the other market was published).
           jq -r '.lag // {} | to_entries[] | "\(.key): published \(.value.published), expected \(.value.expected), \(.value.behind) behind"' "$RUNNER_TEMP/summary.json"
-          # A failure on one market (refused KRX key, Korea preparation, BLOCKED verification)
-          # never stops the other market's publication above, but still turns the run red here.
+          # A failure on one market (missing key, Korea preparation, BLOCKED verification) never
+          # stops the other market's publication above, but still turns the run red here. A key
+          # KRX refuses is a warning until Korea is too far behind (stale, below).
           alerts=$(jq -r '(.alerts // [])[]' "$RUNNER_TEMP/summary.json")
           if [ -n "$POST_FAILED" ]; then
             alerts=$(printf '%s\n%s' "$alerts" "Post-processing kept the previous output for: $POST_FAILED" | sed '/^$/d')

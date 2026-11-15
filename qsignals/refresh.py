@@ -31,8 +31,8 @@ runner secret can be compared with a local .env). Before any download the KRX
 key is checked with one request per KRX endpoint: a rejected key makes the V1
 KRX downloaders retry every session since 2010 for hours, so they are skipped.
 KRX feeds Korea only, so Korea is then reported as delayed from its cached
-history while US is refreshed as usual; the summary's `key_rejected` makes the
-workflow fail after publishing. `--check-keys` runs only the checks (KRX and ECOS). Run logs
+history while US is refreshed as usual. That is a warning; the workflow fails once
+Korea is more than MAX_BEHIND sessions behind. `--check-keys` runs only the checks (KRX and ECOS). Run logs
 and provider receipts stay in --work-root (outside this repo).
 """
 
@@ -540,6 +540,7 @@ def main(argv=None):
     if missing and args.check_keys:
         raise SystemExit(f"{', '.join(missing)} is not set (V1 .env or environment)")
     key_alert = f"{', '.join(missing)} is not set (repository secret or V1 .env); Korea was not refreshed." if missing else None
+    key_warning = None
     skip_krx = bool(missing)
     # KRX only on a refresh: its downloaders retry each session for hours on a
     # rejected key, while ECOS fails within seconds by itself, and an extra ECOS
@@ -551,9 +552,11 @@ def main(argv=None):
         if args.check_keys or exc.names != ["KRX_API_KEY"]:
             raise SystemExit(f"{exc.code}\nNothing was collected or published.") from None
         # KRX feeds Korea only. US needs no KRX data, so a refused KRX key must not stop US.
-        key_alert, skip_krx = " ".join(exc.code.splitlines()), True
-        print("::warning::KRX refused the key: Korea keeps its published scores; US is refreshed as usual "
-              "and the run fails after publishing.", file=sys.stderr)
+        # A warning, like any late provider: the run fails once Korea is more than MAX_BEHIND
+        # sessions behind (summary 'stale'), i.e. when its data is actually too old.
+        key_warning, skip_krx = " ".join(exc.code.splitlines()), True
+        print(f"::warning title=KRX refused the key; Korea keeps its published scores, US is refreshed::{key_warning}",
+              file=sys.stderr)
     except ProvidersUnreachable as exc:
         if args.check_keys:
             raise SystemExit(f"Providers unreachable: {exc}") from None
@@ -612,6 +615,8 @@ def main(argv=None):
     status = {m: freshness(v) for m, v in operational["markets"].items()}
     summary = {"run_id": operational.get("runId"), "work_dir": str(work), "korea_reference": reference or {"rebuilt": False}, "markets": status}
     summary["alerts"] = alerts  # the workflow fails on any alert after publishing the other market
+    if key_warning:
+        summary["key_rejected"] = key_warning
 
     try:
         remote = git(args.source_root, "remote", "get-url", "origin")

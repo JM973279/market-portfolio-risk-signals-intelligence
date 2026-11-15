@@ -71,7 +71,7 @@ jobs:
       - name: Collect and validate Korean prices and risk factors
         run: |
           "$RUNNER_TEMP/korea-portfolio-collector/bin/python" -m qsignals.portfolio_korea_refresh \
-            --vkospi-cache "$V1_DATA/raw/korea/vkospi.csv" --alert-file "$RUNNER_TEMP/provider-alerts.txt"
+            --vkospi-cache "$V1_DATA/raw/korea/vkospi.csv"
       - name: Verify published snapshot and portfolio behavior
         run: |
           python3 -m qsignals.portfolio_korea_refresh --validate-only
@@ -85,17 +85,14 @@ jobs:
           last=$(python3 -c 'from qsignals.portfolio_data import load_dataset; print(load_dataset("data/portfolio-kr").meta["as_of"])')
           git commit -m "data: refresh verified Korea portfolio ($last)"
           bash scripts/push_data_commit.sh
-      - name: Fail after publishing when a provider key needs attention
-        # A refused KRX key keeps prices publishing (VKOSPI may lag up to three sessions), but the
-        # run must still fail so someone renews the key before the factor lag blocks publication.
+      - name: Fail when the KRX key is about to expire
+        # Only with the optional variable KRX_API_KEY_EXPIRES. A key KRX refuses is a warning on
+        # the collection step while prices still publish; the run fails once VKOSPI is more than
+        # three sessions late and publication stops.
+        if: env.KRX_API_KEY_EXPIRES != ''
         run: |
-          if [ -n "${KRX_API_KEY_EXPIRES:-}" ]; then
-            left=$(( ( $(date -ud "$KRX_API_KEY_EXPIRES" +%s) - $(date -u +%s) ) / 86400 ))
-            if [ "$left" -le 14 ]; then
-              echo "KRX_API_KEY expires on $KRX_API_KEY_EXPIRES ($left days left). Extend it on openapi.krx.co.kr (마이페이지), then update the variable KRX_API_KEY_EXPIRES." >> "$RUNNER_TEMP/provider-alerts.txt"
-            fi
-          fi
-          if [ -s "$RUNNER_TEMP/provider-alerts.txt" ]; then
-            while IFS= read -r line; do echo "::error title=Provider key needs attention::$line"; done < "$RUNNER_TEMP/provider-alerts.txt"
+          left=$(( ( $(date -ud "$KRX_API_KEY_EXPIRES" +%s) - $(date -u +%s) ) / 86400 ))
+          if [ "$left" -le 14 ]; then
+            echo "::error title=KRX key expires soon::KRX_API_KEY expires on $KRX_API_KEY_EXPIRES ($left days left). Extend it on openapi.krx.co.kr, then update the variable KRX_API_KEY_EXPIRES."
             exit 1
           fi

@@ -278,7 +278,8 @@ class KeyCheckTest(unittest.TestCase):
             # It got past the key check (KRX feeds Korea only) and stopped on the next requirement.
             self.assertIn("Inference Python not found", str(stop.exception.code))
             self.assertEqual(get.call_count, 2)  # KRX only; ECOS is checked by --check-keys
-            self.assertIn("US is refreshed as usual", self.stderr.getvalue())
+            self.assertIn("::warning title=KRX refused the key; Korea keeps its published scores, US is refreshed",
+                          self.stderr.getvalue())
 
     def test_check_keys_mode_still_stops_on_a_refused_key(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -400,6 +401,13 @@ class MarketIndependenceTest(unittest.TestCase):
             code, summary, imported = self.run_main(tmp, "DELAYED", keys="ECOS_API_KEY=e\n", check=no_check)
         self.assertEqual((code, imported, self.downloads), (3, ["us"], [False]))
         self.assertIn("KRX_API_KEY is not set", summary["alerts"][0])
+
+    def test_refused_krx_key_is_a_warning_not_an_alert(self):
+        refused = refresh.KeysRejected("Provider rejected KRX_API_KEY.\n- kospi_dd_trd: HTTP 401", ["KRX_API_KEY"])
+        with tempfile.TemporaryDirectory() as tmp:
+            code, summary, imported = self.run_main(tmp, "DELAYED", check=refused)
+        self.assertEqual((code, imported, summary["alerts"], self.downloads), (3, ["us"], [], [False]))
+        self.assertIn("HTTP 401", summary["key_rejected"])
 
     def test_unreachable_krx_keeps_korea_late_without_an_alert(self):
         with tempfile.TemporaryDirectory() as tmp:
