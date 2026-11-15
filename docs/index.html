@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M/PRI · Market &amp; Portfolio Risk Intelligence</title>
+<meta name="description" content="한국·미국 시장 스트레스 모니터링과 포트폴리오 성과·위험 분석 대시보드. Korea and US market stress monitoring with portfolio performance and risk analytics.">
+<style>
+  :root { --bg: #f7f8fa; --card: #ffffff; --text: #17202b; --muted: #5b6776; --line: #dfe4ea; --accent: #1f5fbf; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #11161c; --card: #1a212a; --text: #e8edf3; --muted: #9aa7b6; --line: #2c3642; --accent: #7db0ff; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 16px/1.6 system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 40px 16px 56px; }
+  h1 { font-size: 1.6rem; line-height: 1.3; margin: 0 0 8px; }
+  p { margin: 0 0 12px; }
+  .en { color: var(--muted); }
+  .open { display: inline-block; margin: 16px 0 28px; padding: 12px 20px; border-radius: 8px;
+          background: var(--accent); color: var(--card); font-weight: 600; text-decoration: none; }
+  ul { list-style: none; margin: 0 0 28px; padding: 0; border: 1px solid var(--line); border-radius: 10px;
+       background: var(--card); }
+  li + li { border-top: 1px solid var(--line); }
+  li a { display: block; padding: 12px 16px; color: var(--text); text-decoration: none; }
+  li a:hover, li a:focus { background: var(--bg); }
+  li span { display: block; color: var(--accent); font-size: 0.85rem; overflow-wrap: anywhere; }
+  h2 { font-size: 1rem; margin: 0 0 8px; color: var(--muted); font-weight: 600; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Market &amp; Portfolio Risk Intelligence (M/PRI)</h1>
+  <p>한국·미국 시장의 스트레스 신호를 모니터링하고, 가상 포트폴리오의 수익 기여도·벤치마크 대비 성과요인·위험을 분석하는 대시보드입니다.</p>
+  <p class="en">An interactive dashboard for Korea and US market stress monitoring, portfolio performance attribution, and risk analysis.</p>
+
+  <a class="open" href="https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/">대시보드 열기 · Open the dashboard</a>
+
+  <h2>화면별 주소 · Pages (AWS Lightsail)</h2>
+  <ul>
+    <li><a href="https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/">전체 사이트 (대시보드) · Dashboard
+      <span>https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/</span></a></li>
+    <li><a href="https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/portfolio">포트폴리오 분석 · Portfolio analytics
+      <span>https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/portfolio</span></a></li>
+    <li><a href="https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/korea">한국 시장 · Korea market
+      <span>https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/korea</span></a></li>
+    <li><a href="https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/us">미국 시장 · US market
+      <span>https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/us</span></a></li>
+    <li><a href="https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/validation">조기경보 백테스트 · Early-warning backtest
+      <span>https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/validation</span></a></li>
+    <li><a href="https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/cases">급락 시나리오 · Sell-off scenarios
+      <span>https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/cases</span></a></li>
+    <li><a href="https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/sources">데이터와 방법론 · Data &amp; methodology
+      <span>https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/sources</span></a></li>
+  </ul>
+
+  <h2>자료 · More</h2>
+  <ul>
+    <li><a href="presentation/">발표자료 · Presentation</a></li>
+    <li><a href="https://github.com/JM973279/market-portfolio-risk-signals-intelligence">GitHub 저장소 · Repository</a></li>
+  </ul>
+
+  <footer class="en">AI 퀀트 과정 2차 프로젝트 · 데이터는 GitHub Actions가 수집·검증한 스냅샷을 사용합니다.<br>
+  Data comes from snapshots collected and verified by GitHub Actions.</footer>
+</main>
+</body>
+</html>
