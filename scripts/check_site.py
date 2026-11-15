@@ -71,7 +71,7 @@ def check(base):
             dates[market] = end
         except (urllib.error.URLError, OSError, KeyError, ValueError) as exc:
             problems.append(f'{market} portfolio API: {exc}')
-    operational = json.loads(expected)['markets']
+    operational = json.loads((ROOT / 'frontend/public/data/operational-markets.json').read_bytes())['markets']
     dates.update({f'{m}_score_due': operational[m].get('expectedDate') for m in operational})
     return problems, dates
 
