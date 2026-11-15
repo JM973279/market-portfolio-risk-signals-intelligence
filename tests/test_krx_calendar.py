@@ -9,6 +9,7 @@ from datetime import date, timedelta
 from pathlib import Path
 from unittest.mock import patch
 
+from qsignals.calendar import calendar_covers
 from scripts import update_krx_calendar as cal
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -80,6 +81,23 @@ class KrxCalendarTest(unittest.TestCase):
         data = (ROOT / "data/calendar/xkrx_sessions.csv").read_bytes()
         self.assertEqual(hashlib.sha256(data).hexdigest(), meta["sha256"])
         self.assertTrue(data.startswith(b"date\n") and data.endswith(b"\n"))
+
+    def test_scores_stay_valid_when_the_calendar_only_gains_later_sessions(self):
+        old = cal.render(weekdays("2026-11-02", "2026-12-31"))
+        sha = hashlib.sha256(old).hexdigest()
+        extended = cal.render(weekdays("2026-11-02", "2027-12-31"))
+        self.assertTrue(calendar_covers(old, sha, "2026-11-12"))
+        self.assertTrue(calendar_covers(extended, sha, "2026-11-12"))
+        self.assertFalse(calendar_covers(extended, sha, "2027-01-04"))  # scores past the recorded calendar
+        self.assertFalse(calendar_covers(extended.replace(b"2026-11-03\n", b""), sha, "2026-11-12"))  # rewritten
+        self.assertFalse(calendar_covers(old[:-11], sha, "2026-11-12"))  # shortened
+        self.assertFalse(calendar_covers(extended, None, "2026-11-12"))
+
+    def test_committed_scores_accept_the_committed_calendar(self):
+        # An extension must not strand the published Korea scores: qsignals.diagnose refuses a mismatch.
+        meta = json.loads((ROOT / "data/input/provenance.json").read_text(encoding="utf-8"))
+        data = (ROOT / "data/calendar/xkrx_sessions.csv").read_bytes()
+        self.assertTrue(calendar_covers(data, meta["calendar_sha256"], meta["last_date"]))
 
 
 if __name__ == "__main__":

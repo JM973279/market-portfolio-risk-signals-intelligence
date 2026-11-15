@@ -35,6 +35,22 @@ def load_sessions():
     return sessions
 
 
+def calendar_covers(data, recorded_sha256, through):
+    """Whether the calendar recorded at import is `data` or an earlier part of it.
+
+    scripts/update_krx_calendar.py extends the calendar by appending later sessions and never
+    rewrites published ones, so scores imported under the shorter calendar stay valid as long
+    as that calendar reached `through` (their last date). Any other difference is a mismatch.
+    """
+    digest, last = hashlib.sha256(), ""
+    for line in data.splitlines(keepends=True):
+        digest.update(line)
+        last = line.strip().decode()
+        if digest.hexdigest() == recorded_sha256:
+            return last[:1].isdigit() and last >= through
+    return False
+
+
 def require_coverage(first, last):
     meta = json.loads((ROOT / "data/calendar/provenance.json").read_text())
     if not meta["start"] <= first <= last <= meta["end"]:
