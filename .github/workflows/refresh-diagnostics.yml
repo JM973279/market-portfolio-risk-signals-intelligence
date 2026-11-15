@@ -50,6 +50,9 @@ jobs:
           ref: main
       - name: Import pinned upstream exports and public prices
         run: python3 -m qsignals.import_scores
+        env:
+          # Authenticated GitHub API reads (anonymous runner IPs hit the 60/hour limit).
+          GITHUB_TOKEN: ${{ github.token }}
       - name: Validate and regenerate diagnostics
         run: |
           python3 -m unittest discover -s tests -t .
