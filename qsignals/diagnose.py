@@ -11,6 +11,7 @@ import hashlib
 from collections import Counter
 from pathlib import Path
 
+from qsignals.calendar import calendar_covers
 from qsignals.diagnostics import VERDICTS, diagnose_all
 from qsignals.events import read_events
 from qsignals.report import render_markdown, write_csv
@@ -39,7 +40,7 @@ def main(argv=None):
     if not price_path.exists() or hashlib.sha256(price_path.read_bytes()).hexdigest() != provenance.get("price_source", {}).get("sha256"):
         raise ValueError("Retained price response does not match provenance")
     calendar_path = PROJECT_ROOT / "data/calendar/xkrx_sessions.csv"
-    if hashlib.sha256(calendar_path.read_bytes()).hexdigest() != provenance.get("calendar_sha256"):
+    if not calendar_covers(calendar_path.read_bytes(), provenance.get("calendar_sha256"), rows[-1].date):
         raise ValueError("Input/calendar version mismatch; rerun qsignals.import_scores")
 
     diagnoses = diagnose_all(events, rows)
