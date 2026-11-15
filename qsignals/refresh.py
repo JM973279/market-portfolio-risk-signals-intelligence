@@ -29,8 +29,10 @@ API keys are read from the V1 .env into the child environment only; they are
 never printed or written (only a length + SHA-256 prefix fingerprint, so a
 runner secret can be compared with a local .env). Before any download the KRX
 key is checked with one request per KRX endpoint: a rejected key makes the V1
-KRX downloaders retry every session since 2010 for hours, so the refresh stops
-at once instead. `--check-keys` runs only the checks (KRX and ECOS). Run logs
+KRX downloaders retry every session since 2010 for hours, so they are skipped.
+KRX feeds Korea only, so Korea is then reported as delayed from its cached
+history while US is refreshed as usual; the summary's `key_rejected` makes the
+workflow fail after publishing. `--check-keys` runs only the checks (KRX and ECOS). Run logs
 and provider receipts stay in --work-root (outside this repo).
 """
 
@@ -96,6 +98,14 @@ class RefreshError(RuntimeError):
     pass
 
 
+class KeysRejected(SystemExit):
+    """A provider refused a key; `names` lists the refused keys and `code` holds the report."""
+
+    def __init__(self, message, names):
+        super().__init__(message)
+        self.names = names
+
+
 def git(repo, *args, binary=False):
     out = subprocess.run(["git", "-C", str(repo), *args], capture_output=True, check=False)
     if out.returncode != 0:
@@ -155,6 +165,21 @@ def load_env(path):
 def key_fingerprint(value):
     """Length and SHA-256 prefix, to compare a runner secret with a local .env without revealing it."""
     return f"len {len(value)}, sha256 {hashlib.sha256(value.encode()).hexdigest()[:8]}"
+
+
+# KRX answers 401 with different messages (checked 2026-11-14): a value it does not know gets
+# "Unauthorized Key"; a key it knows but may not call that service with gets "Unauthorized API Call".
+KRX_SERVICE_HINT = ("KRX knows this key but refuses the service (Unauthorized API Call): replacing the secret "
+                    "will not help. KRX supplies indices only (prices come from Yahoo): the V1 score's KOSPI200 "
+                    "index (kospi_dd_trd) and the VKOSPI risk factor (drvprod_dd_trd). On openapi.krx.co.kr, "
+                    "signed in as the account that issued this key, check both services' approval for it; apply "
+                    "again if missing, or ask KRX if they show as approved, then re-run.")
+UPDATE_HINT = "Update the value (repository secret on GitHub Actions, V1 .env locally) and run again."
+
+
+def krx_rejection_hint(text):
+    """The fix a provider's rejection message points to."""
+    return KRX_SERVICE_HINT if "Unauthorized API Call" in text else UPDATE_HINT
 
 
 def _http_get(url, headers=None, timeout=30):
@@ -229,9 +254,9 @@ def check_provider_keys(env, ecos):
         raise ProvidersUnreachable("; ".join(problem for _, problem in failed))
     names = sorted({name for name, _ in failed})
     message = "\n".join([
-        f"Provider rejected {', '.join(names)}; nothing was collected or published.",
+        f"Provider rejected {', '.join(names)}.",
         *lines,
-        "Update the value (repository secret on GitHub Actions, V1 .env locally) and run again.",
+        *dict.fromkeys(krx_rejection_hint(problem) for _, problem in failed),
         "Compare fingerprints with `python3 -m qsignals.refresh --check-keys` on a machine where the keys work.",
     ])
     if os.environ.get("GITHUB_ACTIONS") == "true":
@@ -239,8 +264,8 @@ def check_provider_keys(env, ecos):
         summary = os.environ.get("GITHUB_STEP_SUMMARY")
         if summary:
             with open(summary, "a", encoding="utf-8") as fh:
-                fh.write(f"### Score refresh stopped: API key rejected\n\n{message}\n")
-    raise SystemExit(message)
+                fh.write(f"### API key rejected\n\n{message}\n")
+    raise KeysRejected(message, names)
 
 
 def run_logged(cmd, cwd, env, log_path, timeout=None):
@@ -257,7 +282,7 @@ def run_logged(cmd, cwd, env, log_path, timeout=None):
     return out.returncode
 
 
-def top_up_korea_raw(python, v1_tree, v1_data, env, log):
+def top_up_korea_raw(python, v1_tree, v1_data, env, log, download=True):
     # KRX must be topped up: run.py only fetches the last 14 days on top of
     # this history and refuses gaps over 90 days. ECOS is fetched in full by
     # run.py itself, and calling it twice within seconds gets the second
@@ -266,6 +291,11 @@ def top_up_korea_raw(python, v1_tree, v1_data, env, log):
     if (v1_data / "raw" / "korea" / "ecos_credit.csv").exists():
         modules.remove("download_ecos_credit")
     raw = v1_data / "raw" / "korea"
+    if not download:
+        # KRX refused the key: its downloaders would retry every session for hours. run.py's own
+        # KRX request fails at once (HTTP 401 is not retried), so Korea falls back to this cached
+        # history and is reported as delayed while US is refreshed as usual.
+        modules = []
     for module in modules:
         cached = (raw / DOWNLOADER_FILES[module]).exists()
         code = run_logged([python, "-m", f"src.korea.{module}", "--data-root", str(v1_data)], v1_tree, env, log,
@@ -505,20 +535,32 @@ def main(argv=None):
 
     env = dict(os.environ)
     env.update(load_env(args.env_file or args.v1_repo / ".env"))
-    for key in ("KRX_API_KEY", "ECOS_API_KEY"):
-        if not env.get(key):
-            raise SystemExit(f"{key} is not set (V1 .env or environment)")
+    # Both keys feed Korea only. A missing key never stops US: Korea is skipped and alerted.
+    missing = [key for key in ("KRX_API_KEY", "ECOS_API_KEY") if not env.get(key)]
+    if missing and args.check_keys:
+        raise SystemExit(f"{', '.join(missing)} is not set (V1 .env or environment)")
+    key_alert = f"{', '.join(missing)} is not set (repository secret or V1 .env); Korea was not refreshed." if missing else None
+    skip_krx = bool(missing)
     # KRX only on a refresh: its downloaders retry each session for hours on a
     # rejected key, while ECOS fails within seconds by itself, and an extra ECOS
     # call shortly before the real fetch can get that fetch rejected.
     try:
-        check_provider_keys(env, ecos=args.check_keys)
+        if not missing:
+            check_provider_keys(env, ecos=args.check_keys)
+    except KeysRejected as exc:
+        if args.check_keys or exc.names != ["KRX_API_KEY"]:
+            raise SystemExit(f"{exc.code}\nNothing was collected or published.") from None
+        # KRX feeds Korea only. US needs no KRX data, so a refused KRX key must not stop US.
+        key_alert, skip_krx = " ".join(exc.code.splitlines()), True
+        print("::warning::KRX refused the key: Korea keeps its published scores; US is refreshed as usual "
+              "and the run fails after publishing.", file=sys.stderr)
     except ProvidersUnreachable as exc:
         if args.check_keys:
             raise SystemExit(f"Providers unreachable: {exc}") from None
-        print(json.dumps(with_lag({"unreachable": str(exc)}, args.output_dir), indent=2, ensure_ascii=False))
-        print(f"::warning::Providers unreachable ({exc}); kept the published files.", file=sys.stderr)
-        return 2
+        # An outage, not a person's problem: Korea is reported late (no alert) and retried next run.
+        skip_krx = True
+        print(f"::warning::KRX unreachable ({exc}); Korea keeps its published scores, US is refreshed as usual.",
+              file=sys.stderr)
     if args.check_keys:
         return 0
 
@@ -537,13 +579,21 @@ def main(argv=None):
 
     env["PYTHONPATH"] = str(work / "v1")
 
+    # Korea and US are independent: a failure on one market's side never stops the other.
+    # run.py scores each market in its own try block (a market that fails is BLOCKED alone),
+    # so a Korea preparation failure is recorded and run.py still scores US.
+    alerts = [key_alert] if key_alert else []
+    reference = None
     args.v1_data.mkdir(parents=True, exist_ok=True)
-    top_up_korea_raw(args.python, work / "v1", args.v1_data, env, log)
-
-    original_reference = (work / "mpri" / contract["markets"]["korea"]["reference"]).exists()
-    if not original_reference and (args.rebuild_reference or not (args.reference_dir / "verification.json").exists()):
-        rebuild_reference(args.python, work, args.v1_data, args.reference_dir, args.reference_end, log)
-    reference = install_reference(work, contract, args.reference_dir)
+    try:
+        top_up_korea_raw(args.python, work / "v1", args.v1_data, env, log, download=not skip_krx)
+        original_reference = (work / "mpri" / contract["markets"]["korea"]["reference"]).exists()
+        if not original_reference and (args.rebuild_reference or not (args.reference_dir / "verification.json").exists()):
+            rebuild_reference(args.python, work, args.v1_data, args.reference_dir, args.reference_end, log)
+        reference = install_reference(work, contract, args.reference_dir)
+    except Exception as exc:  # noqa: BLE001 - any Korea-side failure must leave US running
+        alerts.append(f"Korea preparation failed: {exc}")
+        print(f"::warning::Korea preparation failed ({exc}); US is refreshed as usual.", file=sys.stderr)
 
     env.pop("PYTHONPATH")
     code = run_logged([args.python, RUNNER, "--collect", "--original-v1-root", str(work / "v1")], work / "mpri", env, log)
@@ -551,12 +601,17 @@ def main(argv=None):
         raise SystemExit(f"Frozen pipeline failed (exit {code}); see {log}")
     operational = json.loads((work / "mpri/frontend/public/data/operational-markets.json").read_text(encoding="utf-8"))
     # The ECOS downloader runs only to bootstrap, so the cache follows run.py's verified rows.
-    added = extend_ecos_cache(work / "mpri/data/operations" / str(operational.get("runId")) / "korea/ecos_credit.csv",
-                              args.v1_data / "raw/korea/ecos_credit.csv")
+    try:
+        added = extend_ecos_cache(work / "mpri/data/operations" / str(operational.get("runId")) / "korea/ecos_credit.csv",
+                                  args.v1_data / "raw/korea/ecos_credit.csv")
+    except Exception as exc:  # noqa: BLE001 - a Korea cache problem must not stop US
+        alerts.append(f"Korea ECOS cache not extended: {type(exc).__name__}: {exc}")
+        added = 0
     if added:
         print(f"ECOS credit cache extended by {added} verified rows.", file=sys.stderr)
     status = {m: freshness(v) for m, v in operational["markets"].items()}
     summary = {"run_id": operational.get("runId"), "work_dir": str(work), "korea_reference": reference or {"rebuilt": False}, "markets": status}
+    summary["alerts"] = alerts  # the workflow fails on any alert after publishing the other market
 
     try:
         remote = git(args.source_root, "remote", "get-url", "origin")
@@ -572,18 +627,22 @@ def main(argv=None):
     #   3  partial: a market's data is late (Korea not CURRENT / US DELAYED without
     #      new verified rows) but the other market was imported -> publish it
     #   2  nothing new: every market late, nothing written
-    #   1  verification failure (BLOCKED: historical reproduction failed) -> nothing
-    #      written, nothing published. Pipeline errors exit non-zero via SystemExit.
+    #   1  every market failed verification (BLOCKED: historical reproduction failed)
+    #      -> nothing written. A BLOCKED market never stops the other one: it is kept
+    #      as published, listed in `alerts`, and the workflow fails after publishing.
+    #      Pipeline errors exit non-zero via SystemExit.
     blocked = sorted(m for m, v in operational["markets"].items() if v.get("status") == "BLOCKED")
     if blocked:
         summary["blocked"] = blocked
-        print(json.dumps(summary, indent=2, ensure_ascii=False))
+        alerts.append(f"Verification failed (BLOCKED: {', '.join(blocked)}); its published scores were kept.")
+    # Korea is written only when CURRENT; US whenever its history was verified.
+    markets = tuple(m for m, ok in (("korea", status["korea"]["fresh"] and "korea" not in blocked),
+                                    ("us", us_importable(operational["markets"]["us"]) and "us" not in blocked)) if ok)
+    summary["delayed"] = [m for m in ("korea", "us") if m not in markets and m not in blocked]
+    if not markets and blocked:
+        print(json.dumps(with_lag(summary, args.output_dir), indent=2, ensure_ascii=False))
         print(f"Verification failed (BLOCKED: {', '.join(blocked)}); data/input/ left unchanged.", file=sys.stderr)
         return 1
-    # Korea is written only when CURRENT; US whenever its history was verified.
-    markets = tuple(m for m, ok in (("korea", status["korea"]["fresh"]),
-                                    ("us", us_importable(operational["markets"]["us"]))) if ok)
-    summary["delayed"] = [m for m in ("korea", "us") if m not in markets]
     if not markets:
         print(json.dumps(with_lag(summary, args.output_dir), indent=2, ensure_ascii=False))
         print("No market has new verified data yet; data/input/ left unchanged.", file=sys.stderr)
@@ -614,7 +673,12 @@ def main(argv=None):
     summary["imported"], summary["skipped"], summary["last_risk_date"] = [], {}, {}
     for market in markets:
         importer = import_data if market == "korea" else import_us
-        result = importer(payloads, files, source, args.output_dir, extra={"refresh": refresh})
+        try:
+            result = importer(payloads, files, source, args.output_dir, extra={"refresh": refresh})
+        except Exception as exc:  # noqa: BLE001 - one market's import never stops the other's
+            alerts.append(f"{market} import failed ({type(exc).__name__}: {exc}); its published scores were kept.")
+            summary["skipped"][market] = {"status": "failed", "error": type(exc).__name__}
+            continue
         summary["last_risk_date"][market] = result.get("last_risk_date")
         if result.get("publication", {}).get("status") == "skipped":
             # Older or relabeled scores never replace what is already published.
@@ -622,8 +686,9 @@ def main(argv=None):
         else:
             summary["imported"].append(market)
     print(json.dumps(with_lag(summary, args.output_dir), indent=2, ensure_ascii=False))
-    if summary["delayed"]:
-        print(f"Late data for {', '.join(summary['delayed'])}; kept the published files for it.", file=sys.stderr)
+    if summary["delayed"] or blocked:
+        late = summary["delayed"] + blocked
+        print(f"Late or failed: {', '.join(late)}; kept the published files for it.", file=sys.stderr)
         return 3
     return 0
 

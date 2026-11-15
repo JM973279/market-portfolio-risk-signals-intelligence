@@ -5,9 +5,12 @@ name: Daily V1 score refresh
 # Required repository secrets: KRX_API_KEY, ECOS_API_KEY.
 # The first run rebuilds the Korea raw history from 2010 (~8,800 KRX calls,
 # about 90 minutes); later runs restore it from the Actions cache.
-# qsignals.refresh checks KRX_API_KEY with KRX before downloading and stops at
-# once if KRX rejects it (otherwise the downloaders retry every session until
-# the 300-minute timeout). Data is published only from main.
+# qsignals.refresh checks KRX_API_KEY with KRX before downloading. If KRX refuses
+# it, the KRX downloaders are skipped (they would retry every session until the
+# 300-minute timeout). Korea and US are independent: when one market fails (refused
+# key, Korea preparation, BLOCKED verification) it keeps its published scores, the
+# other market is published as usual, and the run fails after publishing.
+# Data is published only from main.
 
 on:
   schedule:
@@ -147,12 +150,30 @@ jobs:
           if-no-files-found: ignore
 
       - name: Rebuild diagnostics and view
+        id: post
         if: steps.refresh.outputs.publish == 'true'
         run: |
-          python -m qsignals.diagnose
-          python -m qsignals.view
-          python -m qsignals.export_frontend
-          python -m market_engine.scenarios.build_korea_library
+          # Each output is rebuilt on its own: a failed step restores only its own files, so the
+          # other market's scores and outputs are still committed. The run fails afterwards.
+          set +e
+          failed=""
+          rebuild() {
+            label=$1; restore=$2; shift 2
+            "$@"; code=$?
+            if [ "$code" -eq 0 ]; then return; fi
+            failed="$failed; $label (exit $code)"
+            # 3 = written with the failed market's previous block kept (qsignals.export_frontend).
+            if [ "$code" -ne 3 ]; then git checkout -- $restore 2>/dev/null || true; fi
+          }
+          rebuild "Korea event diagnostics" "reports/event_diagnostics.*" python -m qsignals.diagnose
+          rebuild "static view" "reports/dashboard.html" python -m qsignals.view
+          rebuild "frontend export" "frontend/public/data/operational-markets.json" python -m qsignals.export_frontend
+          rebuild "Korea scenarios" "frontend/public/data/korea-scenarios.json" python -m market_engine.scenarios.build_korea_library --market korea
+          rebuild "US scenarios" "frontend/public/data/us-scenarios.json" python -m market_engine.scenarios.build_korea_library --market us
+          if [ -n "$failed" ]; then
+            echo "failed=${failed#; }" >> "$GITHUB_OUTPUT"
+            echo "::warning::Kept the previous output for: ${failed#; }"
+          fi
 
       - name: Skip publication outside main
         if: steps.refresh.outputs.publish == 'true' && github.ref != 'refs/heads/main'
@@ -175,11 +196,23 @@ jobs:
 
       - name: Fail only when a market's published score is too far behind
         if: steps.refresh.outcome == 'success'
+        env:
+          POST_FAILED: ${{ steps.post.outputs.failed }}
         run: |
           # Late or unreachable providers end as warnings and the next run retries; this
           # step turns the run red once a market is more than qsignals.deferral.MAX_BEHIND
           # sessions behind (after the other market was published).
           jq -r '.lag // {} | to_entries[] | "\(.key): published \(.value.published), expected \(.value.expected), \(.value.behind) behind"' "$RUNNER_TEMP/summary.json"
+          # A failure on one market (refused KRX key, Korea preparation, BLOCKED verification)
+          # never stops the other market's publication above, but still turns the run red here.
+          alerts=$(jq -r '(.alerts // [])[]' "$RUNNER_TEMP/summary.json")
+          if [ -n "$POST_FAILED" ]; then
+            alerts=$(printf '%s\n%s' "$alerts" "Post-processing kept the previous output for: $POST_FAILED" | sed '/^$/d')
+          fi
+          if [ -n "$alerts" ]; then
+            while IFS= read -r line; do echo "::error title=One market failed (the other was published)::$line"; done <<< "$alerts"
+            exit 1
+          fi
           stale=$(jq -r '(.stale // []) | join(", ")' "$RUNNER_TEMP/summary.json")
           if [ -n "$stale" ]; then
             echo "::error title=Published score too far behind::$stale: no verified new score within the allowed sessions; see the lag above and the refresh logs."

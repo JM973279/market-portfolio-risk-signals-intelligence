@@ -1,0 +1,61 @@
+name: Extend the KRX trading calendar
+
+# Every Korea batch refuses dates outside data/calendar coverage (qsignals.calendar), so the
+# calendar is extended to the next year-end 90 days before it ends, from the pinned
+# exchange_calendars XKRX calendar plus provenance additional_closures. The committed file
+# must first rebuild exactly from the library; published sessions are never rewritten.
+# After an extension, check KRX's closure notice for the new year (published in December)
+# and add any missing closure to additional_closures.
+
+on:
+  schedule:
+    # 1st and 15th of each month, 10:23 KST (minute 23 is used by no other workflow).
+    - cron: '23 1 1,15 * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/update-krx-calendar.yml'
+      - 'scripts/update_krx_calendar.py'
+      - 'data/calendar/provenance.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: krx-calendar-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  extend:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements.portfolio-refresh.txt
+      - name: Install the pinned calendar library
+        run: python3 -m pip install -q -r requirements.portfolio-refresh.txt
+      - name: Verify the committed calendar rebuilds from the library
+        run: python3 scripts/update_krx_calendar.py --check
+      - name: Extend coverage to the next year-end when it ends within 90 days
+        run: python3 scripts/update_krx_calendar.py --extend-within-days 90
+      - name: Verify code against the calendar
+        run: python3 -m unittest discover -s tests -t .
+      - name: Commit the extended calendar
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/calendar
+          if git diff --cached --quiet; then echo 'No calendar change'; exit 0; fi
+          end=$(python3 -c 'import json; print(json.load(open("data/calendar/provenance.json"))["end"])')
+          git commit -m "data: extend the KRX trading calendar to $end"
+          bash scripts/push_data_commit.sh

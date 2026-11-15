@@ -226,6 +226,17 @@ class KeyCheckTest(unittest.TestCase):
         self.assertIn("Provider rejected KRX_API_KEY", message)
         self.assertIn(key_fingerprint(self.KRX), message)
         self.assertNotIn(self.KRX, message)
+        self.assertIn("Update the value", message)
+
+    def test_known_key_without_service_approval_does_not_blame_the_secret(self):
+        refused = (401, b'{"respMsg":"Unauthorized API Call","respCode":"401"}')
+        with patch("qsignals.refresh._http_get", return_value=refused), \
+             patch.dict(os.environ, {"GITHUB_ACTIONS": "", "GITHUB_STEP_SUMMARY": ""}), \
+             self.assertRaises(SystemExit) as stop:
+            check_provider_keys({"KRX_API_KEY": self.KRX, "ECOS_API_KEY": self.ECOS}, ecos=False)
+        message = str(stop.exception.code)
+        self.assertIn("replacing the secret will not help", message)
+        self.assertNotIn("Update the value", message)
 
     def test_step_summary_on_actions(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -255,19 +266,42 @@ class KeyCheckTest(unittest.TestCase):
         with patch("qsignals.refresh._http_get", return_value=(200, b'{"StatisticSearch": {"row": []}}')):
             self.assertEqual(check_ecos_key(self.ECOS), [])
 
-    def test_refresh_stops_before_any_snapshot_or_download(self):
+    def test_refused_krx_key_does_not_stop_the_us_refresh(self):
         with tempfile.TemporaryDirectory() as tmp:
             env_file = Path(tmp) / ".env"
             env_file.write_text(f"KRX_API_KEY={self.KRX}\nECOS_API_KEY={self.ECOS}\n", encoding="utf-8")
             argv = ["--env-file", str(env_file), "--python", str(Path(tmp) / "missing-python"),
                     "--work-root", str(Path(tmp) / "runs"), "--v1-data", str(Path(tmp) / "v1-data")]
             with patch("qsignals.refresh._http_get", return_value=self.REJECTED) as get, \
-                 patch("qsignals.refresh.archive", side_effect=AssertionError("snapshot started")), \
                  patch.dict(os.environ, {"GITHUB_ACTIONS": ""}), self.assertRaises(SystemExit) as stop:
                 refresh.main(argv)
-            self.assertIn("Provider rejected KRX_API_KEY", str(stop.exception.code))
+            # It got past the key check (KRX feeds Korea only) and stopped on the next requirement.
+            self.assertIn("Inference Python not found", str(stop.exception.code))
             self.assertEqual(get.call_count, 2)  # KRX only; ECOS is checked by --check-keys
-            self.assertFalse((Path(tmp) / "runs").exists())
+            self.assertIn("US is refreshed as usual", self.stderr.getvalue())
+
+    def test_check_keys_mode_still_stops_on_a_refused_key(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            env_file = Path(tmp) / ".env"
+            env_file.write_text(f"KRX_API_KEY={self.KRX}\nECOS_API_KEY={self.ECOS}\n", encoding="utf-8")
+            responses = [self.REJECTED, self.REJECTED, (200, b'{"StatisticSearch": {}}')]
+            with patch("qsignals.refresh._http_get", side_effect=responses), \
+                 patch.dict(os.environ, {"GITHUB_ACTIONS": ""}), self.assertRaises(SystemExit) as stop:
+                refresh.main(["--check-keys", "--env-file", str(env_file)])
+            self.assertIn("Provider rejected KRX_API_KEY", str(stop.exception.code))
+            self.assertIn("Nothing was collected or published", str(stop.exception.code))
+
+    def test_refused_krx_key_skips_the_downloaders_but_installs_the_cached_history(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            v1_data, v1_tree = Path(tmp) / "data", Path(tmp) / "v1"
+            raw = v1_data / "raw" / "korea"
+            raw.mkdir(parents=True)
+            for name in refresh.KOREA_RAW:
+                (raw / name).write_text("Date\n", encoding="utf-8")
+            with patch("qsignals.refresh.run_logged", side_effect=AssertionError("downloader started")), \
+                 patch("qsignals.refresh.align_korea_fallback", return_value="2026-11-12"):
+                refresh.top_up_korea_raw(Path("python"), v1_tree, v1_data, {}, Path(tmp) / "log", download=False)
+            self.assertTrue(all((v1_tree / "data/raw/korea" / name).exists() for name in refresh.KOREA_RAW))
 
     def test_check_keys_mode_checks_both_and_exits(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -285,6 +319,98 @@ class KeyCheckTest(unittest.TestCase):
                               tmp, {"PATH": os.environ.get("PATH", "")}, log)
             self.assertEqual(code, 0)
             self.assertEqual(log.read_text(encoding="utf-8").splitlines()[-1], "1")
+
+
+class MarketIndependenceTest(unittest.TestCase):
+    """A Korea failure must never stop US publication (and the run still fails afterwards)."""
+
+    def run_main(self, tmp, korea_status, prepare=None, keys="KRX_API_KEY=k\nECOS_API_KEY=e\n",
+                 check=None, import_korea=None):
+        tmp = Path(tmp)
+        python = tmp / "python"
+        python.write_text("", encoding="utf-8")
+        env_file = tmp / ".env"
+        env_file.write_text(keys, encoding="utf-8")
+        current = {"date": "2026-11-13"} if korea_status == "CURRENT" else None
+        markets = {
+            "korea": {"status": korea_status, "expectedDate": "2026-11-13", "current": current,
+                      "lastValid": current, "reason": "x", "series": []},
+            "us": {"status": "DELAYED", "expectedDate": "2026-11-13", "current": None, "historicalParity": True,
+                   "lastValid": {"date": "2026-11-12"}, "history": [{"date": "2026-11-12"}], "series": []},
+        }
+
+        def fake_archive(repo, ref, dest):
+            (dest / "market_engine/operations").mkdir(parents=True)
+            (dest / refresh.CONTRACT).write_text(json.dumps({"original_sources": {}, "markets": {"korea": {"reference": "ref.csv"}}}))
+            return "c" * 40
+
+        def fake_run(cmd, cwd, env, log, timeout=None):
+            data = Path(cwd) / "frontend/public/data"
+            data.mkdir(parents=True, exist_ok=True)
+            (data / "operational-markets.json").write_text(json.dumps({"runId": "r", "markets": markets}))
+            (data / "global-markets.json").write_text("{}")
+            return 0
+
+        imported, self.downloads = [], []
+        prepare = prepare or (lambda *a, download=True: self.downloads.append(download))
+        argv = ["--env-file", str(env_file), "--python", str(python), "--work-root", str(tmp / "runs"),
+                "--v1-data", str(tmp / "v1-data"), "--output-dir", str(tmp / "out"),
+                "--source-root", str(tmp), "--v1-repo", str(tmp)]
+        with patch.dict(os.environ, {"KRX_API_KEY": "", "ECOS_API_KEY": ""}), \
+             patch("qsignals.refresh.check_provider_keys", side_effect=check), \
+             patch("qsignals.refresh.archive", side_effect=fake_archive), \
+             patch("qsignals.refresh.find_v1_commit", return_value="v" * 40), \
+             patch("qsignals.refresh.top_up_korea_raw", side_effect=prepare), \
+             patch("qsignals.refresh.install_reference", return_value=None), \
+             patch("qsignals.refresh.run_logged", side_effect=fake_run), \
+             patch("qsignals.refresh.extend_ecos_cache", return_value=0), \
+             patch("qsignals.refresh.git", side_effect=refresh.RefreshError("no repo")), \
+             patch("qsignals.refresh.import_us", side_effect=lambda *a, **k: imported.append("us") or {"last_risk_date": "2026-11-12"}), \
+             patch("qsignals.refresh.import_data", side_effect=import_korea or AssertionError("korea imported")), \
+             patch("qsignals.refresh.score_lag", return_value={}), \
+             patch("sys.stdout", new_callable=io.StringIO) as out, patch("sys.stderr", new_callable=io.StringIO):
+            code = refresh.main(argv)
+        return code, json.loads(out.getvalue()), imported
+
+    def test_blocked_korea_still_publishes_us_and_raises_an_alert(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, summary, imported = self.run_main(tmp, "BLOCKED")
+        self.assertEqual((code, imported, summary["blocked"]), (3, ["us"], ["korea"]))
+        self.assertIn("BLOCKED: korea", summary["alerts"][0])
+
+    def test_failed_korea_preparation_still_publishes_us(self):
+        def broken(*args, **kwargs):
+            raise refresh.RefreshError("V1 downloader download_vkospi failed (exit 1)")
+        with tempfile.TemporaryDirectory() as tmp:
+            code, summary, imported = self.run_main(tmp, "BLOCKED", prepare=broken)
+        self.assertEqual((code, imported), (3, ["us"]))
+        self.assertIn("Korea preparation failed", summary["alerts"][0])
+
+    def test_failed_korea_import_still_publishes_us(self):
+        def broken(*args, **kwargs):
+            raise ValueError("KOSPI200 price check failed")
+        with tempfile.TemporaryDirectory() as tmp:
+            code, summary, imported = self.run_main(tmp, "CURRENT", import_korea=broken)
+        self.assertEqual((code, imported), (0, ["us"]))
+        self.assertIn("korea import failed", summary["alerts"][0])
+
+    def test_missing_korea_keys_still_refresh_us(self):
+        no_check = AssertionError("keys checked without a value")
+        with tempfile.TemporaryDirectory() as tmp:
+            code, summary, imported = self.run_main(tmp, "DELAYED", keys="ECOS_API_KEY=e\n", check=no_check)
+        self.assertEqual((code, imported, self.downloads), (3, ["us"], [False]))
+        self.assertIn("KRX_API_KEY is not set", summary["alerts"][0])
+
+    def test_unreachable_krx_keeps_korea_late_without_an_alert(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, summary, imported = self.run_main(
+                tmp, "DELAYED", check=refresh.ProvidersUnreachable("kospi_dd_trd: no response"))
+        self.assertEqual((code, imported, summary["alerts"], self.downloads), (3, ["us"], [], [False]))
+
+    def test_delayed_korea_is_not_an_alert(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, summary, imported = self.run_main(tmp, "DELAYED")
+        self.assertEqual((code, imported, summary["alerts"], summary["delayed"]), (3, ["us"], [], ["korea"]))
 
 
 class FreshnessTest(unittest.TestCase):

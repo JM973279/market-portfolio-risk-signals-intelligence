@@ -21,6 +21,7 @@ from qsignals.calendar import latest_closed_session, load_sessions, require_cove
 from qsignals.portfolio_data import PortfolioError, load_dataset, parse_files
 from qsignals.portfolio_import import publish
 from qsignals.portfolio_refresh import csv_bytes, fetch_quotes
+from qsignals.refresh import key_fingerprint, krx_rejection_hint
 from scripts.build_korea_portfolio import MARKET, UNIVERSE, window_extreme
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -28,6 +29,18 @@ OUTPUT = ROOT / 'data' / 'portfolio-kr'
 SOURCE_REPO = 'JM973279/market-portfolio-risk-signals-intelligence'
 POLICY = 'korea-portfolio-github-actions-v1'
 START = '2018-01-02'
+KRX_VKOSPI_URL = 'http://data-dbg.krx.co.kr/svc/apis/idx/drvprod_dd_trd'
+# A session KRX has always served (the first one the V1 downloaders request). When KRX refuses
+# a new day but answers this one, the key works and only that day is refused.
+KRX_PROBE_DAY = '20100104'
+
+
+class ProviderRejected(PortfolioError):
+    """HTTP 401/403 with the provider's status and message (never the URL: ECOS keys sit in it)."""
+
+    def __init__(self, provider, status, message):
+        super().__init__(f'{provider} rejected the request (HTTP {status}: {message}).', 'config_error',
+                         provider=provider, status=status)
 
 
 def completed_sessions(now):
@@ -36,7 +49,21 @@ def completed_sessions(now):
     return [d for d in load_sessions() if START <= d <= end]
 
 
-def request_json(url, *, headers=None):
+def provider_message(body):
+    """Only the provider's own message field; never echo a raw body (it could carry the request)."""
+    try:
+        data = json.loads(body)
+    except ValueError:
+        return 'non-JSON response'
+    if isinstance(data, dict):
+        result = data.get('RESULT') if isinstance(data.get('RESULT'), dict) else data
+        for field in ('respMsg', 'MESSAGE', 'message'):
+            if isinstance(result.get(field), str):
+                return result[field].strip()[:120]
+    return 'no message'
+
+
+def request_json(url, *, headers=None, provider='Provider'):
     """Do not expose ECOS URLs (which contain the key) in exception text or logs."""
     for attempt in range(3):
         try:
@@ -44,14 +71,27 @@ def request_json(url, *, headers=None):
             with urllib.request.urlopen(req, timeout=30) as response:
                 return json.load(response)
         except urllib.error.HTTPError as exc:
+            try:
+                body = exc.read() if exc.fp else b''
+            except OSError:
+                body = b''
             exc.close()
             if exc.code in (401, 403):
-                raise PortfolioError('Provider rejected the Actions API key.', 'config_error') from None
+                raise ProviderRejected(provider, exc.code, provider_message(body)) from None
         except (OSError, ValueError):
             pass
         if attempt < 2:
             time.sleep(attempt + 1)
-    raise PortfolioError('Provider request failed; previous snapshot was preserved.', 'collection_failed') from None
+    raise PortfolioError(provider + ' request failed; previous snapshot was preserved.', 'collection_failed') from None
+
+
+def krx_key_works(key):
+    """True when KRX serves KRX_PROBE_DAY with this key (the key is valid, in quota and approved)."""
+    try:
+        payload = request_json(KRX_VKOSPI_URL + '?basDd=' + KRX_PROBE_DAY, headers={'AUTH_KEY': key}, provider='KRX')
+    except PortfolioError:
+        return False
+    return isinstance(payload, dict) and isinstance(payload.get('OutBlock_1'), list)
 
 
 def parse_vkospi(raw):
@@ -70,7 +110,11 @@ def parse_vkospi(raw):
     return values
 
 
-def fetch_vkospi(sessions, key, cache=None, previous=None):
+def fetch_vkospi(sessions, key, cache=None, previous=None, alerts=None):
+    """New sessions from KRX on top of the verified history. A KRX rejection stops collection
+    with the history kept, so prices can still publish while the factor lag stays within
+    build_snapshot's limit: a refused day (key still works) is a warning, a refused key is
+    appended to `alerts` (the caller must fail the run) or raised when `alerts` is None."""
     values, origin = {}, 'KRX Open API'
     if cache and Path(cache).exists():
         values = parse_vkospi(Path(cache).read_bytes())
@@ -84,9 +128,19 @@ def fetch_vkospi(sessions, key, cache=None, previous=None):
     for day in sessions:
         if day in values:
             continue
-        payload = request_json(
-            'http://data-dbg.krx.co.kr/svc/apis/idx/drvprod_dd_trd?basDd=' + day.replace('-', ''),
-            headers={'AUTH_KEY': key})
+        try:
+            payload = request_json(KRX_VKOSPI_URL + '?basDd=' + day.replace('-', ''),
+                                   headers={'AUTH_KEY': key}, provider='KRX')
+        except ProviderRejected as exc:
+            if krx_key_works(key):
+                warn(f'{exc} KRX가 {day} 세션만 거부했고 키는 정상입니다; 이 날짜부터는 다음 일정에서 다시 수집합니다.')
+                break
+            message = (f'{exc} KRX also refused {KRX_PROBE_DAY}, so the key or its service approval is refused, '
+                       f'not the day ({key_fingerprint(key)}). {krx_rejection_hint(str(exc))}')
+            if alerts is None:
+                raise PortfolioError(message, 'config_error') from None
+            alerts.append(message)
+            break
         for row in payload.get('OutBlock_1', []):
             if row.get('IDX_NM') == '코스피 200 변동성지수':
                 if row.get('BAS_DD') != day.replace('-', ''):
@@ -115,7 +169,7 @@ def parse_ecos(payload):
 def fetch_rates(start, end, key):
     payload = request_json('https://ecos.bok.or.kr/api/StatisticSearch/' + key +
         '/json/kr/1/100000/817Y002/D/' + start.replace('-', '') + '/' +
-        end.replace('-', '') + '/010210000')
+        end.replace('-', '') + '/010210000', provider='ECOS')
     return parse_ecos(payload)
 
 
@@ -202,7 +256,7 @@ def build_snapshot(quotes, rates, volatility, krx_sessions):
                                           for k, v in [('VKOSPI', volatility), ('KTB10Y', rates)]}}
 
 
-def refresh(output=OUTPUT, *, cache=None, now=None, source_commit=None):
+def refresh(output=OUTPUT, *, cache=None, now=None, source_commit=None, alerts=None):
     now = now or datetime.now(timezone.utc)
     for key in ['KRX_API_KEY', 'ECOS_API_KEY']:
         if not os.environ.get(key, '').strip():
@@ -214,7 +268,7 @@ def refresh(output=OUTPUT, *, cache=None, now=None, source_commit=None):
     print('Collecting Korean adjusted prices for ' + str(len(symbols)) + ' assets.', file=sys.stderr)
     downloaded = fetch_quotes(symbols, sessions[0], sessions[-1])
     quotes = {t[:-3]: values for t, values in downloaded.items()}
-    volatility, vol_origin = fetch_vkospi(sessions, os.environ['KRX_API_KEY'], cache, output)
+    volatility, vol_origin = fetch_vkospi(sessions, os.environ['KRX_API_KEY'], cache, output, alerts)
     rates = fetch_rates(sessions[0], sessions[-1], os.environ['ECOS_API_KEY'])
     raw, quality = build_snapshot(quotes, rates, volatility, sessions)
     tickers = [u[0] for u in UNIVERSE]
@@ -252,16 +306,21 @@ def main():
     parser.add_argument('--output-dir', type=Path, default=OUTPUT)
     parser.add_argument('--vkospi-cache', type=Path)
     parser.add_argument('--validate-only', action='store_true')
+    parser.add_argument('--alert-file', type=Path,
+                        help='Write provider-key alerts here; the workflow fails after publishing when it is non-empty.')
     args = parser.parse_args()
+    alerts = []
     try:
         if not args.validate_only:
             try:
-                refresh(args.output_dir, cache=args.vkospi_cache)
+                refresh(args.output_dir, cache=args.vkospi_cache, alerts=alerts)
             except PortfolioError as exc:
                 # Provider late/unreachable: keep the published snapshot and retry (qsignals.deferral).
+                # A refused key is never deferred: retrying cannot fix it.
                 current = Path(args.output_dir) / 'current.json'
                 published = json.loads(current.read_text())['price_as_of'] if current.exists() else None
-                message = deferral(exc, completed_sessions(datetime.now(timezone.utc)), published)
+                message = None if alerts else deferral(
+                    exc, completed_sessions(datetime.now(timezone.utc)), published)
                 if not message:
                     raise
                 warn(message)
@@ -274,7 +333,24 @@ def main():
         # Provider exceptions may contain private URLs. Publish only our own sanitized messages.
         print(str(exc) if isinstance(exc, PortfolioError) else type(exc).__name__, file=sys.stderr)
         return 1
+    finally:
+        report_alerts(alerts, args.alert_file)
     return 0
+
+
+def report_alerts(alerts, alert_file=None):
+    """Annotate, summarize and hand alerts to the workflow's final step (which fails the run)."""
+    for message in alerts:
+        print(f'::error title=KRX API key rejected::{message}', flush=True)
+    if not alerts:
+        return
+    summary = os.environ.get('GITHUB_STEP_SUMMARY')
+    if summary:
+        with open(summary, 'a', encoding='utf-8') as fh:
+            fh.write('### Korea portfolio: KRX API key needs attention\n\n' +
+                     '\n'.join(f'- {m}' for m in alerts) + '\n')
+    if alert_file:
+        Path(alert_file).write_text('\n'.join(alerts) + '\n', encoding='utf-8')
 
 
 if __name__ == '__main__':
