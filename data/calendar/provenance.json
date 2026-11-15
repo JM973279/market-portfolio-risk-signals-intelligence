@@ -3,8 +3,8 @@
   "library": "exchange_calendars",
   "library_version": "4.13.2",
   "start": "2016-01-01",
-  "end": "2026-12-31",
-  "sha256": "7fc152faf5d28e8d2c7fc474bd9f3681acd7c3523f12f76d95750eff1cf63990",
+  "end": "2027-12-31",
+  "sha256": "eb8f7a9efafbac40324213529f0588771cc769507299a2dbd7a51a813d6f21d0",
   "additional_closures": {
     "2026-06-03": "지방선거일",
     "2026-07-17": "제헌절"

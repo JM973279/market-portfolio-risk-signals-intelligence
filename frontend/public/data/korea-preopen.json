@@ -8,22 +8,40 @@
  ],
  "source": {
   "path": "data/input/overnight_us.csv",
-  "sha256": "c2c6bb382625e0313e92a3a244aba91cbaa86db9bd927e414eb8f881260378af",
+  "sha256": "8ebf5d44b84672c0fb2870db7fa4ca15cf4c4d7d33adaa321a1658319c2d832f",
   "provider": "Yahoo Finance adjusted close (yfinance auto_adjust=True)",
-  "retrievedAt": "2026-11-12T22:28:15+00:00",
-  "lastUsSession": "2026-11-11",
-  "nextUsSession": "2026-11-12"
+  "retrievedAt": "2026-11-15T07:13:58+00:00",
+  "lastUsSession": "2026-11-13",
+  "nextUsSession": "2026-11-16"
  },
  "latest": {
-  "krxDate": "2026-11-12",
-  "usDate": "2026-11-11",
+  "krxDate": "2026-11-16",
+  "usDate": "2026-11-13",
   "returns": {
-   "EWY": 0.062006,
-   "^SOX": 0.056587
+   "EWY": -0.017884,
+   "^SOX": -0.034297
   },
-  "ewyRange": "gt_3"
+  "ewyRange": "-3_-1"
  },
  "history": [
+  {
+   "krxDate": "2026-11-16",
+   "usDate": "2026-11-13",
+   "returns": {
+    "EWY": -0.017884,
+    "^SOX": -0.034297
+   },
+   "ewyRange": "-3_-1"
+  },
+  {
+   "krxDate": "2026-11-13",
+   "usDate": "2026-11-12",
+   "returns": {
+    "EWY": -0.01644,
+    "^SOX": -0.005437
+   },
+   "ewyRange": "-3_-1"
+  },
   {
    "krxDate": "2026-11-12",
    "usDate": "2026-11-11",
@@ -185,24 +203,6 @@
     "^SOX": 0.016077
    },
    "ewyRange": "gt_3"
-  },
-  {
-   "krxDate": "2026-10-19",
-   "usDate": "2026-10-16",
-   "returns": {
-    "EWY": -0.036999,
-    "^SOX": -0.038331
-   },
-   "ewyRange": "le_-3"
-  },
-  {
-   "krxDate": "2026-10-16",
-   "usDate": "2026-10-15",
-   "returns": {
-    "EWY": -0.022587,
-    "^SOX": -0.00883
-   },
-   "ewyRange": "-3_-1"
   }
  ],
  "context": {
