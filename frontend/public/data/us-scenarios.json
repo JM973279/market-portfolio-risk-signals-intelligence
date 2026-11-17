@@ -47,7 +47,7 @@
   },
   "operational": {
    "path": "frontend/public/data/operational-markets.json",
-   "sha256": "c8542510adb50207e71000bdb4647b99e5a02006ef7d9bbf7b6ca90260624be8"
+   "sha256": "d6f7293c6bd1e68a75a3925c8bf602d8b83d0611eac5e03d39c33226e54283e1"
   }
  },
  "summary": [

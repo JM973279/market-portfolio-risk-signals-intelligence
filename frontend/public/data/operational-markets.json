@@ -1,7 +1,7 @@
 {
  "schema_version": 1,
- "runId": "korea:20261113T002725Z-54159a96 + us:20261115T014053Z-0266ebde",
- "generatedAt": "2026-11-15T01:40:53.211514+00:00",
+ "runId": "korea:20261113T002725Z-54159a96 + us:20261117T040558Z-4fef7750",
+ "generatedAt": "2026-11-17T04:05:58.834626+00:00",
  "mode": "qualitative-signals-import",
  "markets": {
   "korea": {
@@ -991,22 +991,22 @@
    "inferenceAt": "2026-11-13T00:27:49.761750+00:00"
   },
   "us": {
-   "status": "DELAYED",
+   "status": "CURRENT",
    "expectedDate": "2026-11-13",
    "series": [
     {
      "name": "SPY",
      "provider": "Yahoo Finance",
-     "retrievedAt": "2026-11-15T01:41:08.052342+00:00",
+     "retrievedAt": "2026-11-17T04:06:12.110534+00:00",
      "observationDate": "2026-11-13",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "1df0152e2708680d9578b0e315a24b20be1fcfd0b6146002302023ea66628035"
+     "sha256": "8d9976b0779db038aeeb984da58a679b5b8a6c6287de92fc696251a5656ead4b"
     },
     {
      "name": "VIX",
      "provider": "Yahoo Finance",
-     "retrievedAt": "2026-11-15T01:41:08.283304+00:00",
+     "retrievedAt": "2026-11-17T04:06:12.294777+00:00",
      "observationDate": "2026-11-13",
      "status": "OBSERVED",
      "reason": null,
@@ -1015,20 +1015,20 @@
     {
      "name": "DBAA",
      "provider": "FRED",
-     "retrievedAt": "2026-11-15T01:41:09.393947+00:00",
-     "observationDate": "2026-11-12",
+     "retrievedAt": "2026-11-17T04:06:13.870733+00:00",
+     "observationDate": "2026-11-13",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "068c41feef26fdc49fd243f92fe41619535a2039ae85bcf982dd28f48a93d400"
+     "sha256": "dc5db730ef9b6416e02d732d6b50b320891f0478abaa101839132a0737234fc4"
     },
     {
      "name": "DGS10",
      "provider": "FRED",
-     "retrievedAt": "2026-11-15T01:41:11.961393+00:00",
-     "observationDate": "2026-11-12",
+     "retrievedAt": "2026-11-17T04:06:15.771173+00:00",
+     "observationDate": "2026-11-13",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "e24c84ee77b0c03628222de840fd6f36020e0e500aa02353621752d653b94bdf"
+     "sha256": "958b03c2987916f4a9c71969df5cce1dc536cd93d8d9ad047997ff94c10a4bfe"
     }
    ],
    "history": [
@@ -1335,18 +1335,33 @@
      "threshold": 1.2916525928004488,
      "price": null,
      "recordType": "OPERATIONAL"
+    },
+    {
+     "date": "2026-11-13",
+     "risk": 0.348148912191391,
+     "msi": -0.0340952811352207,
+     "threshold": 1.2915839917519292,
+     "price": null,
+     "recordType": "OPERATIONAL"
     }
    ],
-   "current": null,
-   "lastValid": {
-    "date": "2026-11-12",
-    "risk": 0.28269314765930176,
-    "msi": -0.1270142710554022,
-    "threshold": 1.2916525928004488,
+   "current": {
+    "date": "2026-11-13",
+    "risk": 0.348148912191391,
+    "msi": -0.0340952811352207,
+    "threshold": 1.2915839917519292,
     "price": null,
     "recordType": "OPERATIONAL"
    },
-   "reason": "최신 필수 원천 관측 미확인. 과거 재현 추론을 현재 점수로 이월하지 않습니다.",
+   "lastValid": {
+    "date": "2026-11-13",
+    "risk": 0.348148912191391,
+    "msi": -0.0340952811352207,
+    "threshold": 1.2915839917519292,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   "reason": null,
    "modelSha256": "90c51c245ebe62b58f804098a7a7045b60fb64ef83da72d4c9a049cf8d5eeb0d",
    "trainingCutoff": "2026-09-16",
    "trainingEvidence": "6317행 prefix scaler 근사 일치; cutoff 추정, 정확한 학습 receipt 미보존",
@@ -1377,7 +1392,7 @@
      "SPY": {
       "overlapDates": 258,
       "scale": 1.0,
-      "maxRelativeDifference": 1.8535803154960518e-07
+      "maxRelativeDifference": 1.8676930013247548e-07
      },
      "VIX": {
       "overlapDates": 260,
@@ -1932,16 +1947,15 @@
      "date": "2026-11-13",
      "available": [
       "SPY",
-      "VIX"
-     ],
-     "missing": [
+      "VIX",
       "BAA_Treasury_Spread"
-     ]
+     ],
+     "missing": []
     }
    ],
    "availabilityOrigin": "provider-refresh",
    "historicalParity": true,
-   "inferenceAt": "2026-11-15T01:41:12.637003+00:00"
+   "inferenceAt": "2026-11-17T04:06:16.277463+00:00"
   }
  },
  "sourceValuesIncluded": false
