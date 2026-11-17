@@ -1,48 +1,48 @@
 {
  "schema_version": 1,
- "runId": "korea:20261113T002725Z-54159a96 + us:20261117T040558Z-4fef7750",
- "generatedAt": "2026-11-17T04:05:58.834626+00:00",
+ "runId": "korea:20261117T064413Z-1c6332bb + us:20261117T064413Z-1c6332bb",
+ "generatedAt": "2026-11-17T06:44:13.981082+00:00",
  "mode": "qualitative-signals-import",
  "markets": {
   "korea": {
    "status": "CURRENT",
-   "expectedDate": "2026-11-12",
+   "expectedDate": "2026-11-16",
    "series": [
     {
      "name": "KOSPI200",
      "provider": "KRX",
-     "retrievedAt": "2026-11-13T00:27:33.141331+00:00",
-     "observationDate": "2026-11-12",
+     "retrievedAt": "2026-11-17T06:44:19.826698+00:00",
+     "observationDate": "2026-11-16",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "b86e89dbc934f909c03f89a9f90c57a1046f323381c22aa3b9ee025a9154c995"
+     "sha256": "2b4b5e9aeae378588868f82891eecbdce1df9d7cc1f78ab2dec62ce937e70afb"
     },
     {
      "name": "VKOSPI",
      "provider": "KRX",
-     "retrievedAt": "2026-11-13T00:27:38.388179+00:00",
-     "observationDate": "2026-11-12",
+     "retrievedAt": "2026-11-17T06:44:24.923319+00:00",
+     "observationDate": "2026-11-16",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "b3976f223d51b01e202b38bdc5cacba3035b72769f75d406fa0aabb6d24b71f0"
+     "sha256": "725c3151a9de61755212e2e491eb4e5e7b6ea4c508bb41c142199e865a31ee8c"
     },
     {
      "name": "Korea_Treasury_3Y",
      "provider": "BOK ECOS",
-     "retrievedAt": "2026-11-13T00:27:43.418679+00:00",
-     "observationDate": "2026-11-12",
+     "retrievedAt": "2026-11-17T06:44:32.730682+00:00",
+     "observationDate": "2026-11-16",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "af2512f89722a3e2a08201235652ff738548da72a7ac19ef3cc68d8a4c306903"
+     "sha256": "f8096be055c3e55dca7cc8a159ce42872cda194ca8953434af1ceb670a1466da"
     },
     {
      "name": "Korea_Corporate_AAminus_3Y",
      "provider": "BOK ECOS",
-     "retrievedAt": "2026-11-13T00:27:48.659251+00:00",
-     "observationDate": "2026-11-12",
+     "retrievedAt": "2026-11-17T06:44:40.065762+00:00",
+     "observationDate": "2026-11-16",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "e18b1b23c450b14ed8f19d4f50272379c8a20d5f10ad615f9be4c1a22c0317e2"
+     "sha256": "3471383c22875ad913cb5c90577e3d0c08bb3a3ad7543dc3f683d4f931597cfc"
     }
    ],
    "history": [
@@ -332,7 +332,7 @@
      "msi": 0.5640099821771972,
      "threshold": 1.1156962770257357,
      "price": null,
-     "recordType": "OPERATIONAL"
+     "recordType": "RETROSPECTIVE_INFERENCE"
     },
     {
      "date": "2026-11-12",
@@ -340,22 +340,38 @@
      "msi": 0.5287803789744636,
      "threshold": 1.1155057818395353,
      "price": null,
+     "recordType": "RETROSPECTIVE_INFERENCE"
+    },
+    {
+     "date": "2026-11-13",
+     "risk": 0.28209513425827026,
+     "msi": 0.3174443472222446,
+     "threshold": 1.115315286653335,
+     "price": null,
+     "recordType": "OPERATIONAL"
+    },
+    {
+     "date": "2026-11-16",
+     "risk": 0.3319217264652252,
+     "msi": 0.4806079435943018,
+     "threshold": 1.1151247914671345,
+     "price": null,
      "recordType": "OPERATIONAL"
     }
    ],
    "current": {
-    "date": "2026-11-12",
-    "risk": 0.2924163341522217,
-    "msi": 0.5287803789744636,
-    "threshold": 1.1155057818395353,
+    "date": "2026-11-16",
+    "risk": 0.3319217264652252,
+    "msi": 0.4806079435943018,
+    "threshold": 1.1151247914671345,
     "price": null,
     "recordType": "OPERATIONAL"
    },
    "lastValid": {
-    "date": "2026-11-12",
-    "risk": 0.2924163341522217,
-    "msi": 0.5287803789744636,
-    "threshold": 1.1155057818395353,
+    "date": "2026-11-16",
+    "risk": 0.3319217264652252,
+    "msi": 0.4806079435943018,
+    "threshold": 1.1151247914671345,
     "price": null,
     "recordType": "OPERATIONAL"
    },
@@ -383,28 +399,8 @@
     "Credit_252D_ZScore"
    ],
    "inferenceSucceeded": true,
-   "publicationDeadline": "2026-11-12T12:30:00+00:00",
+   "publicationDeadline": "2026-11-16T12:30:00+00:00",
    "availability": [
-    {
-     "date": "2026-08-14",
-     "available": [
-      "KOSPI200",
-      "VKOSPI",
-      "Korea_Treasury_3Y",
-      "Korea_Corporate_AAminus_3Y"
-     ],
-     "missing": []
-    },
-    {
-     "date": "2026-08-18",
-     "available": [
-      "KOSPI200",
-      "VKOSPI",
-      "Korea_Treasury_3Y",
-      "Korea_Corporate_AAminus_3Y"
-     ],
-     "missing": []
-    },
     {
      "date": "2026-08-19",
      "available": [
@@ -984,11 +980,31 @@
       "Korea_Corporate_AAminus_3Y"
      ],
      "missing": []
+    },
+    {
+     "date": "2026-11-13",
+     "available": [
+      "KOSPI200",
+      "VKOSPI",
+      "Korea_Treasury_3Y",
+      "Korea_Corporate_AAminus_3Y"
+     ],
+     "missing": []
+    },
+    {
+     "date": "2026-11-16",
+     "available": [
+      "KOSPI200",
+      "VKOSPI",
+      "Korea_Treasury_3Y",
+      "Korea_Corporate_AAminus_3Y"
+     ],
+     "missing": []
     }
    ],
    "availabilityOrigin": "provider-refresh",
    "historicalParity": true,
-   "inferenceAt": "2026-11-13T00:27:49.761750+00:00"
+   "inferenceAt": "2026-11-17T06:44:40.892790+00:00"
   },
   "us": {
    "status": "CURRENT",
@@ -997,16 +1013,16 @@
     {
      "name": "SPY",
      "provider": "Yahoo Finance",
-     "retrievedAt": "2026-11-17T04:06:12.110534+00:00",
+     "retrievedAt": "2026-11-17T06:44:41.399857+00:00",
      "observationDate": "2026-11-13",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "8d9976b0779db038aeeb984da58a679b5b8a6c6287de92fc696251a5656ead4b"
+     "sha256": "204fff8b52aad6c1f570a5ec8d89c185e8748edeaa14d54a0bf2278628ec8048"
     },
     {
      "name": "VIX",
      "provider": "Yahoo Finance",
-     "retrievedAt": "2026-11-17T04:06:12.294777+00:00",
+     "retrievedAt": "2026-11-17T06:44:41.632614+00:00",
      "observationDate": "2026-11-13",
      "status": "OBSERVED",
      "reason": null,
@@ -1015,7 +1031,7 @@
     {
      "name": "DBAA",
      "provider": "FRED",
-     "retrievedAt": "2026-11-17T04:06:13.870733+00:00",
+     "retrievedAt": "2026-11-17T06:44:45.632480+00:00",
      "observationDate": "2026-11-13",
      "status": "OBSERVED",
      "reason": null,
@@ -1024,7 +1040,7 @@
     {
      "name": "DGS10",
      "provider": "FRED",
-     "retrievedAt": "2026-11-17T04:06:15.771173+00:00",
+     "retrievedAt": "2026-11-17T06:44:49.124062+00:00",
      "observationDate": "2026-11-13",
      "status": "OBSERVED",
      "reason": null,
@@ -1392,7 +1408,7 @@
      "SPY": {
       "overlapDates": 258,
       "scale": 1.0,
-      "maxRelativeDifference": 1.8676930013247548e-07
+      "maxRelativeDifference": 1.862084003450814e-07
      },
      "VIX": {
       "overlapDates": 260,
@@ -1955,7 +1971,7 @@
    ],
    "availabilityOrigin": "provider-refresh",
    "historicalParity": true,
-   "inferenceAt": "2026-11-17T04:06:16.277463+00:00"
+   "inferenceAt": "2026-11-17T06:44:49.638666+00:00"
   }
  },
  "sourceValuesIncluded": false
