@@ -4,47 +4,47 @@
   "source_commit": "04546dee7198bdcccf9c780501804cadf509e231",
   "files": {
     "universe.csv": {
-      "path": "snapshots/ddd0b57a617be4f782cb5701d736bfac69a24bb2/universe.csv",
+      "path": "snapshots/c3f5a0c7e9a74fbd6e567909f535b096981c95ca/universe.csv",
       "source_path": null,
       "sha256": "e6adbdd04f855f21afea48f210e79fcac5c69cf1ee93d65e0de8f51f159827e1",
       "bytes": 1096
     },
     "prices.csv": {
-      "path": "snapshots/ddd0b57a617be4f782cb5701d736bfac69a24bb2/prices.csv",
+      "path": "snapshots/c3f5a0c7e9a74fbd6e567909f535b096981c95ca/prices.csv",
       "source_path": null,
-      "sha256": "8f04b2496a63311cefa601142757e1184f54f58c6cdad9abe501ac7a797aaa64",
-      "bytes": 668542
+      "sha256": "c418fbc43b69cd06bf4793f8f16e957f067038f8f231973823b53f963bb091d0",
+      "bytes": 668086
     },
     "factors.csv": {
-      "path": "snapshots/ddd0b57a617be4f782cb5701d736bfac69a24bb2/factors.csv",
+      "path": "snapshots/c3f5a0c7e9a74fbd6e567909f535b096981c95ca/factors.csv",
       "source_path": null,
-      "sha256": "1d2deac29c32c4498f430b4a448de450d7f626831502f4ef667f616b5d7e1447",
-      "bytes": 48887
+      "sha256": "0ac4bc22176f03fb1fa41dd2c3afb0313aa670c22a3ed532bb5b929784f46618",
+      "bytes": 48897
     },
     "snapshot_meta.json": {
-      "path": "snapshots/ddd0b57a617be4f782cb5701d736bfac69a24bb2/snapshot_meta.json",
+      "path": "snapshots/c3f5a0c7e9a74fbd6e567909f535b096981c95ca/snapshot_meta.json",
       "source_path": null,
-      "sha256": "a1ee633b5f30bc0c831ebb6c691cc83daf47509bcb53c12bfb7f619f9e8a4db2",
+      "sha256": "a81bef932de5109eb861445d5aff287eb9d748e1aa58f1466ead0ebf9ba7e976",
       "bytes": 542
     },
     "scenarios.json": {
-      "path": "snapshots/ddd0b57a617be4f782cb5701d736bfac69a24bb2/scenarios.json",
+      "path": "snapshots/c3f5a0c7e9a74fbd6e567909f535b096981c95ca/scenarios.json",
       "source_path": null,
       "sha256": "c615ba4bfa0bde9bb29bf6eb5626c139931c8a412509f38e5405f9fb68f8656b",
       "bytes": 1315
     }
   },
-  "imported_at": "2026-11-17T04:05:50+00:00",
+  "imported_at": "2026-11-17T06:40:12+00:00",
   "price_basis": "dividend_split_adjusted_close",
   "currency": "KRW",
   "sector_attribution": {
     "status": "unavailable",
     "reason": "과거 벤치마크 섹터 구성·수익률 및 시점별 분류 자료가 연결되지 않았습니다."
   },
-  "snapshot_id": "ddd0b57a617be4f782cb5701d736bfac69a24bb2",
+  "snapshot_id": "c3f5a0c7e9a74fbd6e567909f535b096981c95ca",
   "collection": {
     "policy": "korea-portfolio-github-actions-v1",
-    "retrieved_at": "2026-11-17T04:05:38+00:00",
+    "retrieved_at": "2026-11-17T06:40:03+00:00",
     "code_repo": "JM973279/market-portfolio-risk-signals-intelligence",
     "code_ref": "main",
     "code_commit": "04546dee7198bdcccf9c780501804cadf509e231",
@@ -57,8 +57,8 @@
     "calendar_sha256": "eb8f7a9efafbac40324213529f0588771cc769507299a2dbd7a51a813d6f21d0",
     "normalization": "full adjusted-price vintage; no filling; KRX sessions where Yahoo lacks a listed asset are excluded and listed in excluded_price_sessions",
     "price_as_of": "2026-11-16",
-    "risk_as_of": "2026-11-12",
-    "factor_lag_sessions": 2,
+    "risk_as_of": "2026-11-16",
+    "factor_lag_sessions": 0,
     "krx_sessions": 2176,
     "rows": 2145,
     "assets": 23,
@@ -623,30 +623,27 @@
       ]
     },
     "missing_factor_dates": {
-      "VKOSPI": [
-        "2026-11-13",
-        "2026-11-16"
-      ],
+      "VKOSPI": [],
       "KTB10Y": []
     },
     "receipts": {
       "yahoo-adjusted-close.csv": {
-        "path": "snapshots/ddd0b57a617be4f782cb5701d736bfac69a24bb2/receipts/yahoo-adjusted-close.csv",
-        "sha256": "a54646b19ae29020ab62f29fb69ea85c05eb5a3f0afd5b904eeea17355b2e6e9",
-        "bytes": 675626
+        "path": "snapshots/c3f5a0c7e9a74fbd6e567909f535b096981c95ca/receipts/yahoo-adjusted-close.csv",
+        "sha256": "11864f657647128ee4e06ec84254a68fe953af3d44964b4810c6ae1fff72fc80",
+        "bytes": 675097
       },
       "krx-vkospi.csv": {
-        "path": "snapshots/ddd0b57a617be4f782cb5701d736bfac69a24bb2/receipts/krx-vkospi.csv",
-        "sha256": "7f2f5964c95f148712dd4cbcfeded8b97444f232fa7dffe8dcf5349f0988d75f",
-        "bytes": 36741
+        "path": "snapshots/c3f5a0c7e9a74fbd6e567909f535b096981c95ca/receipts/krx-vkospi.csv",
+        "sha256": "98d507ffe850863cff5f79a5f8fdefd61f23d16b622a96b724db204d523ba6d3",
+        "bytes": 36775
       },
       "ecos-ktb10y.csv": {
-        "path": "snapshots/ddd0b57a617be4f782cb5701d736bfac69a24bb2/receipts/ecos-ktb10y.csv",
+        "path": "snapshots/c3f5a0c7e9a74fbd6e567909f535b096981c95ca/receipts/ecos-ktb10y.csv",
         "sha256": "08aaa3d1b9c3541d1eed6f3449d7f386c5d7bdb58b20c791b0be6d6076b91e86",
         "bytes": 36904
       },
       "krx-sessions.csv": {
-        "path": "snapshots/ddd0b57a617be4f782cb5701d736bfac69a24bb2/receipts/krx-sessions.csv",
+        "path": "snapshots/c3f5a0c7e9a74fbd6e567909f535b096981c95ca/receipts/krx-sessions.csv",
         "sha256": "51355cc211637f4fc782a6971db22905a4813be2cd87f097283747d7861fc87d",
         "bytes": 23941
       }
