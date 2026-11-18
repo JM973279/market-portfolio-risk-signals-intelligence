@@ -8,9 +8,9 @@
  ],
  "source": {
   "path": "data/input/overnight_us.csv",
-  "sha256": "92ff9ef91560739cf79943466d53ddf047c30227c08e5042b2f26e5aa552244f",
+  "sha256": "3d434e9bf5ed40e96d6b82a178e440323633255bca6542f06c30e1404bf9c992",
   "provider": "Yahoo Finance adjusted close (yfinance auto_adjust=True)",
-  "retrievedAt": "2026-11-18T17:35:28+00:00",
+  "retrievedAt": "2026-11-18T22:16:21+00:00",
   "lastUsSession": "2026-11-17",
   "nextUsSession": "2026-11-18"
  },
