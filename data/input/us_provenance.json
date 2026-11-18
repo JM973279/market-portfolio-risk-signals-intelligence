@@ -6,7 +6,7 @@
   "source_git_ref": "HEAD",
   "source_git_commit": "9bedc79f3dd9b553d3cbb88502e84cae817b9d1d",
   "source_files_modified_locally": false,
-  "imported_at": "2026-11-17T07:46:13+00:00",
+  "imported_at": "2026-11-18T04:40:10+00:00",
   "files": {
     "global_markets": {
       "path": "frontend/public/data/global-markets.json",
@@ -15,30 +15,30 @@
     },
     "operational_markets": {
       "path": "frontend/public/data/operational-markets.json",
-      "bytes": 50952,
-      "sha256": "a5970d67b51eac1aa0af2364f8c3e65c854b26107688dd105198ec3e4c5441d3"
+      "bytes": 51412,
+      "sha256": "15554a4318871d786d85a49bdb0d8004b67e86ace6b042af77464d5767718371"
     }
   },
-  "operational_run_id": "20261117T074538Z-a90bf0d1",
+  "operational_run_id": "20261118T043930Z-40e3a356",
   "operational_model_sha256": "90c51c245ebe62b58f804098a7a7045b60fb64ef83da72d4c9a049cf8d5eeb0d",
   "training_cutoff": "2026-09-16",
-  "us_expected_date": "2026-11-13",
+  "us_expected_date": "2026-11-16",
   "us_source_status": "CURRENT",
-  "rows": 5097,
+  "rows": 5098,
   "record_type_counts": {
     "NO_SCORE": 1,
     "OOS_WALK_FORWARD": 5060,
-    "OPERATIONAL": 27,
+    "OPERATIONAL": 28,
     "RETROSPECTIVE_INFERENCE": 9
   },
   "first_date": "2006-08-09",
-  "last_date": "2026-11-13",
-  "last_risk_date": "2026-11-13",
+  "last_date": "2026-11-16",
+  "last_risk_date": "2026-11-16",
   "last_price_date": "2026-10-05",
   "refresh": {
     "mode": "provider-refresh",
     "v1_commit": "e939dc358c3bca92fee4c318d4bb297fd80debd3",
-    "generated_at": "2026-11-17T07:45:38.792412+00:00",
+    "generated_at": "2026-11-18T04:39:30.211343+00:00",
     "korea_reference": {
       "rebuilt": true,
       "original_sha256": "9fad15f4d0c2d78f890aa479a2b77d0f83cff637c014061de72e4c1c21b61588",
@@ -66,31 +66,31 @@
     },
     "korea": {
       "status": "CURRENT",
+      "expected_date": "2026-11-17",
+      "current_date": "2026-11-17",
+      "last_valid_date": "2026-11-17",
+      "fresh": true,
+      "reason": null,
+      "series": {
+        "KOSPI200": "2026-11-17",
+        "VKOSPI": "2026-11-17",
+        "Korea_Treasury_3Y": "2026-11-17",
+        "Korea_Corporate_AAminus_3Y": "2026-11-17"
+      },
+      "imported": true
+    },
+    "us": {
+      "status": "CURRENT",
       "expected_date": "2026-11-16",
       "current_date": "2026-11-16",
       "last_valid_date": "2026-11-16",
       "fresh": true,
       "reason": null,
       "series": {
-        "KOSPI200": "2026-11-16",
-        "VKOSPI": "2026-11-16",
-        "Korea_Treasury_3Y": "2026-11-16",
-        "Korea_Corporate_AAminus_3Y": "2026-11-16"
-      },
-      "imported": true
-    },
-    "us": {
-      "status": "CURRENT",
-      "expected_date": "2026-11-13",
-      "current_date": "2026-11-13",
-      "last_valid_date": "2026-11-13",
-      "fresh": true,
-      "reason": null,
-      "series": {
-        "SPY": "2026-11-13",
-        "VIX": "2026-11-13",
-        "DBAA": "2026-11-13",
-        "DGS10": "2026-11-13"
+        "SPY": "2026-11-16",
+        "VIX": "2026-11-16",
+        "DBAA": "2026-11-16",
+        "DGS10": "2026-11-16"
       },
       "imported": true,
       "provider_revision": {
@@ -99,7 +99,7 @@
           "SPY": {
             "overlapDates": 258,
             "scale": 1.0,
-            "maxRelativeDifference": 0.0
+            "maxRelativeDifference": 1.8676930013247548e-07
           },
           "VIX": {
             "overlapDates": 260,
@@ -112,9 +112,9 @@
             "maxRelativeDifference": 2.453531546132943e-16
           }
         },
-        "appendedDates": 29
+        "appendedDates": 30
       }
     }
   },
-  "scores_sha256": "650d7863fbf2561296067a0504d54b08747934a6f3568ba070db3db78d9ac758"
+  "scores_sha256": "6df09fc7ed5a4db6f853e4a8ee50e88a7c837acd8ceef41f764aa9cd0f05466f"
 }
