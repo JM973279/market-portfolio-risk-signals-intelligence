@@ -12,6 +12,7 @@ The site passes when every page answers 200 and it serves exactly the data commi
 from __future__ import annotations
 
 import argparse
+import http.client
 import json
 import sys
 import time
@@ -31,8 +32,12 @@ ANALYSES = {
 def fetch(base, path, body=None):
     data = None if body is None else json.dumps(body).encode()
     headers = {'User-Agent': 'mpri-site-check'} | ({'Content-Type': 'application/json'} if data else {})
-    with urllib.request.urlopen(urllib.request.Request(base + path, data=data, headers=headers), timeout=60) as r:
-        return r.status, r.read()
+    try:
+        with urllib.request.urlopen(urllib.request.Request(base + path, data=data, headers=headers), timeout=60) as r:
+            return r.status, r.read()
+    except http.client.HTTPException as exc:
+        # A truncated response must fail this attempt, but still use main's retry loop.
+        raise urllib.error.URLError(f'{base + path}: {type(exc).__name__}: {exc}') from exc
 
 
 def check(base):
