@@ -8,9 +8,9 @@
  ],
  "source": {
   "path": "data/input/overnight_us.csv",
-  "sha256": "c5c27abb4a8a3a009c8cd61cc6ed774a87bc5371b77d696c28d40c67b21a22d1",
+  "sha256": "a7a6f03b8d402d4b3d5f8ef9f9831c0472cb90b33f26bca8b32114cfe6d522bb",
   "provider": "Yahoo Finance adjusted close (yfinance auto_adjust=True)",
-  "retrievedAt": "2026-11-18T04:39:26+00:00",
+  "retrievedAt": "2026-11-18T07:57:37+00:00",
   "lastUsSession": "2026-11-17",
   "nextUsSession": "2026-11-18"
  },
@@ -19,7 +19,7 @@
   "usDate": "2026-11-17",
   "returns": {
    "EWY": -0.009008,
-   "^SOX": 0.003353
+   "^SOX": 0.003354
   },
   "ewyRange": "-1_1"
  },
@@ -29,7 +29,7 @@
    "usDate": "2026-11-17",
    "returns": {
     "EWY": -0.009008,
-    "^SOX": 0.003353
+    "^SOX": 0.003354
    },
    "ewyRange": "-1_1"
   },
