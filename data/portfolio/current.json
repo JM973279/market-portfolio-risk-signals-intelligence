@@ -4,47 +4,47 @@
   "source_commit": "9bedc79f3dd9b553d3cbb88502e84cae817b9d1d",
   "files": {
     "prices.csv": {
-      "path": "snapshots/844faaedd90b3a7dc10927e796c4eb8835d8a21f/prices.csv",
+      "path": "snapshots/88587f135b685c4f6b99447368b31e706b08d0f8/prices.csv",
       "source_path": null,
-      "sha256": "4a13bad28bfd5a6e742b3234b9ba9f9787df4b87d5d7e7c22608cbc7915d54bc",
-      "bytes": 1162793
+      "sha256": "2f875b7210e113d0b013d52b665f5961a9f0d6558e328d44d8ee9b21a8a07e2e",
+      "bytes": 1163199
     },
     "factors.csv": {
-      "path": "snapshots/844faaedd90b3a7dc10927e796c4eb8835d8a21f/factors.csv",
+      "path": "snapshots/88587f135b685c4f6b99447368b31e706b08d0f8/factors.csv",
       "source_path": null,
-      "sha256": "222764a2ddf9a39052d5e99e2ec285ce3b4a80f8747b74aabacf9eabae956798",
-      "bytes": 76045
+      "sha256": "ea5b4617fe8e42be15577692fda02b0c406ad2a06d34b53e7612d75f8c8baed2",
+      "bytes": 76076
     },
     "universe.csv": {
-      "path": "snapshots/844faaedd90b3a7dc10927e796c4eb8835d8a21f/universe.csv",
+      "path": "snapshots/88587f135b685c4f6b99447368b31e706b08d0f8/universe.csv",
       "source_path": "data/portfolio/universe.csv",
       "sha256": "2c7ada7fd34d2954162d504696045173bb04f41b76a87d7dd59b6ab4dda5cab9",
       "bytes": 1526
     },
     "snapshot_meta.json": {
-      "path": "snapshots/844faaedd90b3a7dc10927e796c4eb8835d8a21f/snapshot_meta.json",
+      "path": "snapshots/88587f135b685c4f6b99447368b31e706b08d0f8/snapshot_meta.json",
       "source_path": null,
-      "sha256": "6a44457dfc189f02d8165bb6318c0f9dccaa42143c971444b02a2b1a987bfe53",
+      "sha256": "5968f0531c8127e69f3c5fe0d7ab2a0706e15e09494affa4d0b2264f37c89fe1",
       "bytes": 470
     },
     "scenarios.json": {
-      "path": "snapshots/844faaedd90b3a7dc10927e796c4eb8835d8a21f/scenarios.json",
+      "path": "snapshots/88587f135b685c4f6b99447368b31e706b08d0f8/scenarios.json",
       "source_path": "data/portfolio/scenarios.json",
       "sha256": "c1d072801f93f7691fb4bb6bedee1a7c97ed571ea3673aa84025997e81d2e75c",
       "bytes": 2373
     }
   },
-  "imported_at": "2026-11-19T22:23:11+00:00",
+  "imported_at": "2026-11-19T23:04:13+00:00",
   "price_basis": "dividend_split_adjusted_close",
   "currency": "USD",
   "sector_attribution": {
     "status": "unavailable",
     "reason": "과거 벤치마크 섹터 구성·수익률 및 시점별 분류 자료가 연결되지 않았습니다."
   },
-  "snapshot_id": "844faaedd90b3a7dc10927e796c4eb8835d8a21f",
+  "snapshot_id": "88587f135b685c4f6b99447368b31e706b08d0f8",
   "collection": {
     "policy": "portfolio-full-provider-vintage-v1",
-    "retrieved_at": "2026-11-19T22:23:00+00:00",
+    "retrieved_at": "2026-11-19T23:04:00+00:00",
     "seed_repo": "tina77302/market-portfolio-risk-intelligence",
     "seed_ref": "main",
     "seed_commit": "9bedc79f3dd9b553d3cbb88502e84cae817b9d1d",
@@ -69,10 +69,10 @@
       "curl_cffi": "0.17.0"
     },
     "normalization": "full-history single provider vintage; no cached-price splicing",
-    "price_as_of": "2026-11-18",
+    "price_as_of": "2026-11-19",
     "risk_as_of": "2026-11-18",
-    "rate_lag_sessions": 0,
-    "rows": 2233,
+    "rate_lag_sessions": 1,
+    "rows": 2234,
     "assets": 28,
     "adjusted_price_revision_audit": {
       "AAPL": {
@@ -87,13 +87,13 @@
       },
       "BAC": {
         "compared": 2215,
-        "changed": 2134,
-        "max_abs_difference": 5.947875976630712e-05
+        "changed": 2133,
+        "max_abs_difference": 6.107177734548941e-05
       },
       "CAT": {
         "compared": 2215,
-        "changed": 2166,
-        "max_abs_difference": 0.00019282226560335403
+        "changed": 2189,
+        "max_abs_difference": 0.0001671874999829015
       },
       "CVX": {
         "compared": 2215,
@@ -108,7 +108,7 @@
       "GOOGL": {
         "compared": 2215,
         "changed": 2156,
-        "max_abs_difference": 0.00010815429686772404
+        "max_abs_difference": 9.289550780522404e-05
       },
       "HYG": {
         "compared": 2215,
@@ -118,96 +118,96 @@
       "IEF": {
         "compared": 2215,
         "changed": 2215,
-        "max_abs_difference": 0.35452659912108686
+        "max_abs_difference": 0.3545342285156181
       },
       "IWM": {
         "compared": 2215,
-        "changed": 2175,
-        "max_abs_difference": 0.00013881835937468168
+        "changed": 2166,
+        "max_abs_difference": 0.0001247558593888698
       },
       "JNJ": {
         "compared": 2215,
-        "changed": 2169,
-        "max_abs_difference": 0.0001143066406257276
+        "changed": 2157,
+        "max_abs_difference": 0.00011516113281118123
       },
       "JPM": {
         "compared": 2215,
-        "changed": 2168,
-        "max_abs_difference": 0.00011010742187522737
+        "changed": 2174,
+        "max_abs_difference": 0.00010708007812354481
       },
       "KO": {
         "compared": 2215,
-        "changed": 2160,
-        "max_abs_difference": 6.442871093526037e-05
+        "changed": 2168,
+        "max_abs_difference": 6.588134765195264e-05
       },
       "META": {
         "compared": 2215,
-        "changed": 2181,
-        "max_abs_difference": 0.00021972656247726263
+        "changed": 2179,
+        "max_abs_difference": 0.00022021484369361133
       },
       "MSFT": {
         "compared": 2215,
-        "changed": 2175,
-        "max_abs_difference": 0.0002541503906172693
+        "changed": 2163,
+        "max_abs_difference": 0.00017158203127110028
       },
       "NEE": {
         "compared": 2215,
-        "changed": 2164,
-        "max_abs_difference": 7.244873046374778e-05
+        "changed": 2167,
+        "max_abs_difference": 7.847290039109112e-05
       },
       "NVDA": {
         "compared": 2215,
-        "changed": 2164,
-        "max_abs_difference": 7.183837890067934e-05
+        "changed": 2170,
+        "max_abs_difference": 7.863769531013531e-05
       },
       "PG": {
         "compared": 2215,
-        "changed": 2173,
-        "max_abs_difference": 0.00010869140623981366
+        "changed": 2167,
+        "max_abs_difference": 0.00010798339843631766
       },
       "QQQ": {
         "compared": 2215,
-        "changed": 2184,
-        "max_abs_difference": 0.0002004394531240905
+        "changed": 2180,
+        "max_abs_difference": 0.0002445800781174512
       },
       "SPY": {
         "compared": 2215,
-        "changed": 2190,
-        "max_abs_difference": 0.00023476562500945874
+        "changed": 2188,
+        "max_abs_difference": 0.00020644531247171471
       },
       "TLT": {
         "compared": 2215,
         "changed": 2215,
-        "max_abs_difference": 0.591093408203136
+        "max_abs_difference": 0.591032373046886
       },
       "UNH": {
         "compared": 2215,
-        "changed": 2181,
-        "max_abs_difference": 0.0002185546875352884
+        "changed": 2176,
+        "max_abs_difference": 0.00022978515625027285
       },
       "WMT": {
         "compared": 2215,
-        "changed": 2168,
-        "max_abs_difference": 6.645507812663709e-05
+        "changed": 2171,
+        "max_abs_difference": 6.264038086101209e-05
       },
       "XLE": {
         "compared": 2215,
-        "changed": 2150,
-        "max_abs_difference": 6.46606445329212e-05
+        "changed": 2157,
+        "max_abs_difference": 6.867065429361219e-05
       },
       "XLF": {
         "compared": 2215,
-        "changed": 2151,
-        "max_abs_difference": 6.526489257652202e-05
+        "changed": 2152,
+        "max_abs_difference": 6.11999511690442e-05
       },
       "XLK": {
         "compared": 2215,
-        "changed": 2153,
-        "max_abs_difference": 7.744140624765805e-05
+        "changed": 2162,
+        "max_abs_difference": 8.524169922452529e-05
       },
       "XLV": {
         "compared": 2215,
-        "changed": 2172,
+        "changed": 2168,
         "max_abs_difference": 9.465332030345053e-05
       },
       "XOM": {
@@ -218,21 +218,21 @@
     },
     "receipts": {
       "yahoo-adjusted-close.csv": {
-        "path": "snapshots/844faaedd90b3a7dc10927e796c4eb8835d8a21f/receipts/yahoo-adjusted-close.csv",
-        "sha256": "d22be1fc30af5caa55d90a4b3b4177212429602293a83e7f4a15d41d54e950dd",
-        "bytes": 1203364
+        "path": "snapshots/88587f135b685c4f6b99447368b31e706b08d0f8/receipts/yahoo-adjusted-close.csv",
+        "sha256": "05cc4a8efe6d36c5da8048b6233fdecd623520a99eef06ac1cf885b921dc9e89",
+        "bytes": 1203789
       },
       "fred-dgs10.csv": {
-        "path": "snapshots/844faaedd90b3a7dc10927e796c4eb8835d8a21f/receipts/fred-dgs10.csv",
+        "path": "snapshots/88587f135b685c4f6b99447368b31e706b08d0f8/receipts/fred-dgs10.csv",
         "sha256": "262278d33ac4b3039d6249b125dae0202086438b57c0a931fabad1b6fb4814e0",
         "bytes": 36707
       },
       "nyse-sessions.csv": {
-        "path": "snapshots/844faaedd90b3a7dc10927e796c4eb8835d8a21f/receipts/nyse-sessions.csv",
-        "sha256": "be84d5bf425db87d60f11b9aec1ec83116d557958f7e510dfc461059c9e36775",
-        "bytes": 24568
+        "path": "snapshots/88587f135b685c4f6b99447368b31e706b08d0f8/receipts/nyse-sessions.csv",
+        "sha256": "55281920cd4dc246ad8757a417f17c605a184ccac71a7699fd484e0404b35fdb",
+        "bytes": 24579
       }
     }
   },
-  "price_as_of": "2026-11-18"
+  "price_as_of": "2026-11-19"
 }
