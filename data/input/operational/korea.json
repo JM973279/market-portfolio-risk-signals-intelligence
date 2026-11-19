@@ -1,49 +1,49 @@
 {
  "schema_version": 1,
- "runId": "20261118T043930Z-40e3a356",
- "generatedAt": "2026-11-18T04:39:30.211343+00:00",
+ "runId": "20261119T034546Z-29540722",
+ "generatedAt": "2026-11-19T03:45:46.474388+00:00",
  "mode": "provider-refresh",
  "sourceValuesIncluded": false,
  "market": "korea",
  "block": {
   "status": "CURRENT",
-  "expectedDate": "2026-11-17",
+  "expectedDate": "2026-11-18",
   "series": [
    {
     "name": "KOSPI200",
     "provider": "KRX",
-    "retrievedAt": "2026-11-18T04:39:36.526812+00:00",
-    "observationDate": "2026-11-17",
+    "retrievedAt": "2026-11-19T03:45:56.436035+00:00",
+    "observationDate": "2026-11-18",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "e6d4bca9a7ada5eb11f3e61c35d02776eec7123c52a6a4ee64c748fc8e2649a7"
+    "sha256": "82677536be3507d2cd1b775849d02c873556a62a5d4c60a3db38a955b15e17af"
    },
    {
     "name": "VKOSPI",
     "provider": "KRX",
-    "retrievedAt": "2026-11-18T04:39:41.778755+00:00",
-    "observationDate": "2026-11-17",
+    "retrievedAt": "2026-11-19T03:46:02.799500+00:00",
+    "observationDate": "2026-11-18",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "7867b701efab8806ebfedf1a2f9db2ac0006a1b455184c38bea18157497075ba"
+    "sha256": "5c9cb48e8282f37cbe28e3ced698babab8bea1a96caea972a71093a7ce6f5234"
    },
    {
     "name": "Korea_Treasury_3Y",
     "provider": "BOK ECOS",
-    "retrievedAt": "2026-11-18T04:39:47.525514+00:00",
-    "observationDate": "2026-11-17",
+    "retrievedAt": "2026-11-19T03:46:09.959464+00:00",
+    "observationDate": "2026-11-18",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "e0931c730cb93398922388a0d89ac0dac10a9bfdea7fd7c9666ee5b96929da9a"
+    "sha256": "35050cc4c9b43d364578efa2b50066fa48638c278b35ca61e037877180a3041d"
    },
    {
     "name": "Korea_Corporate_AAminus_3Y",
     "provider": "BOK ECOS",
-    "retrievedAt": "2026-11-18T04:39:54.135120+00:00",
-    "observationDate": "2026-11-17",
+    "retrievedAt": "2026-11-19T03:46:16.925652+00:00",
+    "observationDate": "2026-11-18",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "2fe0ab27fdfae785380c998d9d62c9b10fd06cec73c0eab8af15dd54ce05910b"
+    "sha256": "190b60da25b166681522f4cccd78eaf701c8b2a1a7ee4c55cbd676ca90a2c50b"
    }
   ],
   "history": [
@@ -365,22 +365,30 @@
     "msi": 0.5890122497285827,
     "threshold": 1.1149342962809328,
     "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-11-18",
+    "risk": 0.3071301579475403,
+    "msi": 0.5138457300847933,
+    "threshold": 1.1147438010947324,
+    "price": null,
     "recordType": "OPERATIONAL"
    }
   ],
   "current": {
-   "date": "2026-11-17",
-   "risk": 0.3267737329006195,
-   "msi": 0.5890122497285827,
-   "threshold": 1.1149342962809328,
+   "date": "2026-11-18",
+   "risk": 0.3071301579475403,
+   "msi": 0.5138457300847933,
+   "threshold": 1.1147438010947324,
    "price": null,
    "recordType": "OPERATIONAL"
   },
   "lastValid": {
-   "date": "2026-11-17",
-   "risk": 0.3267737329006195,
-   "msi": 0.5890122497285827,
-   "threshold": 1.1149342962809328,
+   "date": "2026-11-18",
+   "risk": 0.3071301579475403,
+   "msi": 0.5138457300847933,
+   "threshold": 1.1147438010947324,
    "price": null,
    "recordType": "OPERATIONAL"
   },
@@ -408,18 +416,8 @@
    "Credit_252D_ZScore"
   ],
   "inferenceSucceeded": true,
-  "publicationDeadline": "2026-11-17T12:30:00+00:00",
+  "publicationDeadline": "2026-11-18T12:30:00+00:00",
   "availability": [
-   {
-    "date": "2026-08-20",
-    "available": [
-     "KOSPI200",
-     "VKOSPI",
-     "Korea_Treasury_3Y",
-     "Korea_Corporate_AAminus_3Y"
-    ],
-    "missing": []
-   },
    {
     "date": "2026-08-21",
     "available": [
@@ -1009,10 +1007,20 @@
      "Korea_Corporate_AAminus_3Y"
     ],
     "missing": []
+   },
+   {
+    "date": "2026-11-18",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
    }
   ],
   "availabilityOrigin": "provider-refresh",
   "historicalParity": true,
-  "inferenceAt": "2026-11-18T04:39:54.928293+00:00"
+  "inferenceAt": "2026-11-19T03:46:17.716178+00:00"
  }
 }
