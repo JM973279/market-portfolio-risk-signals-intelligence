@@ -8,22 +8,31 @@
  ],
  "source": {
   "path": "data/input/overnight_us.csv",
-  "sha256": "3d434e9bf5ed40e96d6b82a178e440323633255bca6542f06c30e1404bf9c992",
+  "sha256": "156251e19cc414e4e6ca6e15888ed5b4273f5c526e5b250db7cc74c58a5925cd",
   "provider": "Yahoo Finance adjusted close (yfinance auto_adjust=True)",
-  "retrievedAt": "2026-11-18T22:16:21+00:00",
-  "lastUsSession": "2026-11-17",
-  "nextUsSession": "2026-11-18"
+  "retrievedAt": "2026-11-19T13:43:43+00:00",
+  "lastUsSession": "2026-11-18",
+  "nextUsSession": "2026-11-19"
  },
  "latest": {
-  "krxDate": "2026-11-18",
-  "usDate": "2026-11-17",
+  "krxDate": "2026-11-19",
+  "usDate": "2026-11-18",
   "returns": {
-   "EWY": -0.009008,
-   "^SOX": 0.003354
+   "EWY": 0.01042,
+   "^SOX": 0.001029
   },
-  "ewyRange": "-1_1"
+  "ewyRange": "1_3"
  },
  "history": [
+  {
+   "krxDate": "2026-11-19",
+   "usDate": "2026-11-18",
+   "returns": {
+    "EWY": 0.01042,
+    "^SOX": 0.001029
+   },
+   "ewyRange": "1_3"
+  },
   {
    "krxDate": "2026-11-18",
    "usDate": "2026-11-17",
@@ -194,15 +203,6 @@
     "^SOX": -0.067235
    },
    "ewyRange": "le_-3"
-  },
-  {
-   "krxDate": "2026-10-22",
-   "usDate": "2026-10-21",
-   "returns": {
-    "EWY": 0.018767,
-    "^SOX": 0.019652
-   },
-   "ewyRange": "1_3"
   }
  ],
  "context": {
