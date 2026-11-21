@@ -373,6 +373,16 @@ class MarketIndependenceTest(unittest.TestCase):
             code = refresh.main(argv)
         return code, json.loads(out.getvalue()), imported
 
+    def test_verified_delay_status_is_published_even_without_new_scores(self):
+        with tempfile.TemporaryDirectory() as tmp, \
+             patch("qsignals.refresh.us_importable", return_value=False), \
+             patch("qsignals.refresh.save_delayed_status", return_value=True):
+            code, summary, imported = self.run_main(tmp, "DELAYED")
+        self.assertEqual(code, 3)
+        self.assertEqual(imported, [])
+        self.assertTrue(summary["status_updated"])
+        self.assertEqual(summary["alerts"], [])
+
     def test_blocked_korea_still_publishes_us_and_raises_an_alert(self):
         with tempfile.TemporaryDirectory() as tmp:
             code, summary, imported = self.run_main(tmp, "BLOCKED")

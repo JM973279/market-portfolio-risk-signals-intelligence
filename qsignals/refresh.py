@@ -3,8 +3,9 @@
     python3 -m qsignals.refresh [--python PATH] [--v1-repo PATH] [--source-root PATH]
 
 The deployed project's frozen pipeline (market_engine/operations/run.py) is
-the only code that may produce V1 scores. This command runs it unchanged, in
-throwaway snapshots, and then imports the Korea and US series:
+the only code that may produce V1 scores. This command runs it in throwaway
+snapshots with a narrow collection adapter that excludes only incomplete
+trailing Korea sessions, then imports both series:
 
 1. Snapshot the deployed repo (git archive of --source-ref) and the original V1
    repo at the commit whose sources match the pipeline's contract.json. The
@@ -57,6 +58,7 @@ from pathlib import Path
 from qsignals.calendar import latest_closed_session, load_sessions
 from qsignals.deferral import MAX_BEHIND, sessions_behind
 from qsignals.import_scores import SOURCE_FILES, import_data, import_us
+from qsignals.korea_status import save_delayed_status
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 HOME = Path.home()
@@ -599,7 +601,8 @@ def main(argv=None):
         print(f"::warning::Korea preparation failed ({exc}); US is refreshed as usual.", file=sys.stderr)
 
     env.pop("PYTHONPATH")
-    code = run_logged([args.python, RUNNER, "--collect", "--original-v1-root", str(work / "v1")], work / "mpri", env, log)
+    worker = Path(__file__).with_name("_collection_worker.py")
+    code = run_logged([args.python, str(worker), RUNNER, "--collect", "--original-v1-root", str(work / "v1")], work / "mpri", env, log)
     if code != 0:
         raise SystemExit(f"Frozen pipeline failed (exit {code}); see {log}")
     operational = json.loads((work / "mpri/frontend/public/data/operational-markets.json").read_text(encoding="utf-8"))
@@ -614,6 +617,13 @@ def main(argv=None):
         print(f"ECOS credit cache extended by {added} verified rows.", file=sys.stderr)
     status = {m: freshness(v) for m, v in operational["markets"].items()}
     summary = {"run_id": operational.get("runId"), "work_dir": str(work), "korea_reference": reference or {"rebuilt": False}, "markets": status}
+    summary["collection_adapter"] = {"path": worker.name, "sha256": sha256_file(worker)}
+    operational["collectionAdapter"] = summary["collection_adapter"]
+    try:
+        summary["status_updated"] = save_delayed_status(operational, args.output_dir)
+    except (OSError, ValueError, KeyError) as exc:
+        summary["status_updated"] = False
+        alerts.append(f"Korea delayed status failed verification ({type(exc).__name__}); kept its previous status.")
     summary["alerts"] = alerts  # the workflow fails on any alert after publishing the other market
     if key_warning:
         summary["key_rejected"] = key_warning
@@ -644,11 +654,11 @@ def main(argv=None):
     markets = tuple(m for m, ok in (("korea", status["korea"]["fresh"] and "korea" not in blocked),
                                     ("us", us_importable(operational["markets"]["us"]) and "us" not in blocked)) if ok)
     summary["delayed"] = [m for m in ("korea", "us") if m not in markets and m not in blocked]
-    if not markets and blocked:
+    if not markets and blocked and not summary["status_updated"]:
         print(json.dumps(with_lag(summary, args.output_dir), indent=2, ensure_ascii=False))
         print(f"Verification failed (BLOCKED: {', '.join(blocked)}); data/input/ left unchanged.", file=sys.stderr)
         return 1
-    if not markets:
+    if not markets and not summary["status_updated"]:
         print(json.dumps(with_lag(summary, args.output_dir), indent=2, ensure_ascii=False))
         print("No market has new verified data yet; data/input/ left unchanged.", file=sys.stderr)
         return 2
@@ -670,6 +680,7 @@ def main(argv=None):
         "mode": operational.get("mode"),
         "v1_commit": v1_commit,
         "generated_at": operational.get("generatedAt"),
+        "collection_adapter": summary["collection_adapter"],
         "korea_reference": reference or {"rebuilt": False},
         "korea": {**status["korea"], "imported": "korea" in markets},
         "us": {**status["us"], "imported": "us" in markets,
