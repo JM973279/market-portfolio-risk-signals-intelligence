@@ -6,6 +6,12 @@
 
 **[사이트 열기 · Live site](https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/) · [포트폴리오 분석 · Portfolio](https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/portfolio) · [조기경보 백테스트 · Backtest](https://mpri.hbgma4wzzydww.ap-northeast-2.cs.amazonlightsail.com/validation) · [발표자료 · Slides](https://jm973279.github.io/market-portfolio-risk-signals-intelligence/presentation/)**
 
+## 한국 점수 원천 공개 지연
+
+일일 수집은 원본 runner를 임시 스냅샷에서 실행하며, `qsignals/_collection_worker.py`가 한국 필수 채널의 공통 관측일까지 계산 구간을 제한합니다. 예를 들어 주가·변동성·국고채는 11/20, 회사채는 11/19까지 있으면 11/19까지만 검증하고 11/20은 `DELAYED`로 표시합니다. 원천별 실제 관측일과 수집 기록, 기대일은 유지하며 값을 보간하거나 날짜를 바꾸지 않습니다. 각 채널의 중간 결측, 과거 재현 불일치, 모델 검증 실패는 계속 차단합니다. 기존 지연 허용 거래일 초과 경보도 유지합니다.
+
+대기 중에는 기존 점수·가격 CSV와 출처 기록을 보존하고, 재현 검증을 통과한 수집 상태만 갱신합니다. 상태 파일의 `scoreRunId`는 점수 발행 실행, `runId`는 최신 수집 상태 실행을 가리킵니다. 신규 한국 점수는 필수 원천이 모두 도착해 `CURRENT` 검증을 통과한 실행에서 게시합니다. 원본 파일은 수정하지 않으며 적용한 adapter의 SHA-256을 수집 요약과 게시 출처에 남깁니다. GitHub 원본 저장소·ref·수신 경로는 그대로입니다.
+
 ## 담당 작업 · My contribution
 
 - **포트폴리오 성과분석 웹/API**를 설계·구현했습니다. 종목별 수익 기여도와 Brinson–Fachler 성과요인을 계산하고, 각각의 합이 포트폴리오 수익률과 벤치마크 대비 초과수익에 정확히 맞는지 테스트로 검증했습니다. ([구현 기록 PR #2](https://github.com/JM973279/market-portfolio-risk-signals-intelligence/pull/2))
