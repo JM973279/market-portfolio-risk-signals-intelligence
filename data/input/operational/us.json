@@ -1,49 +1,49 @@
 {
  "schema_version": 1,
- "runId": "20261120T070009Z-cf06a76b",
- "generatedAt": "2026-11-20T07:00:09.077475+00:00",
+ "runId": "20261121T024301Z-a165c50a",
+ "generatedAt": "2026-11-21T02:43:01.942533+00:00",
  "mode": "provider-refresh",
  "sourceValuesIncluded": false,
  "market": "us",
  "block": {
   "status": "CURRENT",
-  "expectedDate": "2026-11-18",
+  "expectedDate": "2026-11-19",
   "series": [
    {
     "name": "SPY",
     "provider": "Yahoo Finance",
-    "retrievedAt": "2026-11-20T07:00:36.824010+00:00",
-    "observationDate": "2026-11-18",
+    "retrievedAt": "2026-11-21T02:43:21.894159+00:00",
+    "observationDate": "2026-11-19",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "624632060a5cb877e6ccf528cb629edf3ad4b941b74ab33a203a85c12dfd6fbf"
+    "sha256": "613066701b8b5d00b4a835d9939877a2cfcebd59e121d261316158e1125628e2"
    },
    {
     "name": "VIX",
     "provider": "Yahoo Finance",
-    "retrievedAt": "2026-11-20T07:00:37.006628+00:00",
-    "observationDate": "2026-11-18",
+    "retrievedAt": "2026-11-21T02:43:22.211685+00:00",
+    "observationDate": "2026-11-19",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "69fdce3b3cc8a237936f82911f81197be1f93c300d2b65515f4830e5f4420f9e"
+    "sha256": "8467418fb10e9e2c12f4493fc7c226c4261248b7ac5b312e98a604717fc40d5f"
    },
    {
     "name": "DBAA",
     "provider": "FRED",
-    "retrievedAt": "2026-11-20T07:00:38.601063+00:00",
-    "observationDate": "2026-11-18",
+    "retrievedAt": "2026-11-21T02:43:23.943169+00:00",
+    "observationDate": "2026-11-19",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "0bdac716c76968a24afab4eb3c13f5af54aacce72b04bb475a9f2ba16eb9d358"
+    "sha256": "badaa75c17447af15895c3843f36740cf7587db009d2340941ee564ba6e64399"
    },
    {
     "name": "DGS10",
     "provider": "FRED",
-    "retrievedAt": "2026-11-20T07:00:40.440373+00:00",
-    "observationDate": "2026-11-18",
+    "retrievedAt": "2026-11-21T02:43:25.790028+00:00",
+    "observationDate": "2026-11-19",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "f09dd8e30f8e741c96092d7603bc63d0ac2c1ab830f6a6523b8626b68f29f090"
+    "sha256": "9979d32a616e2a4af1d3d65190c3216aa93d38cf74c1d2c2ccd12b3af919210a"
    }
   ],
   "history": [
@@ -382,21 +382,29 @@
     "threshold": 1.291449557472435,
     "price": null,
     "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-11-19",
+    "risk": 0.9352673888206482,
+    "msi": 1.6053324542467546,
+    "threshold": 1.2914166408569476,
+    "price": null,
+    "recordType": "OPERATIONAL"
    }
   ],
   "current": {
-   "date": "2026-11-18",
-   "risk": 0.6864505410194397,
-   "msi": 0.8910115155517865,
-   "threshold": 1.291449557472435,
+   "date": "2026-11-19",
+   "risk": 0.9352673888206482,
+   "msi": 1.6053324542467546,
+   "threshold": 1.2914166408569476,
    "price": null,
    "recordType": "OPERATIONAL"
   },
   "lastValid": {
-   "date": "2026-11-18",
-   "risk": 0.6864505410194397,
-   "msi": 0.8910115155517865,
-   "threshold": 1.291449557472435,
+   "date": "2026-11-19",
+   "risk": 0.9352673888206482,
+   "msi": 1.6053324542467546,
+   "threshold": 1.2914166408569476,
    "price": null,
    "recordType": "OPERATIONAL"
   },
@@ -424,7 +432,7 @@
    "Credit_252D_ZScore"
   ],
   "inferenceSucceeded": true,
-  "publicationDeadline": "2026-11-19T09:00:00+00:00",
+  "publicationDeadline": "2026-11-20T09:00:00+00:00",
   "providerRevision": {
    "cacheEnd": "2026-10-05",
    "channels": {
@@ -444,18 +452,9 @@
      "maxRelativeDifference": 2.453531546132943e-16
     }
    },
-   "appendedDates": 32
+   "appendedDates": 33
   },
   "availability": [
-   {
-    "date": "2026-08-27",
-    "available": [
-     "SPY",
-     "VIX",
-     "BAA_Treasury_Spread"
-    ],
-    "missing": []
-   },
    {
     "date": "2026-08-28",
     "available": [
@@ -990,10 +989,19 @@
      "BAA_Treasury_Spread"
     ],
     "missing": []
+   },
+   {
+    "date": "2026-11-19",
+    "available": [
+     "SPY",
+     "VIX",
+     "BAA_Treasury_Spread"
+    ],
+    "missing": []
    }
   ],
   "availabilityOrigin": "provider-refresh",
   "historicalParity": true,
-  "inferenceAt": "2026-11-20T07:00:40.928037+00:00"
+  "inferenceAt": "2026-11-21T02:43:26.925826+00:00"
  }
 }
