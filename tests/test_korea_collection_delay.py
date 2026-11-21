@@ -6,7 +6,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import pandas as pd
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
 
 from qsignals._collection_worker import adapted_source, complete_korea_history
 from qsignals.korea_status import save_delayed_status
@@ -21,6 +24,7 @@ def observations():
                         index=pd.to_datetime(['2026-11-18', '2026-11-19', '2026-11-20']))
 
 
+@unittest.skipIf(pd is None, "Requires the existing inference environment (pandas)")
 class CollectionBoundaryTest(unittest.TestCase):
     def test_only_late_tail_is_trimmed_and_source_is_preserved(self):
         raw = observations()
