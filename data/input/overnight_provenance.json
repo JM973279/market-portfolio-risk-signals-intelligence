@@ -8,9 +8,9 @@
     "^SOX"
   ],
   "first_date": "2016-01-04",
-  "last_date": "2026-11-20",
-  "rows": 2738,
-  "next_us_session": "2026-11-23",
+  "last_date": "2026-11-23",
+  "rows": 2739,
+  "next_us_session": "2026-11-24",
   "coverage": {
     "EWY": 1.0,
     "^SOX": 1.0
@@ -23,7 +23,7 @@
     "EWY": [],
     "^SOX": []
   },
-  "sha256": "80979f41f7e60712d6333d6df98f426c0c61ac926198732de3f966989ad0bda7",
+  "sha256": "4c1e940eee3003eca6cc022da5564f67e8a59c884c5a9655830e79f529c87edd",
   "use": "overnight overlay experiment and pre-open display only; frozen Risk Score/MSI unchanged",
-  "retrieved_at": "2026-11-23T20:35:20+00:00"
+  "retrieved_at": "2026-11-24T02:29:42+00:00"
 }
