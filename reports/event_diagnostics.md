@@ -13,7 +13,7 @@
   - 가격 보충: [Naver Finance KPI200](https://fchart.stock.naver.com/sise.nhn?symbol=KPI200&timeframe=day&count=500&requestType=0), 원응답 sha256 `1f483fdf0a9931f83c4eb0b2b9cf81b799d357fa9eb5eb5406352c140d35e381`
   - 동결 가격과 겹치는 465일 대조, 최대 절대 차이 0.000000. 가격은 사건 수익률에만 사용하며 점수·MSI는 바꾸지 않았습니다.
   - 생성 CSV sha256 `555ef12e8bf7eb8babbed25365a2d619c7b9192a51a64bfffa4c7835efe305bb`
-  - 최신성 점검일: 2026-11-24 KST; 6시간 게시 여유를 적용한 기대 거래일 2026-11-24
+  - 최신성 점검일: 2026-11-25 KST; 6시간 게시 여유를 적용한 기대 거래일 2026-11-24
   - **갱신 지연**: 기대 거래일까지의 점수 또는 가격이 없습니다. 데이터 마지막 관측일 이후를 정상·무경보로 판정하지 않습니다.
   - KRX 거래일 누락: 0일
 - 이벤트: `data/events/kospi_2026_events.csv` (보도 기준 KOSPI 등락, 사후 정리)
