@@ -1,7 +1,7 @@
 {
  "schema_version": 1,
- "runId": "korea:20261124T023004Z-a1675512 + us:20261124T023004Z-a1675512",
- "generatedAt": "2026-11-24T02:30:04.347687+00:00",
+ "runId": "korea:20261124T023004Z-a1675512 + us:20261124T094313Z-ba8e4106",
+ "generatedAt": "2026-11-24T09:43:13.496853+00:00",
  "mode": "qualitative-signals-import",
  "markets": {
   "korea": {
@@ -1047,31 +1047,31 @@
    "inferenceAt": "2026-11-24T02:30:28.157108+00:00"
   },
   "us": {
-   "status": "CURRENT",
-   "expectedDate": "2026-11-20",
+   "status": "DELAYED",
+   "expectedDate": "2026-11-23",
    "series": [
     {
      "name": "SPY",
      "provider": "Yahoo Finance",
-     "retrievedAt": "2026-11-24T02:30:28.674927+00:00",
-     "observationDate": "2026-11-20",
+     "retrievedAt": "2026-11-24T09:43:37.570233+00:00",
+     "observationDate": "2026-11-23",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "a187dc077c9ddf8f4ff93d84a015676ab58708ef11fd0499a3ea612d4524a855"
+     "sha256": "6a2cc1463ef2b36f0700ba3a9555a72121ab069d0cd5215284abde52962d2c63"
     },
     {
      "name": "VIX",
      "provider": "Yahoo Finance",
-     "retrievedAt": "2026-11-24T02:30:28.873766+00:00",
-     "observationDate": "2026-11-20",
+     "retrievedAt": "2026-11-24T09:43:37.816846+00:00",
+     "observationDate": "2026-11-23",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "fea1d73cd8235e19dc46c49cfe6d2b7084bea73af44e160ed3a9c7083663a8e0"
+     "sha256": "94679d37b84e902fcbcf90b23bf03ef2cc0428dc489b7f743d0c1d1730587d41"
     },
     {
      "name": "DBAA",
      "provider": "FRED",
-     "retrievedAt": "2026-11-24T02:30:30.018368+00:00",
+     "retrievedAt": "2026-11-24T09:43:39.291095+00:00",
      "observationDate": "2026-11-20",
      "status": "OBSERVED",
      "reason": null,
@@ -1080,7 +1080,7 @@
     {
      "name": "DGS10",
      "provider": "FRED",
-     "retrievedAt": "2026-11-24T02:30:32.603037+00:00",
+     "retrievedAt": "2026-11-24T09:43:40.315052+00:00",
      "observationDate": "2026-11-20",
      "status": "OBSERVED",
      "reason": null,
@@ -1441,14 +1441,7 @@
      "recordType": "OPERATIONAL"
     }
    ],
-   "current": {
-    "date": "2026-11-20",
-    "risk": 0.9725493788719177,
-    "msi": 2.6673827592722024,
-    "threshold": 1.2919269969945288,
-    "price": null,
-    "recordType": "OPERATIONAL"
-   },
+   "current": null,
    "lastValid": {
     "date": "2026-11-20",
     "risk": 0.9725493788719177,
@@ -1457,7 +1450,7 @@
     "price": null,
     "recordType": "OPERATIONAL"
    },
-   "reason": null,
+   "reason": "최신 필수 원천 관측 미확인. 과거 재현 추론을 현재 점수로 이월하지 않습니다.",
    "modelSha256": "90c51c245ebe62b58f804098a7a7045b60fb64ef83da72d4c9a049cf8d5eeb0d",
    "trainingCutoff": "2026-09-16",
    "trainingEvidence": "6317행 prefix scaler 근사 일치; cutoff 추정, 정확한 학습 receipt 미보존",
@@ -1481,14 +1474,14 @@
     "Credit_252D_ZScore"
    ],
    "inferenceSucceeded": true,
-   "publicationDeadline": "2026-11-21T09:00:00+00:00",
+   "publicationDeadline": "2026-11-24T09:00:00+00:00",
    "providerRevision": {
     "cacheEnd": "2026-10-05",
     "channels": {
      "SPY": {
       "overlapDates": 258,
       "scale": 1.0,
-      "maxRelativeDifference": 1.814972781306942e-07
+      "maxRelativeDifference": 1.8535803154960518e-07
      },
      "VIX": {
       "overlapDates": 260,
@@ -1501,18 +1494,9 @@
       "maxRelativeDifference": 2.453531546132943e-16
      }
     },
-    "appendedDates": 34
+    "appendedDates": 35
    },
    "availability": [
-    {
-     "date": "2026-08-31",
-     "available": [
-      "SPY",
-      "VIX",
-      "BAA_Treasury_Spread"
-     ],
-     "missing": []
-    },
     {
      "date": "2026-09-01",
      "available": [
@@ -2047,11 +2031,21 @@
       "BAA_Treasury_Spread"
      ],
      "missing": []
+    },
+    {
+     "date": "2026-11-23",
+     "available": [
+      "SPY",
+      "VIX"
+     ],
+     "missing": [
+      "BAA_Treasury_Spread"
+     ]
     }
    ],
    "availabilityOrigin": "provider-refresh",
    "historicalParity": true,
-   "inferenceAt": "2026-11-24T02:30:33.094965+00:00"
+   "inferenceAt": "2026-11-24T09:43:40.992611+00:00"
   }
  },
  "sourceValuesIncluded": false
