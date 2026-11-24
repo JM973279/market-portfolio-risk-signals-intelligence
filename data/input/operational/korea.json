@@ -1,49 +1,49 @@
 {
  "schema_version": 1,
- "runId": "20261122T112050Z-397de5d5",
- "generatedAt": "2026-11-22T11:20:50.488485+00:00",
+ "runId": "20261124T023004Z-a1675512",
+ "generatedAt": "2026-11-24T02:30:04.347687+00:00",
  "mode": "provider-refresh",
  "sourceValuesIncluded": false,
  "market": "korea",
  "block": {
-  "status": "DELAYED",
-  "expectedDate": "2026-11-20",
+  "status": "CURRENT",
+  "expectedDate": "2026-11-23",
   "series": [
    {
     "name": "KOSPI200",
     "provider": "KRX",
-    "retrievedAt": "2026-11-22T11:20:55.302891+00:00",
-    "observationDate": "2026-11-20",
+    "retrievedAt": "2026-11-24T02:30:10.808452+00:00",
+    "observationDate": "2026-11-23",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "fe9853635ab8b8c48f82f0dbd08ea57bff1bbfeeef1a55181a0e60a6dece5596"
+    "sha256": "9f927881d12c34ec5627454ee020a1b4d7b82fc280e196fafdaaf40161e821dc"
    },
    {
     "name": "VKOSPI",
     "provider": "KRX",
-    "retrievedAt": "2026-11-22T11:20:59.285301+00:00",
-    "observationDate": "2026-11-20",
+    "retrievedAt": "2026-11-24T02:30:17.235635+00:00",
+    "observationDate": "2026-11-23",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "2ac8bd1c784643cb569f7a7ed1b60d3faf94f644f00a842dcb625dfd6200ee3f"
+    "sha256": "d12e622264bace61ceb671213311f35fe8de4e2b2ec9297d2fa635f73c20fedf"
    },
    {
     "name": "Korea_Treasury_3Y",
     "provider": "BOK ECOS",
-    "retrievedAt": "2026-11-22T11:21:03.939394+00:00",
-    "observationDate": "2026-11-20",
+    "retrievedAt": "2026-11-24T02:30:22.180665+00:00",
+    "observationDate": "2026-11-23",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "4f0a89f8cf2c88e1bca758bdce2fda4c610aeb1d936354c53f2e2ac7ba5e0a50"
+    "sha256": "1fbb832e0073ce433f81fa4a7dc2d9c8df8321eb5b226b85244a52649eb08b58"
    },
    {
     "name": "Korea_Corporate_AAminus_3Y",
     "provider": "BOK ECOS",
-    "retrievedAt": "2026-11-22T11:21:08.968981+00:00",
-    "observationDate": "2026-11-19",
+    "retrievedAt": "2026-11-24T02:30:27.369579+00:00",
+    "observationDate": "2026-11-23",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "4b1abd2555c37bc31c01b01253a565f85fade9abe614e713d25e448db0243aaa"
+    "sha256": "85ddbdd805a89e9791d7b2db98d4bb3e101f96b392694be5696c368348661da4"
    }
   ],
   "history": [
@@ -381,19 +381,42 @@
     "msi": 0.4996735596248922,
     "threshold": 1.114553305908532,
     "price": null,
+    "recordType": "RETROSPECTIVE_INFERENCE"
+   },
+   {
+    "date": "2026-11-20",
+    "risk": 0.31991392374038696,
+    "msi": 0.5190254220113127,
+    "threshold": 1.1143628107223311,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   {
+    "date": "2026-11-23",
+    "risk": 0.3097819983959198,
+    "msi": 0.6187946272167041,
+    "threshold": 1.114172315536131,
+    "price": null,
     "recordType": "OPERATIONAL"
    }
   ],
-  "current": null,
-  "lastValid": {
-   "date": "2026-11-19",
-   "risk": 0.26408955454826355,
-   "msi": 0.4996735596248922,
-   "threshold": 1.114553305908532,
+  "current": {
+   "date": "2026-11-23",
+   "risk": 0.3097819983959198,
+   "msi": 0.6187946272167041,
+   "threshold": 1.114172315536131,
    "price": null,
    "recordType": "OPERATIONAL"
   },
-  "reason": "최신 필수 원천 관측 미확인. 과거 재현 추론을 현재 점수로 이월하지 않습니다.",
+  "lastValid": {
+   "date": "2026-11-23",
+   "risk": 0.3097819983959198,
+   "msi": 0.6187946272167041,
+   "threshold": 1.114172315536131,
+   "price": null,
+   "recordType": "OPERATIONAL"
+  },
+  "reason": null,
   "modelSha256": "b8524d9dab692434e051011987bc6a86ffbd18c20a0c30ff00b4b30856318247",
   "trainingCutoff": "2026-09-16",
   "trainingEvidence": "scaler 통계와 labeled 3714행 일치; 실행 시각 미기록",
@@ -417,18 +440,8 @@
    "Credit_252D_ZScore"
   ],
   "inferenceSucceeded": true,
-  "publicationDeadline": "2026-11-19T12:30:00+00:00",
+  "publicationDeadline": "2026-11-23T12:30:00+00:00",
   "availability": [
-   {
-    "date": "2026-08-25",
-    "available": [
-     "KOSPI200",
-     "VKOSPI",
-     "Korea_Treasury_3Y",
-     "Korea_Corporate_AAminus_3Y"
-    ],
-    "missing": []
-   },
    {
     "date": "2026-08-26",
     "available": [
@@ -1014,20 +1027,24 @@
     "available": [
      "KOSPI200",
      "VKOSPI",
-     "Korea_Treasury_3Y"
-    ],
-    "missing": [
+     "Korea_Treasury_3Y",
      "Korea_Corporate_AAminus_3Y"
-    ]
+    ],
+    "missing": []
+   },
+   {
+    "date": "2026-11-23",
+    "available": [
+     "KOSPI200",
+     "VKOSPI",
+     "Korea_Treasury_3Y",
+     "Korea_Corporate_AAminus_3Y"
+    ],
+    "missing": []
    }
   ],
   "availabilityOrigin": "provider-refresh",
   "historicalParity": true,
-  "inferenceAt": "2026-11-20T03:40:57.853191+00:00"
- },
- "scoreRunId": "20261120T034036Z-2b865e51",
- "collectionAdapter": {
-  "path": "_collection_worker.py",
-  "sha256": "dd6e5395d8ed180bc1bacc44a5904558a00fd5c8d111071198e10e17d5790335"
+  "inferenceAt": "2026-11-24T02:30:28.157108+00:00"
  }
 }
