@@ -1,48 +1,48 @@
 {
  "schema_version": 1,
- "runId": "korea:20261124T023004Z-a1675512 + us:20261124T094313Z-ba8e4106",
- "generatedAt": "2026-11-24T09:43:13.496853+00:00",
+ "runId": "korea:20261125T053609Z-5e0886b9 + us:20261125T053609Z-5e0886b9",
+ "generatedAt": "2026-11-25T05:36:09.730112+00:00",
  "mode": "qualitative-signals-import",
  "markets": {
   "korea": {
    "status": "CURRENT",
-   "expectedDate": "2026-11-23",
+   "expectedDate": "2026-11-24",
    "series": [
     {
      "name": "KOSPI200",
      "provider": "KRX",
-     "retrievedAt": "2026-11-24T02:30:10.808452+00:00",
-     "observationDate": "2026-11-23",
+     "retrievedAt": "2026-11-25T05:36:15.558640+00:00",
+     "observationDate": "2026-11-24",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "9f927881d12c34ec5627454ee020a1b4d7b82fc280e196fafdaaf40161e821dc"
+     "sha256": "707df0b4ef7651594ad10e7c83a86bc5ab1cfc09823ce2b2d30617f593bcd94b"
     },
     {
      "name": "VKOSPI",
      "provider": "KRX",
-     "retrievedAt": "2026-11-24T02:30:17.235635+00:00",
-     "observationDate": "2026-11-23",
+     "retrievedAt": "2026-11-25T05:36:20.240090+00:00",
+     "observationDate": "2026-11-24",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "d12e622264bace61ceb671213311f35fe8de4e2b2ec9297d2fa635f73c20fedf"
+     "sha256": "2ee7097e112f0a362547cac0e0dbb15a790ba3fe1e5ba117de62a00ad8e9737b"
     },
     {
      "name": "Korea_Treasury_3Y",
      "provider": "BOK ECOS",
-     "retrievedAt": "2026-11-24T02:30:22.180665+00:00",
-     "observationDate": "2026-11-23",
+     "retrievedAt": "2026-11-25T05:36:27.145634+00:00",
+     "observationDate": "2026-11-24",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "1fbb832e0073ce433f81fa4a7dc2d9c8df8321eb5b226b85244a52649eb08b58"
+     "sha256": "a36ee7a33631349c212be4ed2539635eb5fc4105164d670f07a219b88d00ec05"
     },
     {
      "name": "Korea_Corporate_AAminus_3Y",
      "provider": "BOK ECOS",
-     "retrievedAt": "2026-11-24T02:30:27.369579+00:00",
-     "observationDate": "2026-11-23",
+     "retrievedAt": "2026-11-25T05:36:34.148562+00:00",
+     "observationDate": "2026-11-24",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "85ddbdd805a89e9791d7b2db98d4bb3e101f96b392694be5696c368348661da4"
+     "sha256": "40e6459a87f94330a13e9d643851f2ae8321a241644718e79062d03825d2c521"
     }
    ],
    "history": [
@@ -388,7 +388,7 @@
      "msi": 0.5190254220113127,
      "threshold": 1.1143628107223311,
      "price": null,
-     "recordType": "OPERATIONAL"
+     "recordType": "RETROSPECTIVE_INFERENCE"
     },
     {
      "date": "2026-11-23",
@@ -396,22 +396,30 @@
      "msi": 0.6187946272167041,
      "threshold": 1.114172315536131,
      "price": null,
+     "recordType": "RETROSPECTIVE_INFERENCE"
+    },
+    {
+     "date": "2026-11-24",
+     "risk": 0.36819320917129517,
+     "msi": 0.5405508322938194,
+     "threshold": 1.1139818203499294,
+     "price": null,
      "recordType": "OPERATIONAL"
     }
    ],
    "current": {
-    "date": "2026-11-23",
-    "risk": 0.3097819983959198,
-    "msi": 0.6187946272167041,
-    "threshold": 1.114172315536131,
+    "date": "2026-11-24",
+    "risk": 0.36819320917129517,
+    "msi": 0.5405508322938194,
+    "threshold": 1.1139818203499294,
     "price": null,
     "recordType": "OPERATIONAL"
    },
    "lastValid": {
-    "date": "2026-11-23",
-    "risk": 0.3097819983959198,
-    "msi": 0.6187946272167041,
-    "threshold": 1.114172315536131,
+    "date": "2026-11-24",
+    "risk": 0.36819320917129517,
+    "msi": 0.5405508322938194,
+    "threshold": 1.1139818203499294,
     "price": null,
     "recordType": "OPERATIONAL"
    },
@@ -439,18 +447,8 @@
     "Credit_252D_ZScore"
    ],
    "inferenceSucceeded": true,
-   "publicationDeadline": "2026-11-23T12:30:00+00:00",
+   "publicationDeadline": "2026-11-24T12:30:00+00:00",
    "availability": [
-    {
-     "date": "2026-08-26",
-     "available": [
-      "KOSPI200",
-      "VKOSPI",
-      "Korea_Treasury_3Y",
-      "Korea_Corporate_AAminus_3Y"
-     ],
-     "missing": []
-    },
     {
      "date": "2026-08-27",
      "available": [
@@ -1040,29 +1038,39 @@
       "Korea_Corporate_AAminus_3Y"
      ],
      "missing": []
+    },
+    {
+     "date": "2026-11-24",
+     "available": [
+      "KOSPI200",
+      "VKOSPI",
+      "Korea_Treasury_3Y",
+      "Korea_Corporate_AAminus_3Y"
+     ],
+     "missing": []
     }
    ],
    "availabilityOrigin": "provider-refresh",
    "historicalParity": true,
-   "inferenceAt": "2026-11-24T02:30:28.157108+00:00"
+   "inferenceAt": "2026-11-25T05:36:34.935144+00:00"
   },
   "us": {
-   "status": "DELAYED",
+   "status": "CURRENT",
    "expectedDate": "2026-11-23",
    "series": [
     {
      "name": "SPY",
      "provider": "Yahoo Finance",
-     "retrievedAt": "2026-11-24T09:43:37.570233+00:00",
+     "retrievedAt": "2026-11-25T05:36:35.412962+00:00",
      "observationDate": "2026-11-23",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "6a2cc1463ef2b36f0700ba3a9555a72121ab069d0cd5215284abde52962d2c63"
+     "sha256": "7c2a2308f242f2af7d050b7c4877b404f2106e887a9040a2961290d91f14fd45"
     },
     {
      "name": "VIX",
      "provider": "Yahoo Finance",
-     "retrievedAt": "2026-11-24T09:43:37.816846+00:00",
+     "retrievedAt": "2026-11-25T05:36:35.643524+00:00",
      "observationDate": "2026-11-23",
      "status": "OBSERVED",
      "reason": null,
@@ -1071,20 +1079,20 @@
     {
      "name": "DBAA",
      "provider": "FRED",
-     "retrievedAt": "2026-11-24T09:43:39.291095+00:00",
-     "observationDate": "2026-11-20",
+     "retrievedAt": "2026-11-25T05:36:37.672198+00:00",
+     "observationDate": "2026-11-23",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "c4b89bae312ed6d889d57c3851156fc194fae6943b74a2efe84931d1567e08da"
+     "sha256": "dd50459dce7930b624b95e2723fe0a01a9b511e0ea00b12bfc743b98db6b35b0"
     },
     {
      "name": "DGS10",
      "provider": "FRED",
-     "retrievedAt": "2026-11-24T09:43:40.315052+00:00",
-     "observationDate": "2026-11-20",
+     "retrievedAt": "2026-11-25T05:36:39.209717+00:00",
+     "observationDate": "2026-11-23",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "9bde946047ff85b685d3e6a9eaca424df8d24db623b4ccd9436951c28a319e0c"
+     "sha256": "5e1966b8000c21bc07290376880163787db4b0c95f4acd2872999f4e7769ab21"
     }
    ],
    "history": [
@@ -1439,18 +1447,33 @@
      "threshold": 1.2919269969945288,
      "price": null,
      "recordType": "OPERATIONAL"
+    },
+    {
+     "date": "2026-11-23",
+     "risk": 0.959465742111206,
+     "msi": 1.2161374873364992,
+     "threshold": 1.2923624425387152,
+     "price": null,
+     "recordType": "OPERATIONAL"
     }
    ],
-   "current": null,
-   "lastValid": {
-    "date": "2026-11-20",
-    "risk": 0.9725493788719177,
-    "msi": 2.6673827592722024,
-    "threshold": 1.2919269969945288,
+   "current": {
+    "date": "2026-11-23",
+    "risk": 0.959465742111206,
+    "msi": 1.2161374873364992,
+    "threshold": 1.2923624425387152,
     "price": null,
     "recordType": "OPERATIONAL"
    },
-   "reason": "최신 필수 원천 관측 미확인. 과거 재현 추론을 현재 점수로 이월하지 않습니다.",
+   "lastValid": {
+    "date": "2026-11-23",
+    "risk": 0.959465742111206,
+    "msi": 1.2161374873364992,
+    "threshold": 1.2923624425387152,
+    "price": null,
+    "recordType": "OPERATIONAL"
+   },
+   "reason": null,
    "modelSha256": "90c51c245ebe62b58f804098a7a7045b60fb64ef83da72d4c9a049cf8d5eeb0d",
    "trainingCutoff": "2026-09-16",
    "trainingEvidence": "6317행 prefix scaler 근사 일치; cutoff 추정, 정확한 학습 receipt 미보존",
@@ -1481,7 +1504,7 @@
      "SPY": {
       "overlapDates": 258,
       "scale": 1.0,
-      "maxRelativeDifference": 1.8535803154960518e-07
+      "maxRelativeDifference": 9.338465006623774e-08
      },
      "VIX": {
       "overlapDates": 260,
@@ -2036,16 +2059,15 @@
      "date": "2026-11-23",
      "available": [
       "SPY",
-      "VIX"
-     ],
-     "missing": [
+      "VIX",
       "BAA_Treasury_Spread"
-     ]
+     ],
+     "missing": []
     }
    ],
    "availabilityOrigin": "provider-refresh",
    "historicalParity": true,
-   "inferenceAt": "2026-11-24T09:43:40.992611+00:00"
+   "inferenceAt": "2026-11-25T05:36:39.708106+00:00"
   }
  },
  "sourceValuesIncluded": false
