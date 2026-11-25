@@ -1,7 +1,7 @@
 {
  "schema_version": 1,
- "runId": "20261125T053609Z-5e0886b9",
- "generatedAt": "2026-11-25T05:36:09.730112+00:00",
+ "runId": "20261125T081739Z-5411387a",
+ "generatedAt": "2026-11-25T08:17:39.423576+00:00",
  "mode": "provider-refresh",
  "sourceValuesIncluded": false,
  "market": "us",
@@ -12,16 +12,16 @@
    {
     "name": "SPY",
     "provider": "Yahoo Finance",
-    "retrievedAt": "2026-11-25T05:36:35.412962+00:00",
+    "retrievedAt": "2026-11-25T08:18:02.737835+00:00",
     "observationDate": "2026-11-23",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "7c2a2308f242f2af7d050b7c4877b404f2106e887a9040a2961290d91f14fd45"
+    "sha256": "2e5bda340f5dc8bc641076b8f85d6cc1b6f0e61eb79b22a2078876b4c3948018"
    },
    {
     "name": "VIX",
     "provider": "Yahoo Finance",
-    "retrievedAt": "2026-11-25T05:36:35.643524+00:00",
+    "retrievedAt": "2026-11-25T08:18:03.101002+00:00",
     "observationDate": "2026-11-23",
     "status": "OBSERVED",
     "reason": null,
@@ -30,7 +30,7 @@
    {
     "name": "DBAA",
     "provider": "FRED",
-    "retrievedAt": "2026-11-25T05:36:37.672198+00:00",
+    "retrievedAt": "2026-11-25T08:18:04.678288+00:00",
     "observationDate": "2026-11-23",
     "status": "OBSERVED",
     "reason": null,
@@ -39,7 +39,7 @@
    {
     "name": "DGS10",
     "provider": "FRED",
-    "retrievedAt": "2026-11-25T05:36:39.209717+00:00",
+    "retrievedAt": "2026-11-25T08:18:06.279065+00:00",
     "observationDate": "2026-11-23",
     "status": "OBSERVED",
     "reason": null,
@@ -455,7 +455,7 @@
     "SPY": {
      "overlapDates": 258,
      "scale": 1.0,
-     "maxRelativeDifference": 9.338465006623774e-08
+     "maxRelativeDifference": 1.8106844323780435e-07
     },
     "VIX": {
      "overlapDates": 260,
@@ -1018,6 +1018,6 @@
   ],
   "availabilityOrigin": "provider-refresh",
   "historicalParity": true,
-  "inferenceAt": "2026-11-25T05:36:39.708106+00:00"
+  "inferenceAt": "2026-11-25T08:18:06.960998+00:00"
  }
 }
