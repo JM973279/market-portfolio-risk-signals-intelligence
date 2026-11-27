@@ -1,36 +1,36 @@
 {
  "schema_version": 1,
- "runId": "20261126T080312Z-8c66c465",
- "generatedAt": "2026-11-26T08:03:12.549427+00:00",
+ "runId": "20261127T030439Z-8502e921",
+ "generatedAt": "2026-11-27T03:04:39.145284+00:00",
  "mode": "provider-refresh",
  "sourceValuesIncluded": false,
  "market": "us",
  "block": {
-  "status": "CURRENT",
-  "expectedDate": "2026-11-24",
+  "status": "DELAYED",
+  "expectedDate": "2026-11-25",
   "series": [
    {
     "name": "SPY",
     "provider": "Yahoo Finance",
-    "retrievedAt": "2026-11-26T08:03:36.651473+00:00",
-    "observationDate": "2026-11-24",
+    "retrievedAt": "2026-11-27T03:05:00.529400+00:00",
+    "observationDate": "2026-11-25",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "0ee9c5adb06ac96dd43c716028625a314d5029c8a59a00a0bd4a5a9198c9f1b5"
+    "sha256": "9d8700fc3510cc96546c361a72d137a380f9c6864ef7570c0f2131125e3af6b4"
    },
    {
     "name": "VIX",
     "provider": "Yahoo Finance",
-    "retrievedAt": "2026-11-26T08:03:36.860314+00:00",
-    "observationDate": "2026-11-24",
+    "retrievedAt": "2026-11-27T03:05:00.977058+00:00",
+    "observationDate": "2026-11-25",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "6d71ad298ffd161de51bba5cfb515ad3ff1b0c1e410d8cd1b8bd63b701d2c0d3"
+    "sha256": "38adf647294dceb66becd85bf327586d0457a737346506e0096621da4c13bf31"
    },
    {
     "name": "DBAA",
     "provider": "FRED",
-    "retrievedAt": "2026-11-26T08:03:38.418416+00:00",
+    "retrievedAt": "2026-11-27T03:05:02.749715+00:00",
     "observationDate": "2026-11-24",
     "status": "OBSERVED",
     "reason": null,
@@ -39,7 +39,7 @@
    {
     "name": "DGS10",
     "provider": "FRED",
-    "retrievedAt": "2026-11-26T08:03:39.503462+00:00",
+    "retrievedAt": "2026-11-27T03:05:04.448655+00:00",
     "observationDate": "2026-11-24",
     "status": "OBSERVED",
     "reason": null,
@@ -416,14 +416,7 @@
     "recordType": "OPERATIONAL"
    }
   ],
-  "current": {
-   "date": "2026-11-24",
-   "risk": 0.9712771773338318,
-   "msi": 1.356069541339628,
-   "threshold": 1.2923302342686942,
-   "price": null,
-   "recordType": "OPERATIONAL"
-  },
+  "current": null,
   "lastValid": {
    "date": "2026-11-24",
    "risk": 0.9712771773338318,
@@ -432,7 +425,7 @@
    "price": null,
    "recordType": "OPERATIONAL"
   },
-  "reason": null,
+  "reason": "최신 필수 원천 관측 미확인. 과거 재현 추론을 현재 점수로 이월하지 않습니다.",
   "modelSha256": "90c51c245ebe62b58f804098a7a7045b60fb64ef83da72d4c9a049cf8d5eeb0d",
   "trainingCutoff": "2026-09-16",
   "trainingEvidence": "6317행 prefix scaler 근사 일치; cutoff 추정, 정확한 학습 receipt 미보존",
@@ -456,14 +449,14 @@
    "Credit_252D_ZScore"
   ],
   "inferenceSucceeded": true,
-  "publicationDeadline": "2026-11-25T09:00:00+00:00",
+  "publicationDeadline": "2026-11-26T09:00:00+00:00",
   "providerRevision": {
    "cacheEnd": "2026-10-05",
    "channels": {
     "SPY": {
      "overlapDates": 258,
      "scale": 1.0,
-     "maxRelativeDifference": 9.295690620081127e-08
+     "maxRelativeDifference": 1.8106844323780435e-07
     },
     "VIX": {
      "overlapDates": 260,
@@ -476,18 +469,9 @@
      "maxRelativeDifference": 2.453531546132943e-16
     }
    },
-   "appendedDates": 36
+   "appendedDates": 37
   },
   "availability": [
-   {
-    "date": "2026-09-02",
-    "available": [
-     "SPY",
-     "VIX",
-     "BAA_Treasury_Spread"
-    ],
-    "missing": []
-   },
    {
     "date": "2026-09-03",
     "available": [
@@ -1022,10 +1006,20 @@
      "BAA_Treasury_Spread"
     ],
     "missing": []
+   },
+   {
+    "date": "2026-11-25",
+    "available": [
+     "SPY",
+     "VIX"
+    ],
+    "missing": [
+     "BAA_Treasury_Spread"
+    ]
    }
   ],
   "availabilityOrigin": "provider-refresh",
   "historicalParity": true,
-  "inferenceAt": "2026-11-26T08:03:39.995273+00:00"
+  "inferenceAt": "2026-11-27T03:05:04.857247+00:00"
  }
 }

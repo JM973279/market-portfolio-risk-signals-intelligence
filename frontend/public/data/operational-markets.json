@@ -1,48 +1,48 @@
 {
  "schema_version": 1,
- "runId": "korea:20261126T015452Z-ba220409 + us:20261126T080312Z-8c66c465",
- "generatedAt": "2026-11-26T08:03:12.549427+00:00",
+ "runId": "korea:20261127T030439Z-8502e921 + us:20261127T030439Z-8502e921",
+ "generatedAt": "2026-11-27T03:04:39.145284+00:00",
  "mode": "qualitative-signals-import",
  "markets": {
   "korea": {
    "status": "CURRENT",
-   "expectedDate": "2026-11-25",
+   "expectedDate": "2026-11-26",
    "series": [
     {
      "name": "KOSPI200",
      "provider": "KRX",
-     "retrievedAt": "2026-11-26T01:54:58.303397+00:00",
-     "observationDate": "2026-11-25",
+     "retrievedAt": "2026-11-27T03:04:45.086036+00:00",
+     "observationDate": "2026-11-26",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "ebfb9430a24d9f39087dc4a86e4061bb15e6398d1a3c3bd26c500380e8630937"
+     "sha256": "44478387ead31b0472f51548468ea1b7171033995bd0381412969ccd2ba6265e"
     },
     {
      "name": "VKOSPI",
      "provider": "KRX",
-     "retrievedAt": "2026-11-26T01:55:03.798097+00:00",
-     "observationDate": "2026-11-25",
+     "retrievedAt": "2026-11-27T03:04:49.911085+00:00",
+     "observationDate": "2026-11-26",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "5beb0d4c194683a50424de33f7b0d3d1dff31f2be407f0dd7837046f10fc9c9a"
+     "sha256": "5674f016581dc0c1242950925a0af00f30833535fa6d809bb9c6a0d169006ceb"
     },
     {
      "name": "Korea_Treasury_3Y",
      "provider": "BOK ECOS",
-     "retrievedAt": "2026-11-26T01:55:08.567850+00:00",
-     "observationDate": "2026-11-25",
+     "retrievedAt": "2026-11-27T03:04:54.379380+00:00",
+     "observationDate": "2026-11-26",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "5edba620f256503cd4e628785adfd9dd1121f0f07a32b4eb2b8780688b4b8d8f"
+     "sha256": "142e4bf59f6405dbb2ae1ea4f288c85e705241c66119c7b43bdb79da1f87d600"
     },
     {
      "name": "Korea_Corporate_AAminus_3Y",
      "provider": "BOK ECOS",
-     "retrievedAt": "2026-11-26T01:55:14.562313+00:00",
-     "observationDate": "2026-11-25",
+     "retrievedAt": "2026-11-27T03:04:58.934999+00:00",
+     "observationDate": "2026-11-26",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "829c2002726ded2597d7553d8a1fffa29656e567f2a3678793d5500c80b8fbdf"
+     "sha256": "3744469e6f0f9c83f18b091bf4619a826a3cb4cccbfca224a6f66b058166ada9"
     }
    ],
    "history": [
@@ -412,22 +412,30 @@
      "msi": 0.6977398112879062,
      "threshold": 1.113791325163729,
      "price": null,
+     "recordType": "RETROSPECTIVE_INFERENCE"
+    },
+    {
+     "date": "2026-11-26",
+     "risk": 0.35611340403556824,
+     "msi": 0.7667589930779674,
+     "threshold": 1.1135083979528917,
+     "price": null,
      "recordType": "OPERATIONAL"
     }
    ],
    "current": {
-    "date": "2026-11-25",
-    "risk": 0.35302168130874634,
-    "msi": 0.6977398112879062,
-    "threshold": 1.113791325163729,
+    "date": "2026-11-26",
+    "risk": 0.35611340403556824,
+    "msi": 0.7667589930779674,
+    "threshold": 1.1135083979528917,
     "price": null,
     "recordType": "OPERATIONAL"
    },
    "lastValid": {
-    "date": "2026-11-25",
-    "risk": 0.35302168130874634,
-    "msi": 0.6977398112879062,
-    "threshold": 1.113791325163729,
+    "date": "2026-11-26",
+    "risk": 0.35611340403556824,
+    "msi": 0.7667589930779674,
+    "threshold": 1.1135083979528917,
     "price": null,
     "recordType": "OPERATIONAL"
    },
@@ -455,18 +463,8 @@
     "Credit_252D_ZScore"
    ],
    "inferenceSucceeded": true,
-   "publicationDeadline": "2026-11-25T12:30:00+00:00",
+   "publicationDeadline": "2026-11-26T12:30:00+00:00",
    "availability": [
-    {
-     "date": "2026-08-28",
-     "available": [
-      "KOSPI200",
-      "VKOSPI",
-      "Korea_Treasury_3Y",
-      "Korea_Corporate_AAminus_3Y"
-     ],
-     "missing": []
-    },
     {
      "date": "2026-08-31",
      "available": [
@@ -1056,38 +1054,48 @@
       "Korea_Corporate_AAminus_3Y"
      ],
      "missing": []
+    },
+    {
+     "date": "2026-11-26",
+     "available": [
+      "KOSPI200",
+      "VKOSPI",
+      "Korea_Treasury_3Y",
+      "Korea_Corporate_AAminus_3Y"
+     ],
+     "missing": []
     }
    ],
    "availabilityOrigin": "provider-refresh",
    "historicalParity": true,
-   "inferenceAt": "2026-11-26T01:55:15.377897+00:00"
+   "inferenceAt": "2026-11-27T03:04:59.647323+00:00"
   },
   "us": {
-   "status": "CURRENT",
-   "expectedDate": "2026-11-24",
+   "status": "DELAYED",
+   "expectedDate": "2026-11-25",
    "series": [
     {
      "name": "SPY",
      "provider": "Yahoo Finance",
-     "retrievedAt": "2026-11-26T08:03:36.651473+00:00",
-     "observationDate": "2026-11-24",
+     "retrievedAt": "2026-11-27T03:05:00.529400+00:00",
+     "observationDate": "2026-11-25",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "0ee9c5adb06ac96dd43c716028625a314d5029c8a59a00a0bd4a5a9198c9f1b5"
+     "sha256": "9d8700fc3510cc96546c361a72d137a380f9c6864ef7570c0f2131125e3af6b4"
     },
     {
      "name": "VIX",
      "provider": "Yahoo Finance",
-     "retrievedAt": "2026-11-26T08:03:36.860314+00:00",
-     "observationDate": "2026-11-24",
+     "retrievedAt": "2026-11-27T03:05:00.977058+00:00",
+     "observationDate": "2026-11-25",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "6d71ad298ffd161de51bba5cfb515ad3ff1b0c1e410d8cd1b8bd63b701d2c0d3"
+     "sha256": "38adf647294dceb66becd85bf327586d0457a737346506e0096621da4c13bf31"
     },
     {
      "name": "DBAA",
      "provider": "FRED",
-     "retrievedAt": "2026-11-26T08:03:38.418416+00:00",
+     "retrievedAt": "2026-11-27T03:05:02.749715+00:00",
      "observationDate": "2026-11-24",
      "status": "OBSERVED",
      "reason": null,
@@ -1096,7 +1104,7 @@
     {
      "name": "DGS10",
      "provider": "FRED",
-     "retrievedAt": "2026-11-26T08:03:39.503462+00:00",
+     "retrievedAt": "2026-11-27T03:05:04.448655+00:00",
      "observationDate": "2026-11-24",
      "status": "OBSERVED",
      "reason": null,
@@ -1473,14 +1481,7 @@
      "recordType": "OPERATIONAL"
     }
    ],
-   "current": {
-    "date": "2026-11-24",
-    "risk": 0.9712771773338318,
-    "msi": 1.356069541339628,
-    "threshold": 1.2923302342686942,
-    "price": null,
-    "recordType": "OPERATIONAL"
-   },
+   "current": null,
    "lastValid": {
     "date": "2026-11-24",
     "risk": 0.9712771773338318,
@@ -1489,7 +1490,7 @@
     "price": null,
     "recordType": "OPERATIONAL"
    },
-   "reason": null,
+   "reason": "최신 필수 원천 관측 미확인. 과거 재현 추론을 현재 점수로 이월하지 않습니다.",
    "modelSha256": "90c51c245ebe62b58f804098a7a7045b60fb64ef83da72d4c9a049cf8d5eeb0d",
    "trainingCutoff": "2026-09-16",
    "trainingEvidence": "6317행 prefix scaler 근사 일치; cutoff 추정, 정확한 학습 receipt 미보존",
@@ -1513,14 +1514,14 @@
     "Credit_252D_ZScore"
    ],
    "inferenceSucceeded": true,
-   "publicationDeadline": "2026-11-25T09:00:00+00:00",
+   "publicationDeadline": "2026-11-26T09:00:00+00:00",
    "providerRevision": {
     "cacheEnd": "2026-10-05",
     "channels": {
      "SPY": {
       "overlapDates": 258,
       "scale": 1.0,
-      "maxRelativeDifference": 9.295690620081127e-08
+      "maxRelativeDifference": 1.8106844323780435e-07
      },
      "VIX": {
       "overlapDates": 260,
@@ -1533,18 +1534,9 @@
       "maxRelativeDifference": 2.453531546132943e-16
      }
     },
-    "appendedDates": 36
+    "appendedDates": 37
    },
    "availability": [
-    {
-     "date": "2026-09-02",
-     "available": [
-      "SPY",
-      "VIX",
-      "BAA_Treasury_Spread"
-     ],
-     "missing": []
-    },
     {
      "date": "2026-09-03",
      "available": [
@@ -2079,11 +2071,21 @@
       "BAA_Treasury_Spread"
      ],
      "missing": []
+    },
+    {
+     "date": "2026-11-25",
+     "available": [
+      "SPY",
+      "VIX"
+     ],
+     "missing": [
+      "BAA_Treasury_Spread"
+     ]
     }
    ],
    "availabilityOrigin": "provider-refresh",
    "historicalParity": true,
-   "inferenceAt": "2026-11-26T08:03:39.995273+00:00"
+   "inferenceAt": "2026-11-27T03:05:04.857247+00:00"
   }
  },
  "sourceValuesIncluded": false
