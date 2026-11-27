@@ -6,7 +6,7 @@
   "source_git_ref": "HEAD",
   "source_git_commit": "9bedc79f3dd9b553d3cbb88502e84cae817b9d1d",
   "source_files_modified_locally": false,
-  "imported_at": "2026-11-27T03:05:06+00:00",
+  "imported_at": "2026-11-27T08:09:18+00:00",
   "files": {
     "global_markets": {
       "path": "frontend/public/data/global-markets.json",
@@ -15,11 +15,11 @@
     },
     "operational_markets": {
       "path": "frontend/public/data/operational-markets.json",
-      "bytes": 54447,
-      "sha256": "13e6054fb3039a5da3c6b970963a6aec5cef508ad9f3d8e0877da04c8e1c7e15"
+      "bytes": 54482,
+      "sha256": "1eec0e80af8acb779751083fb3d7e8ba44e05dcf632eef01c855663f92029c59"
     }
   },
-  "operational_run_id": "20261127T030439Z-8502e921",
+  "operational_run_id": "20261127T080850Z-5dabc49e",
   "operational_model_sha256": "90c51c245ebe62b58f804098a7a7045b60fb64ef83da72d4c9a049cf8d5eeb0d",
   "training_cutoff": "2026-09-16",
   "us_expected_date": "2026-11-25",
@@ -38,7 +38,7 @@
   "refresh": {
     "mode": "provider-refresh",
     "v1_commit": "e939dc358c3bca92fee4c318d4bb297fd80debd3",
-    "generated_at": "2026-11-27T03:04:39.145284+00:00",
+    "generated_at": "2026-11-27T08:08:50.686345+00:00",
     "collection_adapter": {
       "path": "_collection_worker.py",
       "sha256": "dd6e5395d8ed180bc1bacc44a5904558a00fd5c8d111071198e10e17d5790335"
@@ -103,7 +103,7 @@
           "SPY": {
             "overlapDates": 258,
             "scale": 1.0,
-            "maxRelativeDifference": 1.8106844323780435e-07
+            "maxRelativeDifference": 9.295690620081127e-08
           },
           "VIX": {
             "overlapDates": 260,

@@ -1,7 +1,7 @@
 {
  "schema_version": 1,
- "runId": "korea:20261127T030439Z-8502e921 + us:20261127T030439Z-8502e921",
- "generatedAt": "2026-11-27T03:04:39.145284+00:00",
+ "runId": "korea:20261127T030439Z-8502e921 + us:20261127T080850Z-5dabc49e",
+ "generatedAt": "2026-11-27T08:08:50.686345+00:00",
  "mode": "qualitative-signals-import",
  "markets": {
   "korea": {
@@ -1077,16 +1077,16 @@
     {
      "name": "SPY",
      "provider": "Yahoo Finance",
-     "retrievedAt": "2026-11-27T03:05:00.529400+00:00",
+     "retrievedAt": "2026-11-27T08:09:12.013688+00:00",
      "observationDate": "2026-11-25",
      "status": "OBSERVED",
      "reason": null,
-     "sha256": "9d8700fc3510cc96546c361a72d137a380f9c6864ef7570c0f2131125e3af6b4"
+     "sha256": "7d457d28ef2970577c1cfe8760127e5e8e74596c84c0c3093d4e34aaa45bc7b7"
     },
     {
      "name": "VIX",
      "provider": "Yahoo Finance",
-     "retrievedAt": "2026-11-27T03:05:00.977058+00:00",
+     "retrievedAt": "2026-11-27T08:09:12.194818+00:00",
      "observationDate": "2026-11-25",
      "status": "OBSERVED",
      "reason": null,
@@ -1095,7 +1095,7 @@
     {
      "name": "DBAA",
      "provider": "FRED",
-     "retrievedAt": "2026-11-27T03:05:02.749715+00:00",
+     "retrievedAt": "2026-11-27T08:09:14.435961+00:00",
      "observationDate": "2026-11-24",
      "status": "OBSERVED",
      "reason": null,
@@ -1104,7 +1104,7 @@
     {
      "name": "DGS10",
      "provider": "FRED",
-     "retrievedAt": "2026-11-27T03:05:04.448655+00:00",
+     "retrievedAt": "2026-11-27T08:09:16.430246+00:00",
      "observationDate": "2026-11-24",
      "status": "OBSERVED",
      "reason": null,
@@ -1521,7 +1521,7 @@
      "SPY": {
       "overlapDates": 258,
       "scale": 1.0,
-      "maxRelativeDifference": 1.8106844323780435e-07
+      "maxRelativeDifference": 9.295690620081127e-08
      },
      "VIX": {
       "overlapDates": 260,
@@ -2085,7 +2085,7 @@
    ],
    "availabilityOrigin": "provider-refresh",
    "historicalParity": true,
-   "inferenceAt": "2026-11-27T03:05:04.857247+00:00"
+   "inferenceAt": "2026-11-27T08:09:16.912685+00:00"
   }
  },
  "sourceValuesIncluded": false
