@@ -1,7 +1,7 @@
 {
  "schema_version": 1,
- "runId": "20261128T040631Z-ebea40e4",
- "generatedAt": "2026-11-28T04:06:31.240181+00:00",
+ "runId": "20261128T132726Z-24731057",
+ "generatedAt": "2026-11-28T13:27:26.809318+00:00",
  "mode": "provider-refresh",
  "sourceValuesIncluded": false,
  "market": "korea",
@@ -12,7 +12,7 @@
    {
     "name": "KOSPI200",
     "provider": "KRX",
-    "retrievedAt": "2026-11-28T04:06:37.998905+00:00",
+    "retrievedAt": "2026-11-28T13:27:32.421542+00:00",
     "observationDate": "2026-11-27",
     "status": "OBSERVED",
     "reason": null,
@@ -21,7 +21,7 @@
    {
     "name": "VKOSPI",
     "provider": "KRX",
-    "retrievedAt": "2026-11-28T04:06:44.196418+00:00",
+    "retrievedAt": "2026-11-28T13:27:36.237429+00:00",
     "observationDate": "2026-11-27",
     "status": "OBSERVED",
     "reason": null,
@@ -30,7 +30,7 @@
    {
     "name": "Korea_Treasury_3Y",
     "provider": "BOK ECOS",
-    "retrievedAt": "2026-11-28T04:06:49.383712+00:00",
+    "retrievedAt": "2026-11-28T13:27:43.899733+00:00",
     "observationDate": "2026-11-27",
     "status": "OBSERVED",
     "reason": null,
@@ -39,7 +39,7 @@
    {
     "name": "Korea_Corporate_AAminus_3Y",
     "provider": "BOK ECOS",
-    "retrievedAt": "2026-11-28T04:06:53.954357+00:00",
+    "retrievedAt": "2026-11-28T13:27:50.980987+00:00",
     "observationDate": "2026-11-26",
     "status": "OBSERVED",
     "reason": null,
