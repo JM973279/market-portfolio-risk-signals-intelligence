@@ -24,6 +24,7 @@ import sys
 from pathlib import Path
 
 from qsignals.scores import MARKETS, read_scores
+from qsignals.collection_status import apply_collection_status
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 INPUT = PROJECT_ROOT / "data/input"
@@ -75,6 +76,11 @@ def build_markets(input_dir=INPUT, previous=None):
             saved[market] = {"runId": "previous-export", "generatedAt": previous.get("generatedAt", ""), "block": old}
     if len(saved) != len(MARKETS):
         return None, errors
+    status_path = Path(input_dir) / "collection_status.json"
+    if status_path.exists():
+        record = json.loads(status_path.read_text(encoding="utf-8"))
+        for market in saved:
+            apply_collection_status(saved[market], market, record)
     return {
         "schema_version": 1,
         "runId": " + ".join(f"{m}:{saved[m]['runId']}" for m in MARKETS),

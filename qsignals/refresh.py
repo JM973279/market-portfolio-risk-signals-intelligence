@@ -59,6 +59,7 @@ from qsignals.calendar import latest_closed_session, load_sessions
 from qsignals.deferral import MAX_BEHIND, sessions_behind
 from qsignals.import_scores import SOURCE_FILES, import_data, import_us
 from qsignals.korea_status import save_delayed_status
+from qsignals.collection_status import save_collection_status
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 HOME = Path.home()
@@ -624,6 +625,8 @@ def main(argv=None):
     except (OSError, ValueError, KeyError) as exc:
         summary["status_updated"] = False
         alerts.append(f"Korea delayed status failed verification ({type(exc).__name__}); kept its previous status.")
+    save_collection_status(operational, args.output_dir)
+    summary["status_updated"] = True  # collection receipts must publish even without new scores
     summary["alerts"] = alerts  # the workflow fails on any alert after publishing the other market
     if key_warning:
         summary["key_rejected"] = key_warning

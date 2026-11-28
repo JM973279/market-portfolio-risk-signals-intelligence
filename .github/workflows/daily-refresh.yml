@@ -15,12 +15,9 @@ name: Daily V1 score refresh
 
 on:
   schedule:
-    # 09:07 and 12:07 KST, Tue-Sat: KRX and ECOS post a session the next morning (a 22:00 KST
-    # run never found the same day's data), FRED posts the previous US day by ~06:00 KST, and
-    # both markets keep the same expected session until 18:00 KST. The second run is a retry
-    # (a late or dropped GitHub schedule, a provider outage); with nothing new it is a no-op.
-    # Minute 07 is used by no other workflow.
-    - cron: "7 0,3 * * 2-6"
+    # Morning collection is unconditional; noon/afternoon retry when inputs advance.
+    - cron: "7 0 * * 2-6"
+    - cron: "7 3,7 * * 2-6"
   workflow_dispatch:
 
 permissions:
@@ -32,7 +29,29 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  readiness:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    outputs:
+      run_refresh: ${{ steps.decision.outputs.run_refresh }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref }}
+      - name: Check collection readiness
+        id: decision
+        env:
+          FULL_REFRESH: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '7 0 * * 2-6' }}
+        run: |
+          if [ "$FULL_REFRESH" = true ]; then
+            echo 'run_refresh=true' >> "$GITHUB_OUTPUT"
+          else
+            python3 -m qsignals.fred_probe --retry-korea
+          fi
+
   refresh:
+    needs: readiness
+    if: needs.readiness.outputs.run_refresh == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 300
     env:
@@ -71,6 +90,8 @@ jobs:
           echo "Required Actions secrets are available."
 
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref }}
 
       - name: Check out the deployed repo (read-only)
         uses: actions/checkout@v7
@@ -127,6 +148,10 @@ jobs:
             *) echo "::error::Refresh failed (exit $code); nothing published."
                exit "$code" ;;
           esac
+
+      - name: Summarize collection and score freshness
+        if: always()
+        run: python3 -m qsignals.collection_summary "$RUNNER_TEMP/summary.json"
 
       - name: Check Korea raw history
         id: raw
