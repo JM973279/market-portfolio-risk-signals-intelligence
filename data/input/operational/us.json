@@ -1,7 +1,7 @@
 {
  "schema_version": 1,
- "runId": "20261127T080850Z-5dabc49e",
- "generatedAt": "2026-11-27T08:08:50.686345+00:00",
+ "runId": "20261128T040631Z-ebea40e4",
+ "generatedAt": "2026-11-28T04:06:31.240181+00:00",
  "mode": "provider-refresh",
  "sourceValuesIncluded": false,
  "market": "us",
@@ -12,16 +12,16 @@
    {
     "name": "SPY",
     "provider": "Yahoo Finance",
-    "retrievedAt": "2026-11-27T08:09:12.013688+00:00",
+    "retrievedAt": "2026-11-28T04:06:55.222833+00:00",
     "observationDate": "2026-11-25",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "7d457d28ef2970577c1cfe8760127e5e8e74596c84c0c3093d4e34aaa45bc7b7"
+    "sha256": "44a80fc2defad9a00dda8e9342571f63e5bd3d0fb3c6caaf5e46ae46fb7c10e6"
    },
    {
     "name": "VIX",
     "provider": "Yahoo Finance",
-    "retrievedAt": "2026-11-27T08:09:12.194818+00:00",
+    "retrievedAt": "2026-11-28T04:06:55.417122+00:00",
     "observationDate": "2026-11-25",
     "status": "OBSERVED",
     "reason": null,
@@ -30,7 +30,7 @@
    {
     "name": "DBAA",
     "provider": "FRED",
-    "retrievedAt": "2026-11-27T08:09:14.435961+00:00",
+    "retrievedAt": "2026-11-28T04:06:57.453713+00:00",
     "observationDate": "2026-11-24",
     "status": "OBSERVED",
     "reason": null,
@@ -39,11 +39,11 @@
    {
     "name": "DGS10",
     "provider": "FRED",
-    "retrievedAt": "2026-11-27T08:09:16.430246+00:00",
-    "observationDate": "2026-11-24",
+    "retrievedAt": "2026-11-28T04:06:59.480102+00:00",
+    "observationDate": "2026-11-25",
     "status": "OBSERVED",
     "reason": null,
-    "sha256": "f590e37130b564ccb395f5f80d68280ea815660e8cfe4e5cec7a28c35d9cf433"
+    "sha256": "2d3864b6cea13e526e71d71d341eaaa07a505d6cc03fb32863a2192a533e41a5"
    }
   ],
   "history": [
@@ -456,7 +456,7 @@
     "SPY": {
      "overlapDates": 258,
      "scale": 1.0,
-     "maxRelativeDifference": 9.295690620081127e-08
+     "maxRelativeDifference": 1.8676930013247548e-07
     },
     "VIX": {
      "overlapDates": 260,
@@ -1020,6 +1020,6 @@
   ],
   "availabilityOrigin": "provider-refresh",
   "historicalParity": true,
-  "inferenceAt": "2026-11-27T08:09:16.912685+00:00"
+  "inferenceAt": "2026-11-28T04:06:59.977538+00:00"
  }
 }
