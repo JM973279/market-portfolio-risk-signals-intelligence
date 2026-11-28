@@ -4,47 +4,47 @@
   "source_commit": "9bedc79f3dd9b553d3cbb88502e84cae817b9d1d",
   "files": {
     "prices.csv": {
-      "path": "snapshots/b97b97b64e2058a9f19b90f6a54eac4a90123f23/prices.csv",
+      "path": "snapshots/332e66b27ded127a3c700d5a24338a878d854e5c/prices.csv",
       "source_path": null,
-      "sha256": "d0e9b6b7a1adfdd3a41f4dea919a1bf019e2d566c3488109ebe55c280aa2338a",
-      "bytes": 1165800
+      "sha256": "837444340a586bb08b24807436eaf0604d39b85c26423cb286838acaa28168c7",
+      "bytes": 1165937
     },
     "factors.csv": {
-      "path": "snapshots/b97b97b64e2058a9f19b90f6a54eac4a90123f23/factors.csv",
+      "path": "snapshots/332e66b27ded127a3c700d5a24338a878d854e5c/factors.csv",
       "source_path": null,
       "sha256": "65d38ac021c05fb2081f4a4f77b14bcd73788d4bbafe248e14ec06a2c5644b72",
       "bytes": 76248
     },
     "universe.csv": {
-      "path": "snapshots/b97b97b64e2058a9f19b90f6a54eac4a90123f23/universe.csv",
+      "path": "snapshots/332e66b27ded127a3c700d5a24338a878d854e5c/universe.csv",
       "source_path": "data/portfolio/universe.csv",
       "sha256": "2c7ada7fd34d2954162d504696045173bb04f41b76a87d7dd59b6ab4dda5cab9",
       "bytes": 1526
     },
     "snapshot_meta.json": {
-      "path": "snapshots/b97b97b64e2058a9f19b90f6a54eac4a90123f23/snapshot_meta.json",
+      "path": "snapshots/332e66b27ded127a3c700d5a24338a878d854e5c/snapshot_meta.json",
       "source_path": null,
       "sha256": "61f1925eccec1bdc4c05e38213ccfee82c1e88615ba9d6203e3e4150fd3d263a",
       "bytes": 470
     },
     "scenarios.json": {
-      "path": "snapshots/b97b97b64e2058a9f19b90f6a54eac4a90123f23/scenarios.json",
+      "path": "snapshots/332e66b27ded127a3c700d5a24338a878d854e5c/scenarios.json",
       "source_path": "data/portfolio/scenarios.json",
       "sha256": "c1d072801f93f7691fb4bb6bedee1a7c97ed571ea3673aa84025997e81d2e75c",
       "bytes": 2373
     }
   },
-  "imported_at": "2026-11-28T07:47:59+00:00",
+  "imported_at": "2026-11-28T13:27:14+00:00",
   "price_basis": "dividend_split_adjusted_close",
   "currency": "USD",
   "sector_attribution": {
     "status": "unavailable",
     "reason": "과거 벤치마크 섹터 구성·수익률 및 시점별 분류 자료가 연결되지 않았습니다."
   },
-  "snapshot_id": "b97b97b64e2058a9f19b90f6a54eac4a90123f23",
+  "snapshot_id": "332e66b27ded127a3c700d5a24338a878d854e5c",
   "collection": {
     "policy": "portfolio-full-provider-vintage-v1",
-    "retrieved_at": "2026-11-28T07:47:51+00:00",
+    "retrieved_at": "2026-11-28T13:27:03+00:00",
     "seed_repo": "tina77302/market-portfolio-risk-intelligence",
     "seed_ref": "main",
     "seed_commit": "9bedc79f3dd9b553d3cbb88502e84cae817b9d1d",
@@ -87,13 +87,13 @@
       },
       "BAC": {
         "compared": 2215,
-        "changed": 2138,
-        "max_abs_difference": 6.712646484174911e-05
+        "changed": 2137,
+        "max_abs_difference": 5.949707031049911e-05
       },
       "CAT": {
         "compared": 2215,
-        "changed": 2179,
-        "max_abs_difference": 0.00016230468747835403
+        "changed": 2181,
+        "max_abs_difference": 0.0001376464843474423
       },
       "CVX": {
         "compared": 2215,
@@ -107,8 +107,8 @@
       },
       "GOOGL": {
         "compared": 2215,
-        "changed": 2166,
-        "max_abs_difference": 0.0001072998046822704
+        "changed": 2161,
+        "max_abs_difference": 0.00011054687502110028
       },
       "HYG": {
         "compared": 2215,
@@ -118,12 +118,12 @@
       "IEF": {
         "compared": 2215,
         "changed": 2215,
-        "max_abs_difference": 0.35454185791014936
+        "max_abs_difference": 0.3545342285156181
       },
       "IWM": {
         "compared": 2215,
-        "changed": 2171,
-        "max_abs_difference": 0.00013850097656131766
+        "changed": 2178,
+        "max_abs_difference": 0.00013081054686381322
       },
       "JNJ": {
         "compared": 2215,
@@ -132,18 +132,18 @@
       },
       "JPM": {
         "compared": 2215,
-        "changed": 2177,
-        "max_abs_difference": 0.00010891113279853926
+        "changed": 2180,
+        "max_abs_difference": 0.00012124023436399511
       },
       "KO": {
         "compared": 2215,
-        "changed": 2161,
-        "max_abs_difference": 6.643066406297748e-05
+        "changed": 2159,
+        "max_abs_difference": 6.798706054667036e-05
       },
       "META": {
         "compared": 2215,
-        "changed": 2176,
-        "max_abs_difference": 0.00017500000001291482
+        "changed": 2171,
+        "max_abs_difference": 0.00019521484375673026
       },
       "MSFT": {
         "compared": 2215,
@@ -157,58 +157,58 @@
       },
       "NVDA": {
         "compared": 2215,
-        "changed": 2165,
-        "max_abs_difference": 7.543945312704636e-05
+        "changed": 2167,
+        "max_abs_difference": 6.677246094000111e-05
       },
       "PG": {
         "compared": 2215,
-        "changed": 2172,
-        "max_abs_difference": 0.00010407714843552185
+        "changed": 2170,
+        "max_abs_difference": 0.00011621093750591172
       },
       "QQQ": {
         "compared": 2215,
-        "changed": 2180,
-        "max_abs_difference": 0.00022255859374809006
+        "changed": 2182,
+        "max_abs_difference": 0.00019218749997662599
       },
       "SPY": {
         "compared": 2215,
-        "changed": 2182,
-        "max_abs_difference": 0.0002323730468560825
+        "changed": 2183,
+        "max_abs_difference": 0.0002190429687516371
       },
       "TLT": {
         "compared": 2215,
         "changed": 2215,
-        "max_abs_difference": 0.591062890625011
+        "max_abs_difference": 0.591032373046886
       },
       "UNH": {
         "compared": 2215,
-        "changed": 2186,
-        "max_abs_difference": 0.0002050292968647227
+        "changed": 2184,
+        "max_abs_difference": 0.00022880859376073204
       },
       "WMT": {
         "compared": 2215,
-        "changed": 2166,
-        "max_abs_difference": 6.69433593714075e-05
+        "changed": 2157,
+        "max_abs_difference": 6.788330077966975e-05
       },
       "XLE": {
         "compared": 2215,
-        "changed": 2165,
-        "max_abs_difference": 6.485595702798719e-05
+        "changed": 2163,
+        "max_abs_difference": 6.135864257572621e-05
       },
       "XLF": {
         "compared": 2215,
-        "changed": 2140,
-        "max_abs_difference": 6.145019531089702e-05
+        "changed": 2147,
+        "max_abs_difference": 6.50146484346692e-05
       },
       "XLK": {
         "compared": 2215,
-        "changed": 2158,
-        "max_abs_difference": 8.502197265158884e-05
+        "changed": 2155,
+        "max_abs_difference": 7.99560546909106e-05
       },
       "XLV": {
         "compared": 2215,
-        "changed": 2170,
-        "max_abs_difference": 9.731445312866072e-05
+        "changed": 2161,
+        "max_abs_difference": 0.00010516357421863631
       },
       "XOM": {
         "compared": 2215,
@@ -218,17 +218,17 @@
     },
     "receipts": {
       "yahoo-adjusted-close.csv": {
-        "path": "snapshots/b97b97b64e2058a9f19b90f6a54eac4a90123f23/receipts/yahoo-adjusted-close.csv",
-        "sha256": "050eeb4ab6dfebd1068b242362fe032391974fbd92a07512e3fd34005e71acc2",
-        "bytes": 1206482
+        "path": "snapshots/332e66b27ded127a3c700d5a24338a878d854e5c/receipts/yahoo-adjusted-close.csv",
+        "sha256": "898a7d899d00d4d36e8572bca55f37742006fc573abf73c8f8f4ec4f4a28eadb",
+        "bytes": 1206619
       },
       "fred-dgs10.csv": {
-        "path": "snapshots/b97b97b64e2058a9f19b90f6a54eac4a90123f23/receipts/fred-dgs10.csv",
+        "path": "snapshots/332e66b27ded127a3c700d5a24338a878d854e5c/receipts/fred-dgs10.csv",
         "sha256": "2f81cc5044db2643ee772dffb074390dba0d0c86b116e3b209b7662448e25501",
         "bytes": 36787
       },
       "nyse-sessions.csv": {
-        "path": "snapshots/b97b97b64e2058a9f19b90f6a54eac4a90123f23/receipts/nyse-sessions.csv",
+        "path": "snapshots/332e66b27ded127a3c700d5a24338a878d854e5c/receipts/nyse-sessions.csv",
         "sha256": "3dbcb272be80f5aa961b504eb62dc1c9a148202137f3ca3285f5d95e235d0f0e",
         "bytes": 24634
       }
