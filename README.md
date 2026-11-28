@@ -87,3 +87,17 @@ python3 -m unittest discover -s tests -t .            # tests
 
 - [연구 코드 · Research code](https://github.com/JM973279/market-portfolio-risk-intelligence) — 초기 시장 스트레스 모델 검증과 포트폴리오 위험 연구
 - [Docker 실행 도구 · Docker runner](https://github.com/JM973279/market-portfolio-risk-dashboard-docker) — 연구용 원본의 로컬 실행
+
+## 수집 상태와 점수 게시 이력
+
+GitHub Actions는 화~토 09:07 KST에 전체 수집을 실행하고 12:07·16:07에 재확인합니다.
+재확인은 FRED DBAA·DGS10에 게시 점수일보다 새로운 공통 관측일이 있을 때 전체 배치를 실행합니다.
+한국 점수가 저장된 KRX 달력의 기대일보다 늦으면 FRED 조회 없이 한국 재시도도 유지합니다.
+오전·수동 실행은 재확인 장애와 관계없이 실행됩니다. 예약 실행은 GitHub 사정으로 지연될 수 있습니다.
+
+`data/input/collection_status.json`은 최신 수집 확인 시각·시장별 상태·기대일·원천별 관측일·지연 원천입니다.
+`provenance.json`과 `us_provenance.json`은 점수를 게시한 당시의 출처 이력이며 최신 수집 상태와 구분합니다.
+화면의 운영 JSON은 최신 수집 상태를 반영하되, 점수 CSV와 점수 게시 출처·실제 관측일은 유지합니다.
+새 점수가 없어도 수집 상태는 게시합니다. Actions Summary의 `Collection and score freshness`에서
+실행 성공과 점수 최신성을 따로 확인할 수 있습니다. 자료가 늦으면 기존 점수는 마지막 유효 점수로 표시합니다.
+외부 조회는 Actions 수집 단계에만 두며 웹/API는 GitHub 검증본만 읽습니다.

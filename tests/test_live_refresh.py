@@ -348,7 +348,7 @@ class MarketIndependenceTest(unittest.TestCase):
         def fake_run(cmd, cwd, env, log, timeout=None):
             data = Path(cwd) / "frontend/public/data"
             data.mkdir(parents=True, exist_ok=True)
-            (data / "operational-markets.json").write_text(json.dumps({"runId": "r", "markets": markets}))
+            (data / "operational-markets.json").write_text(json.dumps({"runId": "r", "generatedAt": "2026-11-14T04:00:00+00:00", "markets": markets}))
             (data / "global-markets.json").write_text("{}")
             return 0
 
